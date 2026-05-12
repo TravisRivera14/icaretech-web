@@ -2,26 +2,31 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>iCare Admin | Control Panel</title>
+    <title>iCare Admin | Premium Control</title>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; padding: 40px; color: #1d1d1f; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; padding: 40px; color: #1d1d1f; }
         .container { max-width: 800px; margin: 0 auto; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #d2d2d7; }
-        h1 { font-weight: 700; margin-bottom: 30px; }
-        h2 { font-size: 19px; margin-bottom: 15px; color: #1b4332; }
+        h2 { font-size: 19px; margin-bottom: 15px; color: #1b4332; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 15px; box-sizing: border-box; }
-        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; }
-        .srv-box { background: #fbfbfd; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e5e5e5; }
+        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; }
+        .item-box { background: #fbfbfd; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e5e5e5; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Panel Administrativo</h1>
+    <h1>Panel iCare Tech CR</h1>
+
+    <div class="card">
+        <h2>🛡️ Editar "Por qué elegirnos"</h2>
+        <div id="ben-list"></div>
+        <button onclick="saveBen()">Guardar Beneficios</button>
+    </div>
 
     <div class="card">
         <h2>🛠 Gestión de Servicios</h2>
         <div id="srv-list"></div>
-        <button onclick="saveSrv()">Guardar Cambios en Servicios</button>
+        <button onclick="saveSrv()">Guardar Servicios</button>
     </div>
 
     <div class="card">
@@ -57,10 +62,23 @@
         fetch(`${API}/servicios`).then(r=>r.json()).then(data => {
             const list = document.getElementById('srv-list');
             data.forEach(s => {
-                list.innerHTML += `<div class="srv-box"><div style="display:flex; gap:10px;"><input type="text" class="si" value="${s.icono}" style="width:20%"><input type="text" class="st" value="${s.titulo}" style="width:80%"></div><textarea class="sd">${s.descripcion}</textarea></div>`;
+                list.innerHTML += `<div class="item-box"><div style="display:flex; gap:10px;"><input type="text" class="si" value="${s.icono}" style="width:20%"><input type="text" class="st" value="${s.titulo}" style="width:80%"></div><textarea class="sd">${s.descripcion}</textarea></div>`;
+            });
+        });
+        fetch(`${API}/beneficios`).then(r=>r.json()).then(data => {
+            const list = document.getElementById('ben-list');
+            data.forEach(b => {
+                list.innerHTML += `<div class="item-box"><div style="display:flex; gap:10px;"><input type="text" class="bi" value="${b.icono}" style="width:20%"><input type="text" class="bt" value="${b.titulo}" style="width:80%"></div><textarea class="bd">${b.descripcion}</textarea></div>`;
             });
         });
     };
+
+    function saveBen() {
+        const icons = document.querySelectorAll('.bi'), titles = document.querySelectorAll('.bt'), descs = document.querySelectorAll('.bd');
+        let data = [];
+        for(let i=0; i<icons.length; i++) data.push({ icono: icons[i].value, titulo: titles[i].value, descripcion: descs[i].value });
+        fetch(`${API}/beneficios`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json()).then(d=>alert(d.mensaje));
+    }
 
     function saveSrv() {
         const icons = document.querySelectorAll('.si'), titles = document.querySelectorAll('.st'), descs = document.querySelectorAll('.sd');

@@ -8,26 +8,22 @@ CORS(app)
 def init_db():
     conn = sqlite3.connect('inventario.db')
     c = conn.cursor()
-    # Tabla de productos
     c.execute('''CREATE TABLE IF NOT EXISTS productos
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, categoria TEXT, precio TEXT, imagen TEXT)''')
-    # Tabla de configuración (Misión/Visión)
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
-    # Tabla de servicios
     c.execute('''CREATE TABLE IF NOT EXISTS servicios
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, icono TEXT, titulo TEXT, descripcion TEXT)''')
     
-    # Valores iniciales si están vacíos
     c.execute("INSERT OR IGNORE INTO configuracion VALUES ('mision', 'Nuestra misión es brindar soporte técnico de alta calidad...')")
     c.execute("INSERT OR IGNORE INTO configuracion VALUES ('vision', 'Ser líderes en soluciones tecnológicas y seguridad...')")
     
     c.execute("SELECT COUNT(*) FROM servicios")
     if c.fetchone()[0] == 0:
         servs = [
-            ('📹', 'Instalación de cámaras', 'Venta e instalación de sistemas de vigilancia (CCTV).'),
-            ('💻', 'Reparación de computadoras', 'Mantenimiento y diagnóstico de hardware y software.'),
-            ('📱', 'Reparación de teléfonos', 'Cambio de pantallas, baterías y microcomponentes.'),
-            ('🌐', 'Páginas Webs', 'Creación y mantenimiento de sitios web modernos.')
+            ('📹', 'Cámaras de Seguridad', 'Sistemas de vigilancia inteligentes para tu hogar.'),
+            ('💻', 'Soporte Computadoras', 'Reparación y mantenimiento preventivo profesional.'),
+            ('📱', 'Servicio Apple', 'Especialistas en iPhone, iPad y Mac.'),
+            ('🌐', 'Desarrollo Web', 'Creamos tu presencia digital a medida.')
         ]
         c.executemany("INSERT INTO servicios (icono, titulo, descripcion) VALUES (?, ?, ?)", servs)
     

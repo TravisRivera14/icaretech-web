@@ -2,26 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Control - iCare Tech CR</title>
+    <title>Panel iCare Tech CR</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f4f7f6; padding: 40px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        h2 { color: #1b4332; border-bottom: 2px solid #1b4332; padding-bottom: 10px; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box;}
-        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; padding: 40px; color: #1d1d1f; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 30px; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; border: 1px solid #e5e5e5; }
+        h1 { font-weight: 600; text-align: center; margin-bottom: 40px; }
+        h2 { font-size: 20px; color: #1b4332; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        input, select, textarea, button { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 15px; box-sizing: border-box; }
+        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; }
         button:hover { background: #2d6a4f; }
-        .row { display: flex; gap: 10px; }
+        .srv-edit-box { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Administrador iCare Tech CR</h1>
+    <h1>Configuración iCare Tech CR</h1>
 
     <div class="card">
         <h2>🛠 Editar Servicios</h2>
         <div id="lista-servicios"></div>
-        <button onclick="guardarServicios()">Guardar Cambios en Servicios</button>
+        <button onclick="guardarServicios()">Guardar Servicios</button>
     </div>
 
     <div class="card">
@@ -36,15 +37,15 @@
     <div class="card">
         <h2>📦 Nuevo Producto</h2>
         <form id="formProd">
-            <input type="text" id="pNombre" placeholder="Nombre (Ej: iPhone 15)" required>
+            <input type="text" id="pNombre" placeholder="Nombre (Ej: iPhone 15 Pro)" required>
             <select id="pCat">
                 <option value="iPhone">iPhone</option>
                 <option value="Mac">Mac & iPad</option>
                 <option value="Accesorios">Accesorios</option>
                 <option value="Camaras">Cámaras</option>
             </select>
-            <input type="text" id="pPrecio" placeholder="Descripción/Precio" required>
-            <input type="text" id="pImg" placeholder="Ruta Imagen (assets/img/...)">
+            <input type="text" id="pPrecio" placeholder="Precio o Descripción">
+            <input type="text" id="pImg" placeholder="Ruta imagen (assets/img/...)">
             <button type="submit">Agregar al Catálogo</button>
         </form>
     </div>
@@ -52,53 +53,34 @@
 
 <script>
     const API = 'http://127.0.0.1:5001/api';
-
-    // Cargar Todo
     window.onload = () => {
         fetch(`${API}/config`).then(r=>r.json()).then(d=>{
             document.getElementById('mision').value = d.mision;
             document.getElementById('vision').value = d.vision;
         });
-
         fetch(`${API}/servicios`).then(r=>r.json()).then(data => {
             const cont = document.getElementById('lista-servicios');
             data.forEach(s => {
-                cont.innerHTML += `
-                <div class="srv-block" style="background:#f9f9f9; padding:10px; margin-bottom:10px; border-radius:8px;">
-                    <div class="row">
-                        <input type="text" class="s-icon" value="${s.icono}" style="width:20%">
-                        <input type="text" class="s-title" value="${s.titulo}" style="width:80%">
-                    </div>
-                    <textarea class="s-desc">${s.descripcion}</textarea>
-                </div>`;
+                cont.innerHTML += `<div class="srv-edit-box"><div style="display:flex; gap:10px;"><input type="text" class="s-icon" value="${s.icono}" style="width:20%"><input type="text" class="s-title" value="${s.titulo}" style="width:80%"></div><textarea class="s-desc">${s.descripcion}</textarea></div>`;
             });
         });
     };
-
     function guardarServicios() {
         const icons = document.querySelectorAll('.s-icon');
         const titles = document.querySelectorAll('.s-title');
         const descs = document.querySelectorAll('.s-desc');
         let data = [];
-        for(let i=0; i<icons.length; i++) {
-            data.push({ icono: icons[i].value, titulo: titles[i].value, descripcion: descs[i].value });
-        }
-        fetch(`${API}/servicios`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) })
-        .then(r=>r.json()).then(d=>alert(d.mensaje));
+        for(let i=0; i<icons.length; i++) { data.push({ icono: icons[i].value, titulo: titles[i].value, descripcion: descs[i].value }); }
+        fetch(`${API}/servicios`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json()).then(d=>alert(d.mensaje));
     }
-
     document.getElementById('formConfig').onsubmit = (e) => {
         e.preventDefault();
-        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({ mision: document.getElementById('mision').value, vision: document.getElementById('vision').value })
-        }).then(r=>r.json()).then(d=>alert(d.mensaje));
+        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ mision: document.getElementById('mision').value, vision: document.getElementById('vision').value }) }).then(r=>r.json()).then(d=>alert(d.mensaje));
     };
-
     document.getElementById('formProd').onsubmit = (e) => {
         e.preventDefault();
         const p = { nombre: document.getElementById('pNombre').value, categoria: document.getElementById('pCat').value, precio: document.getElementById('pPrecio').value, imagen: document.getElementById('pImg').value };
-        fetch(`${API}/productos`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) })
-        .then(r=>r.json()).then(d=>{ alert(d.mensaje); location.reload(); });
+        fetch(`${API}/productos`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) }).then(r=>r.json()).then(d=>{ alert(d.mensaje); location.reload(); });
     };
 </script>
 </body>

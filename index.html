@@ -3,169 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCare Tech CR | Soluciones Tecnológicas</title>
+    <title>iCare Tech CR | Soporte y Seguridad</title>
     <style>
         /* =========================================
-           ESTRUCTURA BASE Y VARIABLES DE DISEÑO
+           1. VARIABLES Y BASE (Light Mode Elegante)
            ========================================= */
         :root {
             --bg-body: #F8F9FA;
             --bg-card: #FFFFFF;
+            --bg-subtle: #F1F3F5;
             --text-main: #2D3748;
             --text-muted: #718096;
-            --brand-primary: #1b4332; /* Verde corporativo */
+            --brand-primary: #1b4332; /* Verde corporativo elegante */
             --brand-hover: #2d6a4f;
             --border-color: rgba(0, 0, 0, 0.08);
-            --shadow-sm: 0 4px 6px rgba(0,0,0,0.04);
-            --shadow-md: 0 10px 25px rgba(0,0,0,0.08);
-            --radius: 16px;
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.03);
+            --shadow-md: 0 12px 30px rgba(0,0,0,0.06);
+            --radius: 18px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 0%, #FFFFFF 0%, transparent 60%);
             color: var(--text-main);
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
-        /* Contenedor principal para limitar el ancho */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        a { text-decoration: none; color: inherit; }
 
         /* =========================================
-           DISEÑO FUNCIONAL: NAVEGACIÓN
+           2. NAVEGACIÓN
            ========================================= */
         header {
-            background-color: var(--bg-card);
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(248, 249, 250, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 80px;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--brand-primary);
-            text-decoration: none;
-            letter-spacing: -0.5px;
+        .navbar { display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .logo { font-size: 20px; font-weight: 800; color: var(--brand-primary); }
+        
+        .nav-links { display: flex; gap: 24px; font-size: 15px; font-weight: 500; color: var(--text-muted); }
+        .nav-links a:hover { color: var(--brand-primary); }
+        
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* Ocultar en móvil por ahora */
         }
 
         /* =========================================
-           DISEÑO FUNCIONAL: BOTONES
+           3. BOTONES
            ========================================= */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: none;
-            font-size: 15px;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 20px; border-radius: 999px; font-weight: 600;
+            font-size: 14px; cursor: pointer; transition: all 0.2s ease; border: none;
         }
-
-        .btn-primary {
-            background-color: var(--brand-primary);
-            color: #FFFFFF;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--brand-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
+        .btn-primary { background-color: var(--brand-primary); color: #FFFFFF; box-shadow: 0 8px 20px rgba(27, 67, 50, 0.15); }
+        .btn-primary:hover { background-color: var(--brand-hover); transform: translateY(-1px); }
+        .btn-outline { background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background-color: var(--bg-subtle); }
 
         /* =========================================
-           DISEÑO FUNCIONAL: SECCIONES Y GRID
+           4. HERO SECTION
            ========================================= */
-        section {
-            padding: 80px 0;
+        .hero { padding: 80px 0 60px; text-align: center; }
+        .pill {
+            display: inline-block; padding: 6px 16px; border-radius: 999px;
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            color: var(--brand-primary); font-size: 13px; font-weight: 600; margin-bottom: 24px;
         }
+        .hero h1 { font-size: clamp(36px, 5vw, 56px); line-height: 1.1; letter-spacing: -1px; margin-bottom: 20px; }
+        .hero h1 span { color: var(--brand-primary); }
+        .hero p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .section-title {
-            font-size: 36px;
-            margin-bottom: 16px;
-            letter-spacing: -1px;
-        }
-
-        .section-subtitle {
-            font-size: 18px;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto 48px auto;
-        }
-
-        /* Cuadrícula de servicios */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 32px;
-        }
-
+        /* =========================================
+           5. GRID DE SERVICIOS
+           ========================================= */
+        .section-title { font-size: 32px; letter-spacing: -0.5px; margin-bottom: 10px; }
+        .section-subtitle { color: var(--text-muted); margin-bottom: 40px; font-size: 16px; }
+        
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
         .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 40px 32px;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column; transition: transform 0.2s;
         }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .card-icon { font-size: 32px; margin-bottom: 20px; }
+        .card h3 { font-size: 20px; margin-bottom: 12px; }
+        .card p { color: var(--text-muted); font-size: 15px; flex-grow: 1; margin-bottom: 24px; }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
+        /* =========================================
+           6. ACORDEÓN (Diseño Funcional para Catálogo)
+           ========================================= */
+        .accordion-wrapper { max-width: 800px; margin: 0 auto; display: grid; gap: 16px; }
+        .acc-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
+        .acc-header {
+            width: 100%; padding: 20px; background: none; border: none; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-size: 18px; font-weight: 600; color: var(--text-main);
         }
-
-        .card-icon {
-            width: 56px;
-            height: 56px;
-            background-color: rgba(27, 67, 50, 0.08); /* Fondo verde suave */
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 22px;
-            margin-bottom: 12px;
-        }
-
-        .card-text {
-            color: var(--text-muted);
-            margin-bottom: 24px;
-            flex-grow: 1;
-        }
+        .acc-icon { display: flex; align-items: center; gap: 16px; }
+        .icon-box { width: 48px; height: 48px; background: var(--bg-subtle); border-radius: 12px; display: grid; place-items: center; font-size: 24px; }
+        .chevron { transition: transform 0.3s ease; }
+        
+        .acc-content { padding: 0 20px; max-height: 0; overflow: hidden; transition: all 0.3s ease; background: #FBFBFC; }
+        .acc-item.active .acc-content { padding: 20px; max-height: 500px; border-top: 1px solid var(--border-color); }
+        .acc-item.active .chevron { transform: rotate(180deg); color: var(--brand-primary); }
+        
+        /* Estructura placeholder para productos */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .product-placeholder { border: 1px dashed #CBD5E0; padding: 24px; border-radius: 12px; text-align: center; color: var(--text-muted); font-size: 14px;}
 
     </style>
 </head>
@@ -174,47 +128,113 @@
     <header>
         <div class="container navbar">
             <a href="#" class="logo">iCare Tech CR</a>
-            <button class="btn btn-primary" onclick="alert('Funcionalidad de contacto pendiente')">Contacto Rápido</button>
+            <nav class="nav-links">
+                <a href="#servicios">Servicios</a>
+                <a href="#catalogo">Catálogo Apple</a>
+            </nav>
+            <button class="btn btn-primary" onclick="openWhatsApp('Hola, quisiera hacer una consulta general.')">Contacto Rápido</button>
         </div>
     </header>
 
-    <main>
-        <section class="container text-center">
-            <h1 class="section-title">Tecnología que funciona.<br>Soporte que se siente.</h1>
-            <p class="section-subtitle">Reparación especializada de equipos, instalación de cámaras de seguridad y desarrollo de páginas web.</p>
-            <a href="#servicios" class="btn btn-primary">Explorar Estructura de Servicios</a>
-        </section>
+    <section class="hero container">
+        <div class="pill">Estructura Base v2.0</div>
+        <h1>Tecnología que funciona.<br><span>Soporte que se siente.</span></h1>
+        <p>Expertos en reparación de dispositivos, instalación de sistemas de seguridad y desarrollo web corporativo.</p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <a href="#servicios" class="btn btn-primary">Ver Áreas de Servicio</a>
+            <a href="#catalogo" class="btn btn-outline">Ver Estructura de Catálogo</a>
+        </div>
+    </section>
 
-        <section id="servicios" class="container" style="background-color: var(--bg-body);">
-            <div class="text-center">
-                <h2 class="section-title">Nuestras Áreas</h2>
-                <p class="section-subtitle">Bloques estructurales listos para recibir el contenido final.</p>
+    <section id="servicios" class="container" style="padding: 60px 20px;">
+        <h2 class="section-title">Nuestras Áreas</h2>
+        <p class="section-subtitle">Soluciones tecnológicas integrales para tu hogar o negocio.</p>
+
+        <div class="services-grid">
+            <div class="card">
+                <div class="card-icon">🔧</div>
+                <h3>Reparación de Equipos</h3>
+                <p>Mantenimiento preventivo, microsoldadura y cambio de componentes para computadoras y celulares multiplataforma.</p>
+                <button class="btn btn-outline" onclick="openWhatsApp('Hola, necesito información sobre reparación de equipos.')">Cotizar Reparación</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📹</div>
+                <h3>Cámaras y Seguridad</h3>
+                <p>Diseño, instalación y configuración de sistemas de vigilancia (CCTV) para proteger lo que más importa.</p>
+                <button class="btn btn-outline" onclick="openWhatsApp('Hola, necesito cotizar cámaras de seguridad.')">Cotizar Seguridad</button>
             </div>
 
-            <div class="grid-layout">
-                <div class="card">
-                    <div class="card-icon">📱</div>
-                    <h3 class="card-title">Soporte Técnico</h3>
-                    <p class="card-text">Espacio reservado para detallar servicios de reparación de hardware y software en dispositivos móviles y computadoras.</p>
-                    <button class="btn btn-primary" style="width: 100%; background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);">Definir Acción</button>
-                </div>
+            <div class="card">
+                <div class="card-icon">💻</div>
+                <h3>Desarrollo Web</h3>
+                <p>Estructuración y diseño de páginas web modernas para potenciar la presencia digital de tu marca.</p>
+                <button class="btn btn-outline" onclick="openWhatsApp('Hola, me interesa el desarrollo de una página web.')">Cotizar Web</button>
+            </div>
+        </div>
+    </section>
 
-                <div class="card">
-                    <div class="card-icon">📹</div>
-                    <h3 class="card-title">Sistemas de Seguridad</h3>
-                    <p class="card-text">Espacio reservado para describir la instalación, configuración y mantenimiento de cámaras CCTV y alarmas.</p>
-                    <button class="btn btn-primary" style="width: 100%; background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);">Definir Acción</button>
-                </div>
+    <section id="catalogo" class="container" style="padding: 60px 20px 100px;">
+        <div style="text-align: center;">
+            <h2 class="section-title">Catálogo Apple</h2>
+            <p class="section-subtitle">Diseño estructural del acordeón (Migración de datos pendiente).</p>
+        </div>
 
-                <div class="card">
-                    <div class="card-icon">💻</div>
-                    <h3 class="card-title">Desarrollo Web</h3>
-                    <p class="card-text">Espacio reservado para el portafolio de creación de páginas web, tiendas online y optimización.</p>
-                    <button class="btn btn-primary" style="width: 100%; background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);">Definir Acción</button>
+        <div class="accordion-wrapper">
+            <div class="acc-item">
+                <button class="acc-header" onclick="toggleAccordion(this)">
+                    <div class="acc-icon">
+                        <div class="icon-box">📱</div>
+                        <span>iPhone</span>
+                    </div>
+                    <span class="chevron">▼</span>
+                </button>
+                <div class="acc-content">
+                    <div class="product-grid">
+                        <div class="product-placeholder">Espacio para Tarjeta de Producto (Ej. iPhone 15 Pro)</div>
+                        <div class="product-placeholder">Espacio para Tarjeta de Producto (Ej. iPhone 14)</div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
 
+            <div class="acc-item">
+                <button class="acc-header" onclick="toggleAccordion(this)">
+                    <div class="acc-icon">
+                        <div class="icon-box">💻</div>
+                        <span>Mac & iPad</span>
+                    </div>
+                    <span class="chevron">▼</span>
+                </button>
+                <div class="acc-content">
+                    <div class="product-grid">
+                        <div class="product-placeholder">Espacio para Tarjeta de Producto (Ej. MacBook Air M2)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Funcionalidad del Acordeón
+        function toggleAccordion(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Cerrar todos
+            document.querySelectorAll('.acc-item').forEach(el => el.classList.remove('active'));
+            
+            // Abrir el clickeado si no estaba activo
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Funcionalidad WhatsApp
+        function openWhatsApp(mensaje) {
+            const telefono = "50685836365"; // Tu número configurado
+            const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+    </script>
 </body>
 </html>

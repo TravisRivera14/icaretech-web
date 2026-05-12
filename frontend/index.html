@@ -32,7 +32,7 @@
         .sec-sub { text-align: center; color: var(--text-muted); margin-bottom: 48px; font-size: 16px; max-width: 600px; margin-left: auto; margin-right: auto; }
 
         /* =========================================
-           NAVEGACIÓN (Idéntica al video)
+           NAVEGACIÓN
            ========================================= */
         header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
         .navbar { display: flex; justify-content: space-between; align-items: center; height: 75px; }
@@ -48,7 +48,7 @@
         .btn-outline:hover { background: var(--brand-light); }
 
         /* =========================================
-           1. HERO SECTION (Igual al video)
+           HERO SECTION
            ========================================= */
         .hero { padding: 80px 0; text-align: center; background: radial-gradient(circle at top, #fff, transparent 80%); }
         .hero h1 { font-size: 52px; line-height: 1.1; margin-bottom: 20px; }
@@ -57,17 +57,7 @@
         .hero-btns { display: flex; gap: 16px; justify-content: center; }
 
         /* =========================================
-           2. BENEFICIOS / POR QUÉ ELEGIRNOS
-           ========================================= */
-        .benefits { padding: 60px 0; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .ben-card { display: flex; gap: 16px; align-items: flex-start; }
-        .ben-icon { font-size: 32px; background: var(--brand-light); min-width: 60px; height: 60px; display: grid; place-items: center; border-radius: 14px; }
-        .ben-text h3 { font-size: 18px; margin-bottom: 6px; }
-        .ben-text p { color: var(--text-muted); font-size: 14px; }
-
-        /* =========================================
-           3. SERVICIOS (Tus 4 opciones exactas)
+           SERVICIOS
            ========================================= */
         .services { padding: 80px 0; }
         .srv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
@@ -78,48 +68,34 @@
         .srv-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
 
         /* =========================================
-           4. EL PROCESO (Paso a paso horizontal)
+           CATÁLOGO DINÁMICO (ACORDEÓN)
            ========================================= */
-        .process { padding: 80px 0; background: var(--bg-card); }
-        .proc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; position: relative; }
-        .proc-step { text-align: center; position: relative; z-index: 2; }
-        .proc-num { width: 50px; height: 50px; background: var(--brand); color: #fff; font-size: 20px; font-weight: bold; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(27,67,50,0.3); }
-        .proc-step h3 { font-size: 18px; margin-bottom: 10px; }
-        .proc-step p { font-size: 14px; color: var(--text-muted); }
+        .catalog { padding: 80px 0; background: var(--bg-card); border-top: 1px solid var(--border); }
+        .accordion-wrapper { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
+        .acc-item { background: var(--bg-body); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .acc-header { width: 100%; padding: 20px; background: none; border: none; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .acc-icon { display: flex; align-items: center; gap: 16px; }
+        .icon-box { width: 48px; height: 48px; background: var(--bg-card); border-radius: 12px; display: grid; place-items: center; font-size: 24px; border: 1px solid var(--border); }
+        .chevron { transition: transform 0.3s ease; }
+        
+        .acc-content { padding: 0 20px; max-height: 0; overflow: hidden; transition: all 0.3s ease; background: #FFFFFF; }
+        .acc-item.active .acc-content { padding: 20px; max-height: 2000px; border-top: 1px solid var(--border); }
+        .acc-item.active .chevron { transform: rotate(180deg); color: var(--brand); }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .product-placeholder { border: 1px dashed #CBD5E0; padding: 24px; border-radius: 12px; text-align: center; color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; }
+        
+        /* Tarjeta de Producto */
+        .prod-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: white; text-align: center; transition: 0.2s; }
+        .prod-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--brand-light); }
+        .prod-img { width: 100%; height: 160px; object-fit: contain; margin-bottom: 12px; }
+        .prod-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: var(--text-main); }
+        .prod-price { color: var(--text-muted); font-size: 14px; margin-bottom: 16px; }
 
-        /* =========================================
-           5. MARCAS / SOCIOS (Logos grises)
-           ========================================= */
-        .brands { padding: 60px 0; text-align: center; border-top: 1px solid var(--border); }
-        .brands-flex { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; opacity: 0.5; filter: grayscale(100%); margin-top: 30px; }
-        .brands-flex img { height: 40px; object-fit: contain; }
-        .brands-flex img:hover { opacity: 1; filter: none; transition: 0.3s; cursor: pointer; }
-
-        /* =========================================
-           6. TESTIMONIOS
-           ========================================= */
-        .testimonials { padding: 80px 0; background: var(--brand); color: #fff; text-align: center; }
-        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
-        .test-card { background: rgba(255,255,255,0.1); padding: 30px; border-radius: var(--radius); backdrop-filter: blur(5px); text-align: left; }
-        .stars { color: #FFD700; margin-bottom: 12px; font-size: 18px; }
-        .test-card p { font-style: italic; margin-bottom: 20px; font-size: 15px; }
-        .test-author { font-weight: bold; font-size: 14px; }
-
-        /* =========================================
-           BOTÓN FLOTANTE WHATSAPP (Como en el video)
-           ========================================= */
-        .float-wa {
-            position: fixed; bottom: 30px; right: 30px;
-            background: #25D366; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: grid; place-items: center; font-size: 32px;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            z-index: 999; transition: 0.3s;
-        }
+        /* Botón WhatsApp Flotante */
+        .float-wa { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 999; transition: 0.3s; }
         .float-wa:hover { transform: scale(1.1); }
 
-        /* Responsive menu oculto por ahora */
-        @media (max-width: 768px) { .nav-links { display: none; } .hero h1 { font-size: 38px; } }
     </style>
 </head>
 <body>
@@ -129,8 +105,7 @@
             <div class="logo">iCare Tech CR</div>
             <nav class="nav-links">
                 <a href="#servicios">Servicios</a>
-                <a href="#proceso">Cómo trabajamos</a>
-                <a href="#testimonios">Opiniones</a>
+                <a href="#catalogo">Catálogo de Productos</a>
             </nav>
             <button class="btn btn-primary" onclick="openWhatsApp('Hola, quisiera contactarlos.')">Contáctanos</button>
         </div>
@@ -141,33 +116,7 @@
         <p>Especialistas en dispositivos móviles, reparación de computadoras, instalación de sistemas de seguridad y desarrollo de plataformas digitales.</p>
         <div class="hero-btns">
             <a href="#servicios" class="btn btn-primary">Ver Servicios</a>
-            <a href="#" class="btn btn-outline" onclick="openWhatsApp('Hola, quiero agendar una revisión.')">Agendar Revisión</a>
-        </div>
-    </section>
-
-    <section class="benefits">
-        <div class="container benefits-grid">
-            <div class="ben-card">
-                <div class="ben-icon">⏱️</div>
-                <div class="ben-text">
-                    <h3>Diagnóstico Rápido</h3>
-                    <p>Revisión detallada y cotización transparente antes de iniciar cualquier trabajo.</p>
-                </div>
-            </div>
-            <div class="ben-card">
-                <div class="ben-icon">🛡️</div>
-                <div class="ben-text">
-                    <h3>Garantía de Servicio</h3>
-                    <p>Utilizamos repuestos de alta calidad y garantizamos todas nuestras reparaciones e instalaciones.</p>
-                </div>
-            </div>
-            <div class="ben-card">
-                <div class="ben-icon">👨‍🔧</div>
-                <div class="ben-text">
-                    <h3>Soporte Profesional</h3>
-                    <p>Acompañamiento continuo, desde el primer contacto hasta el soporte post-entrega.</p>
-                </div>
-            </div>
+            <a href="#catalogo" class="btn btn-outline">Ver Catálogo</a>
         </div>
     </section>
 
@@ -180,99 +129,145 @@
                 <div class="srv-icon">📹</div>
                 <h3>Instalación de cámaras</h3>
                 <p>Venta e instalación de sistemas de vigilancia (CCTV) para proteger tu hogar o negocio.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Info cámaras de vigilancia')">Cotizar</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito información sobre cámaras de vigilancia')">Cotizar</button>
             </div>
             <div class="srv-card">
                 <div class="srv-icon">💻</div>
                 <h3>Reparación de computadoras</h3>
                 <p>Mantenimiento, diagnóstico y actualización de hardware y software para PCs y Laptops.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Info reparación computadoras')">Cotizar</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito reparación para mi computadora')">Cotizar</button>
             </div>
             <div class="srv-card">
                 <div class="srv-icon">📱</div>
                 <h3>Reparación de teléfonos</h3>
                 <p>Cambio de pantallas, baterías, puertos de carga y microcomponentes de placa.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Info reparación teléfonos')">Cotizar</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito reparación para mi teléfono')">Cotizar</button>
             </div>
             <div class="srv-card">
                 <div class="srv-icon">🌐</div>
                 <h3>Páginas Webs</h3>
                 <p>Creación y mantenimiento de sitios web corporativos y tiendas online modernas.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Info creación web')">Cotizar</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, me interesa la creación de una página web')">Cotizar</button>
             </div>
         </div>
     </section>
 
-    <section id="proceso" class="process">
+    <section id="catalogo" class="catalog">
         <div class="container">
-            <h2 class="sec-title">Nuestro proceso de trabajo</h2>
-            <p class="sec-sub">Tres pasos simples para solucionar tus necesidades tecnológicas.</p>
+            <h2 class="sec-title">Nuestros Productos</h2>
+            <p class="sec-sub">Equipos, accesorios y cámaras disponibles. Actualizado en tiempo real.</p>
             
-            <div class="proc-grid">
-                <div class="proc-step">
-                    <div class="proc-num">1</div>
-                    <h3>Consultas</h3>
-                    <p>Nos contactás para explicarnos tu requerimiento o problema.</p>
+            <div class="accordion-wrapper">
+                
+                <div class="acc-item">
+                    <button class="acc-header" onclick="toggleAccordion(this)">
+                        <div class="acc-icon"><div class="icon-box">📱</div><span>iPhone</span></div>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="acc-content"><div class="product-grid" id="grid-iPhone">Cargando productos...</div></div>
                 </div>
-                <div class="proc-step">
-                    <div class="proc-num">2</div>
-                    <h3>Diagnóstico y Soporte</h3>
-                    <p>Evaluamos el equipo o proyecto y te brindamos una cotización clara.</p>
+
+                <div class="acc-item">
+                    <button class="acc-header" onclick="toggleAccordion(this)">
+                        <div class="acc-icon"><div class="icon-box">💻</div><span>Mac & iPad</span></div>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="acc-content"><div class="product-grid" id="grid-Mac">Cargando productos...</div></div>
                 </div>
-                <div class="proc-step">
-                    <div class="proc-num">3</div>
-                    <h3>Entrega y Garantía</h3>
-                    <p>Ejecutamos el trabajo y te damos soporte técnico tras la entrega.</p>
+
+                <div class="acc-item">
+                    <button class="acc-header" onclick="toggleAccordion(this)">
+                        <div class="acc-icon"><div class="icon-box">🎧</div><span>Accesorios</span></div>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="acc-content"><div class="product-grid" id="grid-Accesorios">Cargando productos...</div></div>
                 </div>
+
+                <div class="acc-item">
+                    <button class="acc-header" onclick="toggleAccordion(this)">
+                        <div class="acc-icon"><div class="icon-box">📹</div><span>Cámaras de Vigilancia</span></div>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="acc-content"><div class="product-grid" id="grid-Camaras">Cargando productos...</div></div>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <section class="brands container">
-        <h2 class="sec-title" style="font-size: 24px;">Marcas con las que trabajamos</h2>
-        <div class="brands-flex">
-            <h2>[ LOGO APPLE ]</h2>
-            <h2>[ LOGO CÁMARAS ]</h2>
-            <h2>[ LOGO PC ]</h2>
-            <h2>[ LOGO ANDROID ]</h2>
-        </div>
-    </section>
-
-    <section id="testimonios" class="testimonials">
-        <div class="container">
-            <h2 style="font-size: 32px; margin-bottom: 10px;">Lo que dicen nuestros clientes</h2>
-            <p style="opacity: 0.8;">La confianza es nuestro mayor respaldo.</p>
-
-            <div class="test-grid">
-                <div class="test-card">
-                    <div class="stars">★★★★★</div>
-                    <p>"Excelente servicio, muy rápidos con el diagnóstico de mi computadora y la reparación quedó perfecta."</p>
-                    <div class="test-author">- Cliente Satisfecho 1</div>
-                </div>
-                <div class="test-card">
-                    <div class="stars">★★★★★</div>
-                    <p>"Me instalaron las cámaras de seguridad en mi negocio. Muy profesionales, limpios para trabajar y me explicaron todo."</p>
-                    <div class="test-author">- Cliente Satisfecho 2</div>
-                </div>
-                <div class="test-card">
-                    <div class="stars">★★★★★</div>
-                    <p>"Revivieron mi teléfono que no encendía. Súper recomendados, muy transparentes con los precios."</p>
-                    <div class="test-author">- Cliente Satisfecho 3</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <a href="#" class="float-wa" onclick="openWhatsApp('Hola, necesito ayuda desde la web.'); return false;">
-        💬
-    </a>
+    <a href="#" class="float-wa" onclick="openWhatsApp('Hola, necesito ayuda desde la web.'); return false;">💬</a>
 
     <script>
-        function openWhatsApp(mensaje) {
-            const telefono = "50685836365"; // Tu número de WhatsApp
-            const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-            window.open(url, '_blank');
+        // Funcionalidad base: Acordeón
+        function toggleAccordion(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+            document.querySelectorAll('.acc-item').forEach(el => el.classList.remove('active'));
+            if (!isActive) item.classList.add('active');
         }
+
+        // Funcionalidad base: WhatsApp
+        function openWhatsApp(mensaje) {
+            const telefono = "50685836365"; 
+            window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
+        }
+
+        // ==========================================
+        // CONEXIÓN CON LA BASE DE DATOS (API REST) AL PUERTO 5001
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Apuntamos a los contenedores donde irán las tarjetas
+            const grids = {
+                'iPhone': document.getElementById('grid-iPhone'),
+                'Mac': document.getElementById('grid-Mac'),
+                'Accesorios': document.getElementById('grid-Accesorios'),
+                'Camaras': document.getElementById('grid-Camaras')
+            };
+
+            // 2. Pedimos los datos al servidor Python
+            fetch('http://127.0.0.1:5001/api/productos')
+                .then(respuesta => respuesta.json())
+                .then(productos => {
+                    
+                    // Limpiamos el texto de "Cargando..."
+                    for (let key in grids) { grids[key].innerHTML = ''; }
+
+                    // Si la base de datos está vacía
+                    if(productos.length === 0) {
+                        for (let key in grids) { grids[key].innerHTML = '<div class="product-placeholder">Pronto agregaremos productos aquí.</div>'; }
+                        return;
+                    }
+
+                    // 3. Dibujamos cada producto en su categoría
+                    productos.forEach(prod => {
+                        const tarjetaHTML = `
+                            <div class="prod-card">
+                                <img src="${prod.imagen}" alt="${prod.nombre}" class="prod-img" onerror="this.src='https://via.placeholder.com/150?text=Sin+Imagen'">
+                                <div class="prod-title">${prod.nombre}</div>
+                                <div class="prod-price">${prod.precio}</div>
+                                <button class="btn btn-outline" style="width: 100%; padding: 8px; font-size: 13px;" onclick="openWhatsApp('Hola, quiero cotizar este producto: ${prod.nombre} (${prod.precio})')">Me interesa</button>
+                            </div>
+                        `;
+                        
+                        // Si la categoría existe, lo metemos en su contenedor
+                        if (grids[prod.categoria]) {
+                            grids[prod.categoria].innerHTML += tarjetaHTML;
+                        }
+                    });
+
+                    // Si alguna categoría quedó vacía, le ponemos un mensaje de relleno
+                    for (let key in grids) {
+                        if (grids[key].innerHTML === '') {
+                            grids[key].innerHTML = '<div class="product-placeholder">Pronto agregaremos productos aquí.</div>';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log("Error de conexión:", error);
+                    for (let key in grids) { grids[key].innerHTML = '<div class="product-placeholder">Error: No se pudo conectar a la base de datos. Verifica que el servidor Python (app.py) esté encendido.</div>'; }
+                });
+        });
     </script>
 </body>
 </html>

@@ -2,271 +2,54 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCare Tech CR | Soporte y Seguridad</title>
+    <title>Panel Admin - iCare Tech CR</title>
     <style>
-        /* =========================================
-           VARIABLES Y DISEÑO BASE
-           ========================================= */
-        :root {
-            --bg-body: #F8F9FA;
-            --bg-card: #FFFFFF;
-            --bg-subtle: #F1F3F5;
-            --text-main: #2D3748;
-            --text-muted: #718096;
-            --brand: #1b4332; /* Tu verde elegante */
-            --brand-hover: #2d6a4f;
-            --brand-light: rgba(27, 67, 50, 0.08);
-            --border: rgba(0, 0, 0, 0.08);
-            --shadow: 0 10px 25px rgba(0,0,0,0.05);
-            --radius: 16px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.6; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        a { text-decoration: none; color: inherit; }
-        
-        /* Títulos de sección */
-        .sec-title { font-size: 32px; text-align: center; margin-bottom: 12px; letter-spacing: -0.5px; }
-        .sec-sub { text-align: center; color: var(--text-muted); margin-bottom: 48px; font-size: 16px; max-width: 600px; margin-left: auto; margin-right: auto; }
-
-        /* =========================================
-           NAVEGACIÓN
-           ========================================= */
-        header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
-        .navbar { display: flex; justify-content: space-between; align-items: center; height: 75px; }
-        .logo { font-size: 22px; font-weight: 800; color: var(--brand); display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; gap: 24px; font-weight: 500; color: var(--text-muted); }
-        .nav-links a:hover { color: var(--brand); }
-        
-        /* Botones */
-        .btn { padding: 12px 24px; border-radius: 999px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; display: inline-flex; align-items: center; justify-content: center; }
-        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 15px rgba(27,67,50,0.2); }
-        .btn-primary:hover { background: var(--brand-hover); transform: translateY(-2px); }
-        .btn-outline { background: transparent; border: 2px solid var(--brand); color: var(--brand); }
-        .btn-outline:hover { background: var(--brand-light); }
-
-        /* =========================================
-           HERO SECTION
-           ========================================= */
-        .hero { padding: 80px 0; text-align: center; background: radial-gradient(circle at top, #fff, transparent 80%); }
-        .hero h1 { font-size: 52px; line-height: 1.1; margin-bottom: 20px; }
-        .hero h1 span { color: var(--brand); }
-        .hero p { font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 32px; }
-        .hero-btns { display: flex; gap: 16px; justify-content: center; }
-
-        /* =========================================
-           SERVICIOS
-           ========================================= */
-        .services { padding: 80px 0; }
-        .srv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
-        .srv-card { background: var(--bg-card); border: 1px solid var(--border); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); transition: 0.3s; text-align: center; }
-        .srv-card:hover { transform: translateY(-5px); border-color: var(--brand); }
-        .srv-icon { font-size: 40px; margin-bottom: 20px; }
-        .srv-card h3 { font-size: 18px; margin-bottom: 12px; }
-        .srv-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
-
-        /* =========================================
-           CATÁLOGO DINÁMICO (ACORDEÓN)
-           ========================================= */
-        .catalog { padding: 80px 0; background: var(--bg-card); border-top: 1px solid var(--border); }
-        .accordion-wrapper { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
-        .acc-item { background: var(--bg-body); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .acc-header { width: 100%; padding: 20px; background: none; border: none; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 18px; font-weight: 600; color: var(--text-main); }
-        .acc-icon { display: flex; align-items: center; gap: 16px; }
-        .icon-box { width: 48px; height: 48px; background: var(--bg-card); border-radius: 12px; display: grid; place-items: center; font-size: 24px; border: 1px solid var(--border); }
-        .chevron { transition: transform 0.3s ease; }
-        
-        .acc-content { padding: 0 20px; max-height: 0; overflow: hidden; transition: all 0.3s ease; background: #FFFFFF; }
-        .acc-item.active .acc-content { padding: 20px; max-height: 2000px; border-top: 1px solid var(--border); }
-        .acc-item.active .chevron { transform: rotate(180deg); color: var(--brand); }
-        
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .product-placeholder { border: 1px dashed #CBD5E0; padding: 24px; border-radius: 12px; text-align: center; color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; }
-        
-        /* Tarjeta de Producto */
-        .prod-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: white; text-align: center; transition: 0.2s; }
-        .prod-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--brand-light); }
-        .prod-img { width: 100%; height: 160px; object-fit: contain; margin-bottom: 12px; }
-        .prod-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: var(--text-main); }
-        .prod-price { color: var(--text-muted); font-size: 14px; margin-bottom: 16px; }
-
-        /* Botón WhatsApp Flotante */
-        .float-wa { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 999; transition: 0.3s; }
-        .float-wa:hover { transform: scale(1.1); }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #F8F9FA; display: grid; place-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 16px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px;}
+        button { background: #1b4332; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #2d6a4f; }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="container navbar">
-            <div class="logo">iCare Tech CR</div>
-            <nav class="nav-links">
-                <a href="#servicios">Servicios</a>
-                <a href="#catalogo">Catálogo de Productos</a>
-            </nav>
-            <button class="btn btn-primary" onclick="openWhatsApp('Hola, quisiera contactarlos.')">Contáctanos</button>
-        </div>
-    </header>
-
-    <section class="hero container">
-        <h1>Servicio técnico especializado <br><span>y soluciones integrales</span></h1>
-        <p>Especialistas en dispositivos móviles, reparación de computadoras, instalación de sistemas de seguridad y desarrollo de plataformas digitales.</p>
-        <div class="hero-btns">
-            <a href="#servicios" class="btn btn-primary">Ver Servicios</a>
-            <a href="#catalogo" class="btn btn-outline">Ver Catálogo</a>
-        </div>
-    </section>
-
-    <section id="servicios" class="services container">
-        <h2 class="sec-title">Catálogo de Servicios</h2>
-        <p class="sec-sub">Seleccioná el área en la que necesitás ayuda y cotizá directamente.</p>
-
-        <div class="srv-grid">
-            <div class="srv-card">
-                <div class="srv-icon">📹</div>
-                <h3>Instalación de cámaras</h3>
-                <p>Venta e instalación de sistemas de vigilancia (CCTV) para proteger tu hogar o negocio.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito información sobre cámaras de vigilancia')">Cotizar</button>
-            </div>
-            <div class="srv-card">
-                <div class="srv-icon">💻</div>
-                <h3>Reparación de computadoras</h3>
-                <p>Mantenimiento, diagnóstico y actualización de hardware y software para PCs y Laptops.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito reparación para mi computadora')">Cotizar</button>
-            </div>
-            <div class="srv-card">
-                <div class="srv-icon">📱</div>
-                <h3>Reparación de teléfonos</h3>
-                <p>Cambio de pantallas, baterías, puertos de carga y microcomponentes de placa.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, necesito reparación para mi teléfono')">Cotizar</button>
-            </div>
-            <div class="srv-card">
-                <div class="srv-icon">🌐</div>
-                <h3>Páginas Webs</h3>
-                <p>Creación y mantenimiento de sitios web corporativos y tiendas online modernas.</p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openWhatsApp('Hola, me interesa la creación de una página web')">Cotizar</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="catalogo" class="catalog">
-        <div class="container">
-            <h2 class="sec-title">Nuestros Productos</h2>
-            <p class="sec-sub">Equipos, accesorios y cámaras disponibles. Actualizado en tiempo real.</p>
-            
-            <div class="accordion-wrapper">
-                
-                <div class="acc-item">
-                    <button class="acc-header" onclick="toggleAccordion(this)">
-                        <div class="acc-icon"><div class="icon-box">📱</div><span>iPhone</span></div>
-                        <span class="chevron">▼</span>
-                    </button>
-                    <div class="acc-content"><div class="product-grid" id="grid-iPhone">Cargando productos...</div></div>
-                </div>
-
-                <div class="acc-item">
-                    <button class="acc-header" onclick="toggleAccordion(this)">
-                        <div class="acc-icon"><div class="icon-box">💻</div><span>Mac & iPad</span></div>
-                        <span class="chevron">▼</span>
-                    </button>
-                    <div class="acc-content"><div class="product-grid" id="grid-Mac">Cargando productos...</div></div>
-                </div>
-
-                <div class="acc-item">
-                    <button class="acc-header" onclick="toggleAccordion(this)">
-                        <div class="acc-icon"><div class="icon-box">🎧</div><span>Accesorios</span></div>
-                        <span class="chevron">▼</span>
-                    </button>
-                    <div class="acc-content"><div class="product-grid" id="grid-Accesorios">Cargando productos...</div></div>
-                </div>
-
-                <div class="acc-item">
-                    <button class="acc-header" onclick="toggleAccordion(this)">
-                        <div class="acc-icon"><div class="icon-box">📹</div><span>Cámaras de Vigilancia</span></div>
-                        <span class="chevron">▼</span>
-                    </button>
-                    <div class="acc-content"><div class="product-grid" id="grid-Camaras">Cargando productos...</div></div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <a href="#" class="float-wa" onclick="openWhatsApp('Hola, necesito ayuda desde la web.'); return false;">💬</a>
+    <div class="card">
+        <h2 style="margin-top:0;">Agregar Producto</h2>
+        <form id="formAdmin">
+            <input type="text" id="nombre" placeholder="Nombre (Ej. iPhone 15 Pro)" required>
+            <select id="categoria">
+                <option value="iPhone">iPhone</option>
+                <option value="Mac">Mac & iPad</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="Camaras">Cámaras de Vigilancia</option>
+            </select>
+            <input type="text" id="precio" placeholder="Descripción/Precio (Ej. 256GB - Titanio)" required>
+            <input type="text" id="imagen" placeholder="URL Imagen (Ej. assets/img/iphone.png)" required>
+            <button type="submit">Guardar en Catálogo</button>
+        </form>
+    </div>
 
     <script>
-        // Funcionalidad base: Acordeón
-        function toggleAccordion(button) {
-            const item = button.parentElement;
-            const isActive = item.classList.contains('active');
-            document.querySelectorAll('.acc-item').forEach(el => el.classList.remove('active'));
-            if (!isActive) item.classList.add('active');
-        }
-
-        // Funcionalidad base: WhatsApp
-        function openWhatsApp(mensaje) {
-            const telefono = "50685836365"; 
-            window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
-        }
-
-        // ==========================================
-        // CONEXIÓN CON LA BASE DE DATOS (API REST)
-        // ==========================================
-        document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('formAdmin').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // 1. Apuntamos a los contenedores donde irán las tarjetas
-            const grids = {
-                'iPhone': document.getElementById('grid-iPhone'),
-                'Mac': document.getElementById('grid-Mac'),
-                'Accesorios': document.getElementById('grid-Accesorios'),
-                'Camaras': document.getElementById('grid-Camaras')
+            const producto = {
+                nombre: document.getElementById('nombre').value,
+                categoria: document.getElementById('categoria').value,
+                precio: document.getElementById('precio').value,
+                imagen: document.getElementById('imagen').value
             };
 
-            // 2. Pedimos los datos al servidor Python
-            fetch('http://127.0.0.1:5000/api/productos')
-                .then(respuesta => respuesta.json())
-                .then(productos => {
-                    
-                    // Limpiamos el texto de "Cargando..."
-                    for (let key in grids) { grids[key].innerHTML = ''; }
-
-                    // Si la base de datos está vacía
-                    if(productos.length === 0) {
-                        for (let key in grids) { grids[key].innerHTML = '<div class="product-placeholder">Pronto agregaremos productos aquí.</div>'; }
-                        return;
-                    }
-
-                    // 3. Dibujamos cada producto en su categoría
-                    productos.forEach(prod => {
-                        const tarjetaHTML = `
-                            <div class="prod-card">
-                                <img src="${prod.imagen}" alt="${prod.nombre}" class="prod-img" onerror="this.src='https://via.placeholder.com/150?text=Sin+Imagen'">
-                                <div class="prod-title">${prod.nombre}</div>
-                                <div class="prod-price">${prod.precio}</div>
-                                <button class="btn btn-outline" style="width: 100%; padding: 8px; font-size: 13px;" onclick="openWhatsApp('Hola, quiero cotizar este producto: ${prod.nombre} (${prod.precio})')">Me interesa</button>
-                            </div>
-                        `;
-                        
-                        // Si la categoría existe, lo metemos en su contenedor
-                        if (grids[prod.categoria]) {
-                            grids[prod.categoria].innerHTML += tarjetaHTML;
-                        }
-                    });
-
-                    // Si alguna categoría quedó vacía, le ponemos un mensaje de relleno
-                    for (let key in grids) {
-                        if (grids[key].innerHTML === '') {
-                            grids[key].innerHTML = '<div class="product-placeholder">Pronto agregaremos productos aquí.</div>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.log("Error de conexión:", error);
-                    for (let key in grids) { grids[key].innerHTML = '<div class="product-placeholder">Error: No se pudo conectar a la base de datos. Verifica que el servidor Python (app.py) esté encendido.</div>'; }
-                });
+            fetch('http://127.0.0.1:5001/api/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(producto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensaje);
+                document.getElementById('formAdmin').reset();
+            })
+            .catch(err => alert("Error de conexión. ¿Está encendido el servidor?"));
         });
     </script>
 </body>

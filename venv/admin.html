@@ -2,49 +2,82 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin iCare | Gestión Total</title>
+    <title>Admin iCare | Control Maestro</title>
     <style>
         :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); padding: 20px; }
+        
+        /* ✅ ESTILOS AÑADIDOS PARA LA CABECERA DEL ADMIN CON LOGO */
+        .admin-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            grid-column: 1 / -1; /* Ocupa todo el ancho superior */
+            margin-bottom: 30px;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .admin-logo-img {
+            height: 60px; /* Altura del logo en el panel */
+            width: auto;
+        }
+        .admin-header h1 {
+            font-size: 24px;
+            color: var(--brand);
+            margin: 0;
+            font-weight: 700;
+        }
+
         .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
-        input, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; }
+        input, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline: none; }
+        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        label { font-size: 11px; color: #666; margin-top: 10px; display: block; font-weight: 600;}
     </style>
 </head>
 <body>
 <div class="container">
-    <h1 style="grid-column: 1/-1;">Panel Administrativo iCare</h1>
+    
+    <div class="admin-header">
+        <img src="logo.png" alt="iCareTech CR Logo" class="admin-logo-img">
+        <h1>Control Maestro | iCare Tech CR</h1>
+    </div>
+
     <div>
         <div class="card">
-            <h2 id="srv-label">➕ Servicio</h2>
-            <input type="text" id="sIcon" placeholder="Emoji o Icono">
+            <h2 id="srv-label">➕ Gestionar Servicio</h2>
+            <input type="text" id="sIcon" placeholder="Emoji o Icono (Ej: 📱)">
             <input type="text" id="sTitle" placeholder="Título">
-            <textarea id="sDesc" placeholder="Descripción"></textarea>
-            <label style="font-size: 11px;">Imagen opcional:</label>
+            <textarea id="sDesc" placeholder="Descripción breve" style="height: 100px;"></textarea>
+            <label>Imagen opcional (formato ancho recomendado):</label>
             <input type="file" id="sImgFile" accept="image/*">
-            <button onclick="subirServicio()">Guardar Servicio</button>
+            <button id="btn-srv" onclick="subirServicio()">Guardar Servicio</button>
         </div>
         <div class="card">
-            <h2 id="prod-label">➕ Producto</h2>
-            <input type="text" id="pName" placeholder="Nombre">
-            <input type="text" id="pPrice" placeholder="Precio">
+            <h2 id="prod-label">➕ Gestionar Producto</h2>
+            <input type="text" id="pName" placeholder="Nombre (Ej: iPhone 13 Pro)">
+            <input type="text" id="pPrice" placeholder="Precio (Ej: ₡450,000)">
+            <input type="text" id="pCat" placeholder="Categoría (Ej: Teléfonos, Cámaras, Accesorios...)">
+            <label>Imagen del Producto:</label>
             <input type="file" id="pImgFile" accept="image/*">
-            <button onclick="subirProducto()">Guardar Producto</button>
+            <button id="btn-prod" onclick="subirProducto()">Guardar Producto</button>
         </div>
     </div>
     <div>
         <div class="card">
-            <h2>🎯 Web y Hero</h2>
-            <input type="text" id="h_titulo" placeholder="Título Hero">
-            <label style="font-size: 11px;">Fondo Hero:</label>
+            <h2>🎯 Textos Generales Web</h2>
+            <input type="text" id="h_titulo" placeholder="Título Hero Principal">
+            <label>Fondo Hero (Imagen Grande Principal):</label>
             <input type="file" id="heroBgFile" accept="image/*">
-            <textarea id="mision" placeholder="Misión"></textarea>
-            <textarea id="vision" placeholder="Visión"></textarea>
-            <button onclick="updateConfig()">Actualizar Web</button>
+            <textarea id="mision" placeholder="Texto de Misión" style="height: 80px;"></textarea>
+            <textarea id="vision" placeholder="Texto de Visión" style="height: 80px;"></textarea>
+            <button onclick="updateConfig()">Actualizar Textos y Fondo</button>
         </div>
-        <div class="card"><h2>📋 Gestión</h2><div id="master-list"></div></div>
+        <div class="card"><h2>📋 Gestión de Contenido Actual</h2><div id="master-list">Cargando...</div></div>
     </div>
 </div>
 <script>
@@ -59,21 +92,22 @@
 
     function loadContent() {
         fetch(`${API}/todo`).then(r=>r.json()).then(data => {
-            setV('h_titulo', data.config.hero_titulo);
-            setV('mision', data.config.mision);
-            setV('vision', data.config.vision);
+            setV('h_titulo', data.config.hero_titulo); setV('mision', data.config.mision); setV('vision', data.config.vision);
             let html = "<strong>Servicios:</strong>";
-            data.servicios.forEach(s => html += `<div class="list-item"><span>${s.titulo}</span><div><button onclick='prepararEdicion("servicios", ${JSON.stringify(s)})' style="background:blue; width:auto; padding:2px 8px; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button><button onclick="deleteItem('servicios', ${s.id})" style="background:red; width:auto; padding:2px 8px; color:white; border:none; border-radius:4px; cursor:pointer; margin-left:4px;">X</button></div></div>`);
+            data.servicios.forEach(s => html += `<div class="list-item"><span>${s.titulo}</span><div><button onclick='prepararEdicion("servicios", ${JSON.stringify(s)})' style="background:blue; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer;">Edit</button><button onclick="deleteItem('servicios', ${s.id})" style="background:red; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer; margin-left:5px;">X</button></div></div>`);
+            html += "<br><strong>Productos:</strong>";
+            data.productos.forEach(p => html += `<div class="list-item"><span>${p.nombre} (${p.categoria || 'Otros'})</span><div><button onclick='prepararEdicion("productos", ${JSON.stringify(p)})' style="background:blue; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer;">Edit</button><button onclick="deleteItem("productos", ${p.id})" style="background:red; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer; margin-left:5px;">X</button></div></div>`);
             document.getElementById('master-list').innerHTML = html;
         });
     }
 
     function subirServicio() { saveItem('servicios', { icono: v('sIcon'), titulo: v('sTitle'), descripcion: v('sDesc'), imagen: imgS }); }
-    function subirProducto() { saveItem('productos', { nombre: v('pName'), precio: v('pPrice'), imagen: imgP }); }
+    function subirProducto() { saveItem('productos', { nombre: v('pName'), precio: v('pPrice'), categoria: v('pCat'), imagen: imgP }); }
     
     function prepararEdicion(tipo, item) {
         editId = item.id; editType = tipo; window.scrollTo(0,0);
         if(tipo === 'servicios') { setV('sIcon', item.icono); setV('sTitle', item.titulo); setV('sDesc', item.descripcion); document.getElementById('srv-label').innerText = "📝 Editando Servicio"; }
+        if(tipo === 'productos') { setV('pName', item.nombre); setV('pPrice', item.precio); setV('pCat', item.categoria); document.getElementById('prod-label').innerText = "📝 Editando Producto"; }
     }
 
     function saveItem(path, data) {
@@ -83,8 +117,7 @@
     }
 
     function updateConfig() {
-        let d = { hero_titulo: v('h_titulo'), mision: v('mision'), vision: v('vision') }; 
-        if(imgH) d.hero_background = imgH;
+        let d = { hero_titulo: v('h_titulo'), mision: v('mision'), vision: v('vision') }; if(imgH) d.hero_background = imgH;
         fetch(`${API}/config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) }).then(() => alert("Web Actualizada"));
     }
 

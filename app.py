@@ -19,6 +19,13 @@ def init_db():
     conn = sqlite3.connect('inventario.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, precio TEXT, imagen TEXT)''')
+    
+    # Truco para añadir la columna 'categoria' sin borrar la base de datos de los productos existentes
+    try:
+        c.execute('''ALTER TABLE productos ADD COLUMN categoria TEXT DEFAULT 'Otros' ''')
+    except:
+        pass # Si la columna ya existe, simplemente ignora el error
+
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id INTEGER PRIMARY KEY AUTOINCREMENT, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT)''')
     conn.commit()
@@ -29,7 +36,8 @@ def obtener_todo():
     config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True)
     config = {r[0]: r[1] for r in config_raw}
     servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4]} for r in db_query("SELECT id, icono, titulo, descripcion, imagen FROM servicios", fetch=True)]
-    prods = [{"id": r[0], "nombre": r[1], "precio": r[2], "imagen": r[3]} for r in db_query("SELECT id, nombre, precio, imagen FROM productos", fetch=True)]
+    # Ahora pedimos también la categoría
+    prods = [{"id": r[0], "nombre": r[1], "precio": r[2], "imagen": r[3], "categoria": r[4]} for r in db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True)]
     return jsonify({"config": config, "servicios": servs, "productos": prods})
 
 @app.route('/api/config', methods=['POST'])
@@ -56,13 +64,16 @@ def editar_servicio(id):
 @app.route('/api/productos', methods=['POST'])
 def guardar_producto():
     d = request.json
-    db_query("INSERT INTO productos (nombre, precio, imagen) VALUES (?, ?, ?)", (d['nombre'], d['precio'], d['imagen']))
+    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros')))
     return jsonify({"mensaje": "✅ Producto añadido"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
 def editar_producto(id):
     d = request.json
-    db_query("UPDATE productos SET nombre=?, precio=?, imagen=? WHERE id=?", (d['nombre'], d['precio'], d['imagen'], id))
+    if d.get('imagen'):
+        db_query("UPDATE productos SET nombre=?, precio=?, imagen=?, categoria=? WHERE id=?", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros'), id))
+    else:
+        db_query("UPDATE productos SET nombre=?, precio=?, categoria=? WHERE id=?", (d['nombre'], d['precio'], d.get('categoria', 'Otros'), id))
     return jsonify({"mensaje": "✅ Producto actualizado"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])

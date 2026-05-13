@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            --nav-bg: #355c6b; 
+            /* ✅ COLOR TURQUESA CON 40% DE TRANSPARENCIA */
+            --nav-bg: rgba(53, 92, 107, 0.6); 
             --neon-green: #7cf5a6; 
             --neon-green-hover: #65d98e;
             --icon-blue: #4ea5ce;
@@ -18,12 +19,25 @@
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
+        body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-        /* NAVEGACIÓN */
-        header { background: var(--nav-bg); padding: 15px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* NAVEGACIÓN (CON EFECTO CRISTAL) */
+        header { 
+            background: var(--nav-bg); 
+            padding: 15px 40px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            /* ✅ Efecto cristal para que no se pierda la lectura al bajar */
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+        }
         .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
-        .logo-area { display: flex; align-items: center; gap: 15px; color: var(--white); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        
+        .logo-area { display: flex; align-items: center; text-decoration: none; }
+        .logo-img { height: 100px; width: auto; object-fit: contain; display: block; }
+        
         .nav-links { display: flex; gap: 30px; align-items: center; }
         .nav-links a { color: var(--white); text-decoration: none; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .nav-links a:hover { color: var(--neon-green); }
@@ -33,13 +47,20 @@
         .btn-neon { background: var(--neon-green); color: #000; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-size: 16px; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; }
         .btn-neon:hover { background: var(--neon-green-hover); transform: scale(1.05); }
 
-        /* HERO BANNER */
+        /* HERO BANNER Y ANIMACIÓN DE ENTRADA */
         .hero-banner { 
             width: 100%; height: 60vh; 
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80'); 
             background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--white);
         }
-        .hero-banner h1 { font-size: clamp(40px, 5vw, 60px); font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 900px; line-height: 1.2; }
+        .hero-banner h1 { 
+            font-size: clamp(40px, 5vw, 60px); font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 900px; line-height: 1.2; 
+            animation: heroFadeIn 1.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes heroFadeIn { to { opacity: 1; transform: translateY(0); } }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         
@@ -48,17 +69,13 @@
 
         /* TARJETAS DE SERVICIOS */
         .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding-bottom: 60px; }
-        .service-card { 
-            background: var(--white); padding: 50px 30px; border-radius: 12px; 
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
-            border: 1px solid #eaeaea; transition: 0.3s;
-        }
+        .service-card { background: var(--white); padding: 50px 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eaeaea; transition: transform 0.3s, box-shadow 0.3s; }
         .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
         .service-icon { font-size: 55px; color: var(--icon-blue); margin-bottom: 20px; display: block; }
         .service-img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; }
         .service-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: var(--text-dark); }
         .service-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 30px; }
-        .btn-ver-mas { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 700; display: inline-block; transition: 0.3s; }
+        .btn-ver-mas { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 700; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
         .btn-ver-mas:hover { background: var(--neon-green-hover); }
 
         /* SECCIÓN "LOS MEJORES EN EL RAMO" */
@@ -83,6 +100,11 @@
         .process-card h3 { font-size: 24px; margin-bottom: 15px; }
         .process-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 25px; }
 
+        /* CATÁLOGO CON PESTAÑAS DINÁMICAS */
+        .category-filters { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+        .cat-btn { background: var(--white); border: 2px solid var(--neon-green); color: var(--text-dark); padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 15px; transition: 0.3s; }
+        .cat-btn.active, .cat-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 5px 15px rgba(124, 245, 166, 0.4); }
+
         /* SECCIÓN: EFICIENCIA Y RAPIDEZ */
         .how-we-operate { background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); padding: 100px 0; text-align: center; }
         .how-we-operate .subtitle { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.7); margin-bottom: 15px; font-weight: 600; }
@@ -94,22 +116,17 @@
         .timeline-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
         .timeline-card p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
 
-        /* BOTÓN WHATSAPP FLOTANTE */
-        .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 65px; height: 65px; border-radius: 50%; display: grid; place-items: center; font-size: 35px; z-index: 2000; box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-decoration: none; transition: 0.3s; }
-        .wa-float:hover { transform: scale(1.1); }
+        /* CLASES DE ANIMACIÓN DE SCROLL */
+        .anim-up { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; will-change: opacity, transform; }
+        .anim-up.visible { opacity: 1; transform: translateY(0); }
 
-        @media (max-width: 900px) {
-            .nav-links, .search-bar { display: none; }
-            .features-grid, .process-grid, .timeline-grid { flex-direction: column; grid-template-columns: 1fr; }
-            .timeline-wrapper::before { display: none; } 
-            .timeline-card { min-height: auto; padding: 40px 20px; }
-        }
-
-        /* ✅ ESTILOS AÑADIDOS PARA EL NUEVO FOOTER COMPLETO */
+        /* PIE DE PÁGINA COMPLETO CON LOGO Y CONTACTO ADJUNTADO */
         .site-footer { background-color: #212529; color: #fff; padding: 80px 0; border-top: 1px solid rgba(0,0,0,0.1); }
         .footer-content { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        
         .contact-info { display: flex; flex-direction: column; }
         .contact-info h3 { color: var(--icon-blue); text-transform: uppercase; font-size: 20px; font-weight: 700; margin-bottom: 25px; letter-spacing: 1px; }
+        
         .contact-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 16px; color: #ccc; }
         .contact-item i { font-size: 20px; width: 25px; text-align: center; color: var(--neon-green); }
         .newsletter-social { display: flex; flex-direction: column; align-items: flex-start; }
@@ -122,19 +139,27 @@
         .social-links a:hover { color: #000; background: var(--neon-green); transform: translateY(-3px); }
         .final-footer { background-color: #111; padding: 20px 0; text-align: center; color: #666; font-size: 14px; }
         
-        @media (max-width: 900px) { 
-            .footer-content { grid-template-columns: 1fr; gap: 40px; } 
-            .newsletter-form { flex-direction: column; align-items: stretch; } 
+        @media (max-width: 900px) {
+            .nav-links, .search-bar { display: none; }
+            .features-grid, .process-grid, .timeline-grid, .footer-content { flex-direction: column; grid-template-columns: 1fr; }
+            .timeline-wrapper::before { display: none; } 
+            .timeline-card { min-height: auto; padding: 40px 20px; }
+            .newsletter-form { flex-direction: column; align-items: stretch; }
         }
+
+        /* WHATSAPP FLOTANTE */
+        .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 65px; height: 65px; border-radius: 50%; display: grid; place-items: center; font-size: 35px; z-index: 2000; box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-decoration: none; transition: 0.3s; }
+        .wa-float:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
     <header>
         <div class="nav-bar">
-            <div class="logo-area">
-                <span style="color:var(--neon-green); font-size: 32px;">◓</span> iCareTech CR
-            </div>
+            <a href="#" class="logo-area">
+                <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
+            </a>
+            
             <nav class="nav-links">
                 <a href="#servicios">Ayuda técnica ▾</a>
                 <a href="#nosotros">Proyectos</a>
@@ -158,7 +183,7 @@
     </section>
 
     <div class="container" id="servicios">
-        <div class="section-header">
+        <div class="section-header anim-up">
             <h2>Reparamos Computadoras,<br>Laptop's y Servidores<br>Empresariales en Costa Rica</h2>
         </div>
         <div class="services-grid" id="srv-c"></div>
@@ -166,7 +191,7 @@
 
     <section class="features-section" id="nosotros">
         <div class="container features-grid">
-            <div class="features-text">
+            <div class="features-text anim-up">
                 <span class="badge">Los mejores en el ramo</span>
                 <h2>Soporte técnico especializado en Costa Rica.</h2>
                 <p>Tranquilo, estás en las mejores manos. Fusionamos precisión técnica con estándares de calidad.</p>
@@ -184,7 +209,7 @@
                     <p>Ofrecemos consultas en línea para que puedas describir tu problema y obtener una evaluación inicial antes de traer tu equipo.</p>
                 </div>
             </div>
-            <div class="features-image">
+            <div class="features-image anim-up" style="transition-delay: 0.2s;">
                 <img src="https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1974&auto=format&fit=crop" alt="Reparación Técnica">
             </div>
         </div>
@@ -192,49 +217,51 @@
 
     <section class="process-section">
         <div class="container process-grid">
-            <div class="process-card">
+            <div class="process-card anim-up">
                 <div class="p-icon">⏭</div>
                 <h3>Consultas</h3>
-                <p>¿Tienes dudas sobre el precio de una pieza o quieres agendar cita? Te ofrecemos una charla rápida y sin compromiso.</p>
+                <p>Te ofrecemos una charla rápida y sin compromiso.</p>
                 <a href="#" class="btn-ver-mas" onclick="openWA('Quiero hacer una consulta.')">Chatea Ahora</a>
             </div>
-            <div class="process-card">
+            <div class="process-card anim-up" style="transition-delay: 0.2s;">
                 <div class="p-icon">⏱</div>
                 <h3>Soporte durante el proceso</h3>
-                <p>Te mantenemos informado en cada etapa del proceso, asegurándonos de que sepas exactamente en qué fase está tu reparación.</p>
+                <p>Te mantenemos informado en cada etapa del proceso.</p>
                 <a href="#" class="btn-ver-mas" onclick="openWA('Quiero enviar un correo.')">Enviar Correo</a>
             </div>
-            <div class="process-card">
+            <div class="process-card anim-up" style="transition-delay: 0.4s;">
                 <div class="p-icon">⚙</div>
                 <h3>Soporte Post-Reparación</h3>
-                <p>No solo te entregamos tu equipo reparado, sino que te ofrecemos asistencia continua para asegurarnos de que todo funcione perfectamente.</p>
+                <p>Ofrecemos asistencia continua para asegurarnos de que todo funcione perfectamente.</p>
                 <a href="#" class="btn-ver-mas" onclick="openWA('Necesito soporte post-reparación.')">Llámanos</a>
             </div>
         </div>
     </section>
 
     <div class="container" id="catalogo" style="padding: 80px 0;">
-        <div class="section-header" style="margin-top: 0;">
+        <div class="section-header anim-up" style="margin-top: 0;">
             <h2>Catálogo de Productos</h2>
         </div>
+        
+        <div class="category-filters anim-up" id="cat-filters"></div>
         <div class="services-grid" id="prod-c"></div>
     </div>
 
     <section class="how-we-operate">
-        <div class="subtitle">CÓMO OPERAMOS</div>
-        <h2>Eficiencia y Rapidez en Cada Servicio</h2>
+        <div class="subtitle anim-up">CÓMO OPERAMOS</div>
+        <h2 class="anim-up">Eficiencia y Rapidez en Cada Servicio</h2>
         
         <div class="timeline-wrapper">
             <div class="timeline-grid">
-                <div class="timeline-card">
+                <div class="timeline-card anim-up">
                     <h3>Diagnóstico Rápido</h3>
-                    <p>En iCareTech CR realizamos un análisis rápido de tu equipo para identificar el problema en el menor tiempo posible.</p>
+                    <p>En iCareTech CR realizamos un análisis rápido de tu equipo identificar el problema en el menor tiempo posible.</p>
                 </div>
-                <div class="timeline-card">
+                <div class="timeline-card anim-up" style="transition-delay: 0.2s;">
                     <h3>Reparaciones Ágiles</h3>
                     <p>Nuestros técnicos certificados trabajan con herramientas avanzadas para asegurar que tu equipo regrese a tus manos rápidamente.</p>
                 </div>
-                <div class="timeline-card">
+                <div class="timeline-card anim-up" style="transition-delay: 0.4s;">
                     <h3>Tiempos Claros</h3>
                     <p>Durante la consulta inicial, te damos un estimado realista del tiempo necesario para la reparación, con plazos siempre cumplidos.</p>
                 </div>
@@ -242,12 +269,13 @@
         </div>
     </section>
 
-    <section class="site-footer" id="contacto">
+    <section class="site-footer anim-up" id="contacto">
         <div class="container footer-content">
             <div class="contact-info">
                 <h3>CONTÁCTANOS</h3>
-                <div class="logo-area" style="font-size: 26px; margin-bottom: 25px; color: #fff;">
-                    <span style="color:var(--neon-green);">◓</span> iCareTech CR
+                
+                <div style="margin-bottom: 25px;">
+                    <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img" style="height: 100px;"> 
                 </div>
                 
                 <div class="contact-item">
@@ -276,7 +304,7 @@
                 </form>
                 
                 <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.facebook.com/iCareTechCR" target="_blank"><i class="fab fa-facebook-f"></i></a>
                     <a href="https://instagram.com/icaretechcr" target="_blank"><i class="fab fa-instagram"></i></a>
                     <a href="#"><i class="fab fa-twitter"></i></a>
                     <a href="#"><i class="fab fa-youtube"></i></a>
@@ -297,13 +325,52 @@
 
     <script>
         const API = 'http://127.0.0.1:5001/api';
+        let allProducts = [];
         
-        // El número fue actualizado a tu nuevo contacto: 50687550729
         function openWA(m) { 
             window.open(`https://wa.me/50687550729?text=${encodeURIComponent(m)}`, "_blank"); 
         }
 
+        const animObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+        function applyAnimations() {
+            document.querySelectorAll('.anim-up').forEach(el => {
+                animObserver.observe(el);
+            });
+        }
+
+        window.filterProducts = function(category) {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText === category) btn.classList.add('active');
+            });
+
+            const filtered = category === 'Todos' ? allProducts : allProducts.filter(p => (p.categoria || "Otros") === category);
+            
+            const prodC = document.getElementById('prod-c');
+            prodC.innerHTML = "";
+            filtered.forEach((p, index) => { 
+                let delay = index * 0.1;
+                prodC.innerHTML += `
+                    <div class="service-card anim-up visible" style="padding: 30px; transition-delay: ${delay}s;">
+                        <img src="${p.imagen}" class="service-img" style="height: 200px; object-fit: contain;">
+                        <h3>${p.nombre}</h3>
+                        <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${p.precio}</p>
+                        <button class="btn-ver-mas" onclick="openWA('Interés en producto: ${p.nombre}')">Cotizar</button>
+                    </div>`; 
+            });
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
+            applyAnimations();
+
             fetch(`${API}/todo`).then(r => r.json()).then(data => {
                 
                 if(data.config.hero_background) {
@@ -314,27 +381,22 @@
                 document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
                 
                 const srvC = document.getElementById('srv-c');
-                data.servicios.forEach(s => { 
+                data.servicios.forEach((s, index) => { 
+                    let delay = index * 0.1;
                     let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`;
-                    srvC.innerHTML += `
-                        <div class="service-card">
-                            ${media}
-                            <h3>${s.titulo}</h3>
-                            <p>${s.descripcion}</p>
-                            <button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button>
-                        </div>`; 
+                    srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo}</h3><p>${s.descripcion}</p><button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button></div>`; 
                 });
 
-                const prodC = document.getElementById('prod-c');
-                data.productos.forEach(p => { 
-                    prodC.innerHTML += `
-                        <div class="service-card" style="padding: 30px;">
-                            <img src="${p.imagen}" class="service-img" style="height: 200px; object-fit: contain;">
-                            <h3>${p.nombre}</h3>
-                            <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${p.precio}</p>
-                            <button class="btn-ver-mas" onclick="openWA('Interés en producto: ${p.nombre}')">Cotizar</button>
-                        </div>`; 
-                });
+                allProducts = data.productos;
+                const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+                const filterContainer = document.getElementById('cat-filters');
+                filterContainer.innerHTML = categories.map(cat => 
+                    `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="filterProducts('${cat}')">${cat}</button>`
+                ).join('');
+
+                filterProducts('Todos');
+
+                applyAnimations();
 
             }).catch(err => {
                 document.getElementById('hero-title').innerText = "Error cargando información.";

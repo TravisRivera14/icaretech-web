@@ -2,21 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>iCare Admin | Editor Visual</title>
+    <title>iCare Admin | Editor Dinámico</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; padding: 40px; color: #1d1d1f; }
         .container { max-width: 850px; margin: 0 auto; }
         .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 30px; border: 1px solid #d2d2d7; }
         h2 { font-size: 20px; margin-bottom: 20px; color: #1b4332; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 15px; box-sizing: border-box; }
-        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: 0.3s; }
-        button:hover { background: #2d6a4f; }
-        .item-box { background: #fbfbfd; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e5e5e5; }
+        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-add { background: #0071e3; margin-top: 20px; }
+        .item-box { background: #fbfbfd; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e5e5e5; position: relative; }
+        .btn-del { background: #ff3b30; width: 30px; height: 30px; padding: 0; position: absolute; top: -10px; right: -10px; border-radius: 50%; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1 style="margin-bottom:30px;">Editor de iCare Tech CR</h1>
+    <h1>Editor Maestro iCare Tech CR</h1>
 
     <div class="card">
         <h2>🛠 Editar Mis Servicios</h2>
@@ -31,24 +32,26 @@
     </div>
 
     <div class="card">
-        <h2>🎯 Misión y Visión</h2>
-        <textarea id="mision" placeholder="Escribe la misión..."></textarea>
-        <textarea id="vision" placeholder="Escribe la visión..."></textarea>
-        <button onclick="saveConfig()">Actualizar Textos</button>
+        <h2>✨ Secciones Extra (Pestañas nuevas)</h2>
+        <div id="extra-list"></div>
+        <button class="btn-add" onclick="addExtraField()">+ Añadir Nueva Pestaña</button>
+        <button onclick="saveExtra()" style="margin-top:10px;">Guardar Todas las Pestañas</button>
     </div>
 
     <div class="card">
-        <h2>📦 Añadir al Catálogo</h2>
-        <input type="text" id="pName" placeholder="Nombre (Ej: iPhone 15 Pro)">
-        <select id="pCat">
-            <option value="iPhone">iPhone</option>
-            <option value="Mac">Mac & iPad</option>
-            <option value="Accesorios">Accesorios</option>
-            <option value="Camaras">Cámaras</option>
-        </select>
-        <input type="text" id="pPrice" placeholder="Precio o Detalle">
-        <input type="text" id="pImg" placeholder="Ruta Imagen (assets/img/...)">
-        <button onclick="saveProd()">Publicar Producto</button>
+        <h2>🎯 Misión y Visión</h2>
+        <textarea id="mision"></textarea>
+        <textarea id="vision"></textarea>
+        <button onclick="saveConfig()">Actualizar Misión/Visión</button>
+    </div>
+
+    <div class="card">
+        <h2>📦 Añadir Producto</h2>
+        <input type="text" id="pName" placeholder="Nombre">
+        <select id="pCat"><option value="iPhone">iPhone</option><option value="Mac">Mac & iPad</option><option value="Accesorios">Accesorios</option><option value="Camaras">Cámaras</option></select>
+        <input type="text" id="pPrice" placeholder="Precio">
+        <input type="text" id="pImg" placeholder="Imagen">
+        <button onclick="saveProd()">Publicar</button>
     </div>
 </div>
 
@@ -56,49 +59,35 @@
     const API = 'http://127.0.0.1:5001/api';
 
     window.onload = () => {
-        // Cargar Config
-        fetch(`${API}/config`).then(r=>r.json()).then(d=>{ 
-            document.getElementById('mision').value = d.mision; document.getElementById('vision').value = d.vision; 
-        });
-        // Cargar Servicios
-        fetch(`${API}/servicios`).then(r=>r.json()).then(data => {
-            const list = document.getElementById('srv-list');
-            data.forEach(s => {
-                list.innerHTML += `<div class="item-box"><div style="display:flex; gap:10px;"><input type="text" class="si" value="${s.icono}" style="width:20%"><input type="text" class="st" value="${s.titulo}" style="width:80%"></div><textarea class="sd">${s.descripcion}</textarea></div>`;
-            });
-        });
-        // Cargar Beneficios
-        fetch(`${API}/beneficios`).then(r=>r.json()).then(data => {
-            const list = document.getElementById('ben-list');
-            data.forEach(b => {
-                list.innerHTML += `<div class="item-box"><div style="display:flex; gap:10px;"><input type="text" class="bi" value="${b.icono}" style="width:20%"><input type="text" class="bt" value="${b.titulo}" style="width:80%"></div><textarea class="bd">${b.descripcion}</textarea></div>`;
-            });
-        });
+        fetch(`${API}/config`).then(r=>r.json()).then(d=>{ document.getElementById('mision').value = d.mision; document.getElementById('vision').value = d.vision; });
+        fetch(`${API}/servicios`).then(r=>r.json()).then(data => data.forEach(s => renderSrv(s)));
+        fetch(`${API}/beneficios`).then(r=>r.json()).then(data => data.forEach(b => renderBen(b)));
+        fetch(`${API}/secciones`).then(r=>r.json()).then(data => data.forEach(e => renderExtra(e)));
     };
 
+    function renderSrv(s) { document.getElementById('srv-list').innerHTML += `<div class="item-box"><input type="text" class="si" value="${s.icono}" style="width:20%"><input type="text" class="st" value="${s.titulo}" style="width:75%"><textarea class="sd">${s.descripcion}</textarea></div>`; }
+    function renderBen(b) { document.getElementById('ben-list').innerHTML += `<div class="item-box"><input type="text" class="bi" value="${b.icono}" style="width:20%"><input type="text" class="bt" value="${b.titulo}" style="width:75%"><textarea class="bd">${b.descripcion}</textarea></div>`; }
+    function renderExtra(e) { document.getElementById('extra-list').innerHTML += `<div class="item-box extra-item"><button class="btn-del" onclick="this.parentElement.remove()">X</button><input type="text" class="et" value="${e.titulo}" placeholder="Título de la sección"><textarea class="ec" placeholder="Contenido de la sección">${e.contenido}</textarea></div>`; }
+    
+    function addExtraField() { renderExtra({titulo:'', contenido:''}); }
+
     function saveSrv() {
-        const icons = document.querySelectorAll('.si'), titles = document.querySelectorAll('.st'), descs = document.querySelectorAll('.sd');
-        let data = [];
-        for(let i=0; i<icons.length; i++) data.push({ icono: icons[i].value, titulo: titles[i].value, descripcion: descs[i].value });
-        fetch(`${API}/servicios`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json()).then(d=>alert(d.mensaje));
+        const i = document.querySelectorAll('.si'), t = document.querySelectorAll('.st'), d = document.querySelectorAll('.sd');
+        let res = []; for(let k=0; k<i.length; k++) res.push({icono:i[k].value, titulo:t[k].value, descripcion:d[k].value});
+        fetch(`${API}/servicios`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(res)}).then(r=>r.json()).then(m=>alert(m.mensaje));
     }
-
     function saveBen() {
-        const icons = document.querySelectorAll('.bi'), titles = document.querySelectorAll('.bt'), descs = document.querySelectorAll('.bd');
-        let data = [];
-        for(let i=0; i<icons.length; i++) data.push({ icono: icons[i].value, titulo: titles[i].value, descripcion: descs[i].value });
-        fetch(`${API}/beneficios`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(r=>r.json()).then(d=>alert(d.mensaje));
+        const i = document.querySelectorAll('.bi'), t = document.querySelectorAll('.bt'), d = document.querySelectorAll('.bd');
+        let res = []; for(let k=0; k<i.length; k++) res.push({icono:i[k].value, titulo:t[k].value, descripcion:d[k].value});
+        fetch(`${API}/beneficios`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(res)}).then(r=>r.json()).then(m=>alert(m.mensaje));
     }
-
-    function saveConfig() {
-        const d = { mision: document.getElementById('mision').value, vision: document.getElementById('vision').value };
-        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }).then(r=>r.json()).then(d=>alert(d.mensaje));
+    function saveExtra() {
+        const t = document.querySelectorAll('.et'), c = document.querySelectorAll('.ec');
+        let res = []; for(let k=0; k<t.length; k++) res.push({titulo:t[k].value, contenido:c[k].value});
+        fetch(`${API}/secciones`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(res)}).then(r=>r.json()).then(m=>alert(m.mensaje));
     }
-
-    function saveProd() {
-        const p = { nombre: document.getElementById('pName').value, categoria: document.getElementById('pCat').value, precio: document.getElementById('pPrice').value, imagen: document.getElementById('pImg').value };
-        fetch(`${API}/productos`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) }).then(r=>r.json()).then(d=>{ alert(d.mensaje); location.reload(); });
-    }
+    function saveConfig() { fetch(`${API}/config`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mision:document.getElementById('mision').value, vision:document.getElementById('vision').value})}).then(r=>r.json()).then(m=>alert(m.mensaje)); }
+    function saveProd() { fetch(`${API}/productos`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:document.getElementById('pName').value, categoria:document.getElementById('pCat').value, precio:document.getElementById('pPrice').value, imagen:document.getElementById('pImg').value})}).then(r=>r.json()).then(m=>{alert(m.mensaje); location.reload();}); }
 </script>
 </body>
 </html>

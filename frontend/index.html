@@ -3,68 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCare Tech CR | Apple Service</title>
+    <title>iCare Tech CR | Soporte Técnico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --a-black: #1d1d1f; --a-grey: #86868b; --a-bg: #f5f5f7; --brand: #1b4332; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background: #fff; color: var(--a-black); -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
-        .container { max-width: 1020px; margin: 0 auto; padding: 0 20px; }
-        header { background: rgba(255,255,255,0.7); backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.08); }
-        .nav { display: flex; justify-content: space-between; align-items: center; height: 50px; }
-        .logo { font-size: 19px; font-weight: 600; }
-        .hero { padding: 100px 0 60px; text-align: center; }
-        .hero h1 { font-size: 64px; font-weight: 700; letter-spacing: -0.015em; }
-        .section-title { font-size: 40px; font-weight: 600; text-align: center; margin: 80px 0 40px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 60px; }
-        .card { background: var(--a-bg); padding: 50px 30px; border-radius: 30px; text-align: center; transition: 0.4s; }
+        :root { 
+            --nav-bg: #355c6b; 
+            --neon-green: #7cf5a6; 
+            --neon-green-hover: #65d98e;
+            --icon-blue: #4ea5ce;
+            --bg-light: #f4f7f6;
+            --text-dark: #111111;
+            --text-grey: #666666;
+            --white: #ffffff;
+        }
         
-        /* UNIFICADO: QUIÉNES SOMOS HORIZONTAL */
-        .about-wide { background: var(--a-bg); padding: 60px; border-radius: 40px; margin: 50px 0; display: flex; gap: 40px; align-items: flex-start; }
-        .about-item { flex: 1; }
-        .about-item h3 { font-size: 28px; margin-bottom: 15px; color: var(--brand); }
-        .about-item p { font-size: 17px; color: var(--a-grey); line-height: 1.6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
 
-        .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; padding-bottom: 80px; }
-        .prod-card { text-align: center; padding: 25px; border-radius: 20px; transition: 0.3s; }
-        .prod-img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; border-radius: 10px; }
-        .btn-blue { background: #0071e3; color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 13px; text-decoration: none; cursor: pointer; }
-        .wa { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; z-index: 2000; }
-        @media (max-width: 768px) { .about-wide { flex-direction: column; } }
+        /* NAVEGACIÓN */
+        header { background: var(--nav-bg); padding: 15px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
+        .logo-area { display: flex; align-items: center; gap: 15px; color: var(--white); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .nav-links a:hover { color: var(--neon-green); }
+        .nav-actions { display: flex; gap: 20px; align-items: center; }
+        .search-bar { background: var(--white); padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; width: 250px; }
+        .search-bar input { border: none; outline: none; width: 100%; font-size: 14px; }
+        .btn-neon { background: var(--neon-green); color: #000; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-size: 16px; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-neon:hover { background: var(--neon-green-hover); transform: scale(1.05); }
+
+        /* HERO BANNER */
+        .hero-banner { 
+            width: 100%; height: 60vh; 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80'); 
+            background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--white);
+        }
+        .hero-banner h1 { font-size: clamp(40px, 5vw, 60px); font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 900px; line-height: 1.2; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        .section-header { text-align: center; margin: 80px 0 50px; }
+        .section-header h2 { font-size: 42px; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+
+        /* TARJETAS DE SERVICIOS */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding-bottom: 60px; }
+        .service-card { 
+            background: var(--white); padding: 50px 30px; border-radius: 12px; 
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+            border: 1px solid #eaeaea; transition: 0.3s;
+        }
+        .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
+        .service-icon { font-size: 55px; color: var(--icon-blue); margin-bottom: 20px; display: block; }
+        .service-img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; }
+        .service-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: var(--text-dark); }
+        .service-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 30px; }
+        .btn-ver-mas { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 700; display: inline-block; transition: 0.3s; }
+        .btn-ver-mas:hover { background: var(--neon-green-hover); }
+
+        /* SECCIÓN "LOS MEJORES EN EL RAMO" */
+        .features-section { background: var(--white); padding: 80px 0; }
+        .features-grid { display: flex; gap: 60px; align-items: center; }
+        .features-text { flex: 1; }
+        .features-text .badge { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-grey); margin-bottom: 10px; display: block; }
+        .features-text h2 { font-size: 40px; font-weight: 800; line-height: 1.1; margin-bottom: 15px; }
+        .features-text > p { font-size: 16px; color: var(--text-grey); margin-bottom: 40px; }
+        .feature-box { background: var(--white); border: 1px solid #eee; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .feature-box h4 { font-size: 18px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .feature-box h4::before { content: '📄'; font-size: 24px; color: var(--icon-blue); }
+        .feature-box p { font-size: 14px; color: var(--text-grey); line-height: 1.6; }
+        .features-image { flex: 1; }
+        .features-image img { width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
+        /* SECCIÓN PROCESO (3 PASOS) */
+        .process-section { background: linear-gradient(135deg, #4ea5ce 0%, #355c6b 100%); padding: 100px 0; margin-top: 60px; }
+        .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .process-card { background: var(--white); padding: 50px 30px; border-radius: 15px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .process-card .p-icon { font-size: 50px; color: var(--icon-blue); margin-bottom: 20px; }
+        .process-card h3 { font-size: 24px; margin-bottom: 15px; }
+        .process-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 25px; }
+
+        /* SECCIÓN: EFICIENCIA Y RAPIDEZ */
+        .how-we-operate { background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); padding: 100px 0; text-align: center; }
+        .how-we-operate .subtitle { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.7); margin-bottom: 15px; font-weight: 600; }
+        .how-we-operate h2 { font-size: 42px; font-weight: 800; color: #111; margin-bottom: 60px; }
+        .timeline-wrapper { position: relative; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        .timeline-wrapper::before { content: ''; position: absolute; top: 50%; left: 5%; right: 5%; height: 0; border-top: 4px dashed rgba(255,255,255,0.7); z-index: 1; transform: translateY(-50%); }
+        .timeline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; z-index: 2; }
+        .timeline-card { background: var(--white); padding: 50px 30px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; min-height: 280px; }
+        .timeline-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
+        .timeline-card p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
+
+        /* BOTÓN WHATSAPP FLOTANTE */
+        .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 65px; height: 65px; border-radius: 50%; display: grid; place-items: center; font-size: 35px; z-index: 2000; box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-decoration: none; transition: 0.3s; }
+        .wa-float:hover { transform: scale(1.1); }
+
+        @media (max-width: 900px) {
+            .nav-links, .search-bar { display: none; }
+            .features-grid, .process-grid, .timeline-grid { flex-direction: column; grid-template-columns: 1fr; }
+            .timeline-wrapper::before { display: none; } 
+            .timeline-card { min-height: auto; padding: 40px 20px; }
+        }
+
+        /* ✅ ESTILOS AÑADIDOS PARA EL NUEVO FOOTER COMPLETO */
+        .site-footer { background-color: #212529; color: #fff; padding: 80px 0; border-top: 1px solid rgba(0,0,0,0.1); }
+        .footer-content { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        .contact-info { display: flex; flex-direction: column; }
+        .contact-info h3 { color: var(--icon-blue); text-transform: uppercase; font-size: 20px; font-weight: 700; margin-bottom: 25px; letter-spacing: 1px; }
+        .contact-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 16px; color: #ccc; }
+        .contact-item i { font-size: 20px; width: 25px; text-align: center; color: var(--neon-green); }
+        .newsletter-social { display: flex; flex-direction: column; align-items: flex-start; }
+        .newsletter-social p { font-size: 18px; margin-bottom: 25px; font-weight: 600; color: #fff; }
+        .newsletter-form { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 450px; margin-bottom: 40px; }
+        .newsletter-input { background: none; border: none; border-bottom: 2px solid #555; color: #fff; padding: 10px 5px; width: 100%; font-size: 15px; outline: none; transition: 0.3s; }
+        .newsletter-input:focus { border-bottom-color: var(--neon-green); }
+        .social-links { display: flex; gap: 20px; font-size: 20px; }
+        .social-links a { color: #ccc; transition: 0.3s; background: #333; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; }
+        .social-links a:hover { color: #000; background: var(--neon-green); transform: translateY(-3px); }
+        .final-footer { background-color: #111; padding: 20px 0; text-align: center; color: #666; font-size: 14px; }
+        
+        @media (max-width: 900px) { 
+            .footer-content { grid-template-columns: 1fr; gap: 40px; } 
+            .newsletter-form { flex-direction: column; align-items: stretch; } 
+        }
     </style>
 </head>
 <body>
 
-<header><div class="container nav"><div class="logo">iCare Tech CR</div><a href="#" class="btn-blue" onclick="openWA('Hola')">Contacto</a></div></header>
+    <header>
+        <div class="nav-bar">
+            <div class="logo-area">
+                <span style="color:var(--neon-green); font-size: 32px;">◓</span> iCareTech CR
+            </div>
+            <nav class="nav-links">
+                <a href="#servicios">Ayuda técnica ▾</a>
+                <a href="#nosotros">Proyectos</a>
+                <a href="#catalogo">Tienda</a>
+                <a href="#contacto">Contáctanos ▾</a>
+            </nav>
+            <div class="nav-actions">
+                <div class="search-bar">
+                    <input type="text" placeholder="Busca tu pieza...">
+                    <span style="font-size: 18px;">🔍</span>
+                </div>
+                <a href="#" class="btn-neon" onclick="openWA('Hola, necesito asistencia técnica.')">¡Llama Ya!</a>
+            </div>
+        </div>
+    </header>
 
-<section class="hero container"><h1>Calidad <span>Apple.</span></h1><p>Soporte profesional y seguridad electrónica.</p></section>
+    <section class="hero-banner" id="hero-sec">
+        <div class="container">
+            <h1 id="hero-title">Cargando...</h1>
+        </div>
+    </section>
 
-<div class="container">
-    <h2 class="section-title">Nuestros Servicios</h2><div class="grid" id="srv-c"></div>
-
-    <h2 class="section-title">Por qué nosotros</h2><div class="grid" id="ben-c"></div>
-
-    <div class="about-wide">
-        <div class="about-item"><h3>Nuestra Misión</h3><p id="m-t"></p></div>
-        <div class="about-item"><h3>Nuestra Visión</h3><p id="v-t"></p></div>
+    <div class="container" id="servicios">
+        <div class="section-header">
+            <h2>Reparamos Computadoras,<br>Laptop's y Servidores<br>Empresariales en Costa Rica</h2>
+        </div>
+        <div class="services-grid" id="srv-c"></div>
     </div>
 
-    <h2 class="section-title">Catálogo</h2><div class="prod-grid" id="prod-c"></div>
-</div>
+    <section class="features-section" id="nosotros">
+        <div class="container features-grid">
+            <div class="features-text">
+                <span class="badge">Los mejores en el ramo</span>
+                <h2>Soporte técnico especializado en Costa Rica.</h2>
+                <p>Tranquilo, estás en las mejores manos. Fusionamos precisión técnica con estándares de calidad.</p>
+                
+                <div class="feature-box">
+                    <h4>Técnicos Certificados</h4>
+                    <p id="m-t">Cargando misión/descripción...</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Partes y Repuestos Originales</h4>
+                    <p id="v-t">Cargando visión/descripción...</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Consultas Online Gratuitas</h4>
+                    <p>Ofrecemos consultas en línea para que puedas describir tu problema y obtener una evaluación inicial antes de traer tu equipo.</p>
+                </div>
+            </div>
+            <div class="features-image">
+                <img src="https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1974&auto=format&fit=crop" alt="Reparación Técnica">
+            </div>
+        </div>
+    </section>
 
-<a href="#" class="wa" onclick="openWA('Hola iCare Tech')">💬</a>
+    <section class="process-section">
+        <div class="container process-grid">
+            <div class="process-card">
+                <div class="p-icon">⏭</div>
+                <h3>Consultas</h3>
+                <p>¿Tienes dudas sobre el precio de una pieza o quieres agendar cita? Te ofrecemos una charla rápida y sin compromiso.</p>
+                <a href="#" class="btn-ver-mas" onclick="openWA('Quiero hacer una consulta.')">Chatea Ahora</a>
+            </div>
+            <div class="process-card">
+                <div class="p-icon">⏱</div>
+                <h3>Soporte durante el proceso</h3>
+                <p>Te mantenemos informado en cada etapa del proceso, asegurándonos de que sepas exactamente en qué fase está tu reparación.</p>
+                <a href="#" class="btn-ver-mas" onclick="openWA('Quiero enviar un correo.')">Enviar Correo</a>
+            </div>
+            <div class="process-card">
+                <div class="p-icon">⚙</div>
+                <h3>Soporte Post-Reparación</h3>
+                <p>No solo te entregamos tu equipo reparado, sino que te ofrecemos asistencia continua para asegurarnos de que todo funcione perfectamente.</p>
+                <a href="#" class="btn-ver-mas" onclick="openWA('Necesito soporte post-reparación.')">Llámanos</a>
+            </div>
+        </div>
+    </section>
 
-<script>
-    const API = 'http://127.0.0.1:5001/api';
-    function openWA(m) { window.open(`https://wa.me/50685836365?text=${encodeURIComponent(m)}`); }
+    <div class="container" id="catalogo" style="padding: 80px 0;">
+        <div class="section-header" style="margin-top: 0;">
+            <h2>Catálogo de Productos</h2>
+        </div>
+        <div class="services-grid" id="prod-c"></div>
+    </div>
 
-    document.addEventListener("DOMContentLoaded", () => {
-        fetch(`${API}/servicios`).then(r=>r.json()).then(data => data.forEach(s => document.getElementById('srv-c').innerHTML += `<div class="card"><span>${s.icono}</span><h3>${s.titulo}</h3><p>${s.descripcion}</p></div>`));
-        fetch(`${API}/beneficios`).then(r=>r.json()).then(data => data.forEach(b => document.getElementById('ben-c').innerHTML += `<div class="card"><span>${b.icono}</span><h3>${b.titulo}</h3><p>${b.descripcion}</p></div>`));
-        fetch(`${API}/config`).then(r=>r.json()).then(d => { document.getElementById('m-t').innerText = d.mision; document.getElementById('v-t').innerText = d.vision; });
-        fetch(`${API}/productos`).then(r=>r.json()).then(data => data.forEach(p => {
-            document.getElementById('prod-c').innerHTML += `<div class="prod-card"><img src="${p.imagen}" class="prod-img" onerror="this.src='https://via.placeholder.com/200'"><div style="font-weight:600">${p.nombre}</div><div style="color:#86868b; font-size:14px; margin:5px 0 15px;">${p.precio}</div><a href="#" class="btn-blue" onclick="openWA('Interés en: ${p.nombre}')">Consultar</a></div>`;
-        }));
-    });
-</script>
+    <section class="how-we-operate">
+        <div class="subtitle">CÓMO OPERAMOS</div>
+        <h2>Eficiencia y Rapidez en Cada Servicio</h2>
+        
+        <div class="timeline-wrapper">
+            <div class="timeline-grid">
+                <div class="timeline-card">
+                    <h3>Diagnóstico Rápido</h3>
+                    <p>En iCareTech CR realizamos un análisis rápido de tu equipo para identificar el problema en el menor tiempo posible.</p>
+                </div>
+                <div class="timeline-card">
+                    <h3>Reparaciones Ágiles</h3>
+                    <p>Nuestros técnicos certificados trabajan con herramientas avanzadas para asegurar que tu equipo regrese a tus manos rápidamente.</p>
+                </div>
+                <div class="timeline-card">
+                    <h3>Tiempos Claros</h3>
+                    <p>Durante la consulta inicial, te damos un estimado realista del tiempo necesario para la reparación, con plazos siempre cumplidos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-footer" id="contacto">
+        <div class="container footer-content">
+            <div class="contact-info">
+                <h3>CONTÁCTANOS</h3>
+                <div class="logo-area" style="font-size: 26px; margin-bottom: 25px; color: #fff;">
+                    <span style="color:var(--neon-green);">◓</span> iCareTech CR
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>+506 8755 0729</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-instagram"></i>
+                    <span>@icaretechcr</span>
+                </div>
+                <div class="contact-item">
+                    <i class="far fa-envelope"></i>
+                    <span>info@icaretechcr.com</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Todo Costa Rica</span>
+                </div>
+            </div>
+
+            <div class="newsletter-social">
+                <p>¡Suscríbete a nuestro boletín de noticias!</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('¡Gracias por suscribirte!');">
+                    <input type="email" class="newsletter-input" placeholder="Tu correo electrónico" required>
+                    <button type="submit" class="btn-neon" style="border-radius: 5px;">Suscríbete</button>
+                </form>
+                
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://instagram.com/icaretechcr" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="final-footer">
+        <div class="container">
+            © 2026 iCare Tech CR. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <a href="#" class="wa-float" onclick="openWA('Hola iCare Tech')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" style="width: 35px; height: 35px; filter: brightness(0) invert(1);">
+    </a>
+
+    <script>
+        const API = 'http://127.0.0.1:5001/api';
+        
+        // El número fue actualizado a tu nuevo contacto: 50687550729
+        function openWA(m) { 
+            window.open(`https://wa.me/50687550729?text=${encodeURIComponent(m)}`, "_blank"); 
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch(`${API}/todo`).then(r => r.json()).then(data => {
+                
+                if(data.config.hero_background) {
+                    document.getElementById('hero-sec').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${data.config.hero_background})`;
+                }
+                document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
+                document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
+                document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
+                
+                const srvC = document.getElementById('srv-c');
+                data.servicios.forEach(s => { 
+                    let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`;
+                    srvC.innerHTML += `
+                        <div class="service-card">
+                            ${media}
+                            <h3>${s.titulo}</h3>
+                            <p>${s.descripcion}</p>
+                            <button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button>
+                        </div>`; 
+                });
+
+                const prodC = document.getElementById('prod-c');
+                data.productos.forEach(p => { 
+                    prodC.innerHTML += `
+                        <div class="service-card" style="padding: 30px;">
+                            <img src="${p.imagen}" class="service-img" style="height: 200px; object-fit: contain;">
+                            <h3>${p.nombre}</h3>
+                            <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${p.precio}</p>
+                            <button class="btn-ver-mas" onclick="openWA('Interés en producto: ${p.nombre}')">Cotizar</button>
+                        </div>`; 
+                });
+
+            }).catch(err => {
+                document.getElementById('hero-title').innerText = "Error cargando información.";
+            });
+        });
+    </script>
 </body>
 </html>

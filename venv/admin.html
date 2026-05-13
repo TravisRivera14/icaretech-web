@@ -2,110 +2,94 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>iCare Admin | Editor Total</title>
+    <title>Admin iCare | Gestión Total</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; padding: 40px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #d2d2d7; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 14px; box-sizing: border-box; }
-        button { background: #1b4332; color: white; border: none; cursor: pointer; font-weight: 600; }
-        .item-box { background: #fbfbfd; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; position: relative; }
-        #preview { width: 100px; height: 100px; object-fit: contain; display: none; margin-top: 10px; border: 1px solid #eee; padding: 5px; }
+        :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
+        input, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Panel Administrativo</h1>
-
-    <div class="card">
-        <h2>📦 Nuevo Producto</h2>
-        <input type="text" id="pName" placeholder="Nombre del Producto">
-        <select id="pCat">
-            <option value="iPhone">iPhone</option>
-            <option value="Mac">Mac & iPad</option>
-            <option value="Accesorios">Accesorios</option>
-            <option value="Camaras">Cámaras</option>
-        </select>
-        <input type="text" id="pPrice" placeholder="Precio o Detalle">
-        
-        <label>Adjuntar Imagen (.png, .jpg):</label>
-        <input type="file" id="pImgFile" accept="image/png, image/jpeg">
-        <img id="preview">
-
-        <button onclick="saveProd()">Publicar Producto</button>
+    <h1 style="grid-column: 1/-1;">Panel Administrativo iCare</h1>
+    <div>
+        <div class="card">
+            <h2 id="srv-label">➕ Servicio</h2>
+            <input type="text" id="sIcon" placeholder="Emoji o Icono">
+            <input type="text" id="sTitle" placeholder="Título">
+            <textarea id="sDesc" placeholder="Descripción"></textarea>
+            <label style="font-size: 11px;">Imagen opcional:</label>
+            <input type="file" id="sImgFile" accept="image/*">
+            <button onclick="subirServicio()">Guardar Servicio</button>
+        </div>
+        <div class="card">
+            <h2 id="prod-label">➕ Producto</h2>
+            <input type="text" id="pName" placeholder="Nombre">
+            <input type="text" id="pPrice" placeholder="Precio">
+            <input type="file" id="pImgFile" accept="image/*">
+            <button onclick="subirProducto()">Guardar Producto</button>
+        </div>
     </div>
-
-    <div class="card">
-        <h2>🛠 Editar Servicios</h2>
-        <div id="srv-list"></div>
-        <button onclick="saveSrv()">Guardar Servicios</button>
-    </div>
-
-    <div class="card">
-        <h2>🛡️ Editar "Por qué elegirnos"</h2>
-        <div id="ben-list"></div>
-        <button onclick="saveBen()">Guardar Beneficios</button>
-    </div>
-
-    <div class="card">
-        <h2>🎯 Misión y Visión</h2>
-        <textarea id="mision" placeholder="Misión"></textarea>
-        <textarea id="vision" placeholder="Visión"></textarea>
-        <button onclick="saveConfig()">Actualizar Textos</button>
+    <div>
+        <div class="card">
+            <h2>🎯 Web y Hero</h2>
+            <input type="text" id="h_titulo" placeholder="Título Hero">
+            <label style="font-size: 11px;">Fondo Hero:</label>
+            <input type="file" id="heroBgFile" accept="image/*">
+            <textarea id="mision" placeholder="Misión"></textarea>
+            <textarea id="vision" placeholder="Visión"></textarea>
+            <button onclick="updateConfig()">Actualizar Web</button>
+        </div>
+        <div class="card"><h2>📋 Gestión</h2><div id="master-list"></div></div>
     </div>
 </div>
-
 <script>
     const API = 'http://127.0.0.1:5001/api';
-    let base64Image = "";
+    let imgS = "", imgP = "", imgH = "", editId = null, editType = null;
+    const v = (id) => document.getElementById(id).value;
+    const setV = (id, val) => document.getElementById(id).value = val || "";
 
-    // Previsualización de imagen
-    document.getElementById('pImgFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function() {
-            base64Image = reader.result;
-            const prev = document.getElementById('preview');
-            prev.src = base64Image;
-            prev.style.display = "block";
-        }
-        reader.readAsDataURL(file);
-    });
+    document.getElementById('sImgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgS = r.result; r.readAsDataURL(e.target.files[0]); };
+    document.getElementById('pImgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgP = r.result; r.readAsDataURL(e.target.files[0]); };
+    document.getElementById('heroBgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgH = r.result; r.readAsDataURL(e.target.files[0]); };
 
-    window.onload = () => {
-        fetch(`${API}/config`).then(r=>r.json()).then(d=>{ 
-            document.getElementById('mision').value = d.mision; 
-            document.getElementById('vision').value = d.vision; 
+    function loadContent() {
+        fetch(`${API}/todo`).then(r=>r.json()).then(data => {
+            setV('h_titulo', data.config.hero_titulo);
+            setV('mision', data.config.mision);
+            setV('vision', data.config.vision);
+            let html = "<strong>Servicios:</strong>";
+            data.servicios.forEach(s => html += `<div class="list-item"><span>${s.titulo}</span><div><button onclick='prepararEdicion("servicios", ${JSON.stringify(s)})' style="background:blue; width:auto; padding:2px 8px; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button><button onclick="deleteItem('servicios', ${s.id})" style="background:red; width:auto; padding:2px 8px; color:white; border:none; border-radius:4px; cursor:pointer; margin-left:4px;">X</button></div></div>`);
+            document.getElementById('master-list').innerHTML = html;
         });
-        fetch(`${API}/servicios`).then(r=>r.json()).then(data => data.forEach(s => {
-            document.getElementById('srv-list').innerHTML += `<div class="item-box"><input type="text" class="si" value="${s.icono}" style="width:20%"><input type="text" class="st" value="${s.titulo}" style="width:75%"><textarea class="sd">${s.descripcion}</textarea></div>`;
-        }));
-        fetch(`${API}/beneficios`).then(r=>r.json()).then(data => data.forEach(b => {
-            document.getElementById('ben-list').innerHTML += `<div class="item-box"><input type="text" class="bi" value="${b.icono}" style="width:20%"><input type="text" class="bt" value="${b.titulo}" style="width:75%"><textarea class="bd">${b.descripcion}</textarea></div>`;
-        }));
-    };
-
-    function saveProd() {
-        const p = { nombre: document.getElementById('pName').value, categoria: document.getElementById('pCat').value, precio: document.getElementById('pPrice').value, imagen: base64Image };
-        fetch(`${API}/productos`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) }).then(r=>r.json()).then(d=>{ alert(d.mensaje); location.reload(); });
     }
 
-    function saveSrv() {
-        const i = document.querySelectorAll('.si'), t = document.querySelectorAll('.st'), d = document.querySelectorAll('.sd');
-        let res = []; for(let k=0; k<i.length; k++) res.push({icono:i[k].value, titulo:t[k].value, descripcion:d[k].value});
-        fetch(`${API}/servicios`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(res)}).then(r=>r.json()).then(m=>alert(m.mensaje));
+    function subirServicio() { saveItem('servicios', { icono: v('sIcon'), titulo: v('sTitle'), descripcion: v('sDesc'), imagen: imgS }); }
+    function subirProducto() { saveItem('productos', { nombre: v('pName'), precio: v('pPrice'), imagen: imgP }); }
+    
+    function prepararEdicion(tipo, item) {
+        editId = item.id; editType = tipo; window.scrollTo(0,0);
+        if(tipo === 'servicios') { setV('sIcon', item.icono); setV('sTitle', item.titulo); setV('sDesc', item.descripcion); document.getElementById('srv-label').innerText = "📝 Editando Servicio"; }
     }
 
-    function saveBen() {
-        const i = document.querySelectorAll('.bi'), t = document.querySelectorAll('.bt'), d = document.querySelectorAll('.bd');
-        let res = []; for(let k=0; k<i.length; k++) res.push({icono:i[k].value, titulo:t[k].value, descripcion:d[k].value});
-        fetch(`${API}/beneficios`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(res)}).then(r=>r.json()).then(m=>alert(m.mensaje));
+    function saveItem(path, data) {
+        let method = (editId && editType === path) ? 'PUT' : 'POST';
+        let url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
+        fetch(url, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(() => location.reload());
     }
 
-    function saveConfig() {
-        const d = { mision: document.getElementById('mision').value, vision: document.getElementById('vision').value };
-        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }).then(r=>r.json()).then(d=>alert(d.mensaje));
+    function updateConfig() {
+        let d = { hero_titulo: v('h_titulo'), mision: v('mision'), vision: v('vision') }; 
+        if(imgH) d.hero_background = imgH;
+        fetch(`${API}/config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) }).then(() => alert("Web Actualizada"));
     }
+
+    function deleteItem(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE' }).then(() => loadContent()); }
+    window.onload = loadContent;
 </script>
 </body>
 </html>

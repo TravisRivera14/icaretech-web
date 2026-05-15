@@ -16,27 +16,26 @@
             --text-dark: #111111;
             --text-grey: #666666;
             --white: #ffffff;
+            --footer-dark: #1a1a1a;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-        /* NAVEGACIÓN (CON EFECTO CRISTAL) */
+        /* NAVEGACIÓN */
         header { 
             background: var(--nav-bg); 
-            padding: 15px 40px; 
+            padding: 5px 40px; 
             position: sticky; 
             top: 0; 
             z-index: 1000; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            /* ✅ Efecto cristal para que no se pierda la lectura al bajar */
             backdrop-filter: blur(10px); 
             -webkit-backdrop-filter: blur(10px);
         }
         .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
-        
         .logo-area { display: flex; align-items: center; text-decoration: none; }
-        .logo-img { height: 100px; width: auto; object-fit: contain; display: block; }
+        .logo-img { height: 75px; width: auto; object-fit: contain; display: block; } 
         
         .nav-links { display: flex; gap: 30px; align-items: center; }
         .nav-links a { color: var(--white); text-decoration: none; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
@@ -59,15 +58,13 @@
             opacity: 0;
             transform: translateY(30px);
         }
-
         @keyframes heroFadeIn { to { opacity: 1; transform: translateY(0); } }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        
         .section-header { text-align: center; margin: 80px 0 50px; }
         .section-header h2 { font-size: 42px; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
 
-        /* TARJETAS DE SERVICIOS */
+        /* ✅ TARJETAS DE SERVICIOS (Restauradas sus clases completas) */
         .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding-bottom: 60px; }
         .service-card { background: var(--white); padding: 50px 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eaeaea; transition: transform 0.3s, box-shadow 0.3s; }
         .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
@@ -78,21 +75,15 @@
         .btn-ver-mas { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 700; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
         .btn-ver-mas:hover { background: var(--neon-green-hover); }
 
-        /* SECCIÓN "LOS MEJORES EN EL RAMO" */
+        /* SECCIÓN NOSOTROS */
         .features-section { background: var(--white); padding: 80px 0; }
-        .features-grid { display: flex; gap: 60px; align-items: center; }
-        .features-text { flex: 1; }
-        .features-text .badge { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-grey); margin-bottom: 10px; display: block; }
-        .features-text h2 { font-size: 40px; font-weight: 800; line-height: 1.1; margin-bottom: 15px; }
-        .features-text > p { font-size: 16px; color: var(--text-grey); margin-bottom: 40px; }
-        .feature-box { background: var(--white); border: 1px solid #eee; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .feature-box h4 { font-size: 18px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-        .feature-box h4::before { content: '📄'; font-size: 24px; color: var(--icon-blue); }
-        .feature-box p { font-size: 14px; color: var(--text-grey); line-height: 1.6; }
-        .features-image { flex: 1; }
-        .features-image img { width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .about-flex-container { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+        .mission-vision-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; width: 100%; }
+        .feature-box { background: var(--white); border: 1px solid #eee; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .feature-box h4 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
+        .features-image-small { width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
 
-        /* SECCIÓN PROCESO (3 PASOS) */
+        /* SECCIÓN PROCESO */
         .process-section { background: linear-gradient(135deg, #4ea5ce 0%, #355c6b 100%); padding: 100px 0; margin-top: 60px; }
         .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
         .process-card { background: var(--white); padding: 50px 30px; border-radius: 15px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
@@ -100,12 +91,21 @@
         .process-card h3 { font-size: 24px; margin-bottom: 15px; }
         .process-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 25px; }
 
-        /* CATÁLOGO CON PESTAÑAS DINÁMICAS */
-        .category-filters { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
-        .cat-btn { background: var(--white); border: 2px solid var(--neon-green); color: var(--text-dark); padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 15px; transition: 0.3s; }
-        .cat-btn.active, .cat-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 5px 15px rgba(124, 245, 166, 0.4); }
+        /* CATÁLOGO */
+        .catalog-controls { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 40px; }
+        .search-wrapper { position: relative; width: 100%; max-width: 500px; }
+        .search-wrapper input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 30px; border: 1px solid #ddd; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .search-wrapper i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-grey); }
+        .category-filters { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .cat-btn { background: white; border: 2px solid var(--neon-green); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .cat-btn.active, .cat-btn:hover { background: var(--neon-green); color: #000; }
 
-        /* SECCIÓN: EFICIENCIA Y RAPIDEZ */
+        .catalog-scroll-wrapper { width: 100%; overflow-x: auto; padding-bottom: 25px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .catalog-scroll-wrapper::-webkit-scrollbar { height: 8px; }
+        .catalog-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
+        .services-grid-horizontal { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: minmax(320px, 1fr); gap: 30px; }
+
+        /* EFICIENCIA Y RAPIDEZ */
         .how-we-operate { background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); padding: 100px 0; text-align: center; }
         .how-we-operate .subtitle { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.7); margin-bottom: 15px; font-weight: 600; }
         .how-we-operate h2 { font-size: 42px; font-weight: 800; color: #111; margin-bottom: 60px; }
@@ -116,38 +116,62 @@
         .timeline-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
         .timeline-card p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
 
-        /* CLASES DE ANIMACIÓN DE SCROLL */
         .anim-up { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; will-change: opacity, transform; }
         .anim-up.visible { opacity: 1; transform: translateY(0); }
 
-        /* PIE DE PÁGINA COMPLETO CON LOGO Y CONTACTO ADJUNTADO */
-        .site-footer { background-color: #212529; color: #fff; padding: 80px 0; border-top: 1px solid rgba(0,0,0,0.1); }
-        .footer-content { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
-        
-        .contact-info { display: flex; flex-direction: column; }
-        .contact-info h3 { color: var(--icon-blue); text-transform: uppercase; font-size: 20px; font-weight: 700; margin-bottom: 25px; letter-spacing: 1px; }
-        
-        .contact-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 16px; color: #ccc; }
-        .contact-item i { font-size: 20px; width: 25px; text-align: center; color: var(--neon-green); }
-        .newsletter-social { display: flex; flex-direction: column; align-items: flex-start; }
-        .newsletter-social p { font-size: 18px; margin-bottom: 25px; font-weight: 600; color: #fff; }
-        .newsletter-form { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 450px; margin-bottom: 40px; }
-        .newsletter-input { background: none; border: none; border-bottom: 2px solid #555; color: #fff; padding: 10px 5px; width: 100%; font-size: 15px; outline: none; transition: 0.3s; }
-        .newsletter-input:focus { border-bottom-color: var(--neon-green); }
-        .social-links { display: flex; gap: 20px; font-size: 20px; }
-        .social-links a { color: #ccc; transition: 0.3s; background: #333; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; }
-        .social-links a:hover { color: #000; background: var(--neon-green); transform: translateY(-3px); }
-        .final-footer { background-color: #111; padding: 20px 0; text-align: center; color: #666; font-size: 14px; }
+        /* ✅ ESTILOS DE LA SECCIÓN DE SOCIOS (AÑADIDOS SIN BORRAR NADA) */
+        .partners-section { background: var(--white); padding: 80px 0; border-top: 1px solid #eee; }
+        .partners-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; justify-content: center; }
+        .partner-card { background: var(--white); border-radius: 12px; padding: 30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #eee; height: 140px; transition: transform 0.3s, box-shadow 0.3s; }
+        .partner-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        .partner-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* ✅ NUEVOS ESTILOS: SECCIÓN DE RESEÑAS */
+        .reviews-section { background-color: #fcfcfc; padding: 100px 0; border-top: 1px solid #eee; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+        .review-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f0; transition: 0.3s; }
+        .review-text { color: #555; line-height: 1.8; margin-bottom: 30px; font-size: 16px; font-style: italic; }
+        .reviewer-info { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 20px; }
+        .reviewer-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-green); }
+        .reviewer-meta { text-align: left; }
+        .reviewer-name { font-weight: 700; color: #111; font-size: 17px; }
+        .reviewer-pos { color: #888; font-size: 14px; }
+
+        /* ✅ ESTILOS: FORMULARIO PÚBLICO DE RESEÑAS */
+        .review-form-container { background: var(--white); padding: 60px 0; }
+        .review-form-card { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; border: 1px solid #eee; }
+        .review-form-card h3 { font-size: 28px; margin-bottom: 25px; text-align: center; color: var(--text-dark); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .review-form-card input, .review-form-card textarea { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; outline: none; font-size: 15px; transition: 0.3s; }
+        .review-form-card input:focus, .review-form-card textarea:focus { border-color: var(--neon-green); }
+        .review-form-card button { width: 100%; padding: 15px; border-radius: 30px; background: var(--neon-green); color: #000; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .review-form-card button:hover { background: var(--neon-green-hover); transform: translateY(-3px); }
+
+        /* FOOTER PROFESIONAL */
+        .site-footer { background-color: var(--footer-dark); color: #fff; padding: 80px 0 40px; border-top: 4px solid var(--neon-green); }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; margin-bottom: 50px; }
+        .footer-brand img { height: 80px; margin-bottom: 20px; filter: brightness(0) invert(1); }
+        .footer-brand p { color: #aaa; line-height: 1.6; font-size: 14px; margin-bottom: 20px; }
+        .footer-title { color: var(--neon-green); font-size: 18px; font-weight: 700; margin-bottom: 25px; text-transform: uppercase; }
+        .footer-links p { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #ccc; }
+        .footer-links i { color: var(--neon-green); width: 20px; }
+        .footer-form input, .footer-form button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: none; outline: none; }
+        .footer-form input { background: #333; color: white; }
+        .footer-form button { background: var(--neon-green); color: #000; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .footer-form button:hover { background: var(--neon-green-hover); }
+
+        .social-row { display: flex; gap: 15px; }
+        .social-circle { width: 40px; height: 40px; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; text-decoration: none; transition: 0.3s; }
+        .social-circle:hover { background: var(--neon-green); color: #000; transform: translateY(-3px); }
+        .final-copy { border-top: 1px solid #333; padding-top: 30px; text-align: center; color: #666; font-size: 13px; }
         
         @media (max-width: 900px) {
             .nav-links, .search-bar { display: none; }
-            .features-grid, .process-grid, .timeline-grid, .footer-content { flex-direction: column; grid-template-columns: 1fr; }
+            .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row { flex-direction: column; grid-template-columns: 1fr; }
             .timeline-wrapper::before { display: none; } 
             .timeline-card { min-height: auto; padding: 40px 20px; }
-            .newsletter-form { flex-direction: column; align-items: stretch; }
         }
 
-        /* WHATSAPP FLOTANTE */
         .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 65px; height: 65px; border-radius: 50%; display: grid; place-items: center; font-size: 35px; z-index: 2000; box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-decoration: none; transition: 0.3s; }
         .wa-float:hover { transform: scale(1.1); }
     </style>
@@ -164,6 +188,7 @@
                 <a href="#servicios">Ayuda técnica ▾</a>
                 <a href="#nosotros">Proyectos</a>
                 <a href="#catalogo">Tienda</a>
+                <a href="#clientes">Reseñas</a>
                 <a href="#contacto">Contáctanos ▾</a>
             </nav>
             <div class="nav-actions">
@@ -190,28 +215,25 @@
     </div>
 
     <section class="features-section" id="nosotros">
-        <div class="container features-grid">
-            <div class="features-text anim-up">
-                <span class="badge">Los mejores en el ramo</span>
-                <h2>Soporte técnico especializado en Costa Rica.</h2>
-                <p>Tranquilo, estás en las mejores manos. Fusionamos precisión técnica con estándares de calidad.</p>
-                
+        <div class="container about-flex-container">
+            <div class="section-header anim-up" style="margin-bottom: 20px;">
+                <span style="font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-grey); display: block; margin-bottom: 10px;">Los mejores en el ramo</span>
+                <h2 style="font-size: 38px;">Soporte técnico especializado en Costa Rica.</h2>
+                <p style="color: var(--text-grey); font-size: 16px; margin-top: 10px;">Tranquilo, estás en las mejores manos. Fusionamos precisión técnica con estándares de calidad.</p>
+            </div>
+            
+            <div class="mission-vision-row anim-up">
                 <div class="feature-box">
-                    <h4>Técnicos Certificados</h4>
+                    <h4><i class="fas fa-file-alt" style="color:var(--icon-blue)"></i> Misión</h4>
                     <p id="m-t">Cargando misión/descripción...</p>
                 </div>
                 <div class="feature-box">
-                    <h4>Partes y Repuestos Originales</h4>
+                    <h4><i class="fas fa-eye" style="color:var(--icon-blue)"></i> Visión</h4>
                     <p id="v-t">Cargando visión/descripción...</p>
                 </div>
-                <div class="feature-box">
-                    <h4>Consultas Online Gratuitas</h4>
-                    <p>Ofrecemos consultas en línea para que puedas describir tu problema y obtener una evaluación inicial antes de traer tu equipo.</p>
-                </div>
             </div>
-            <div class="features-image anim-up" style="transition-delay: 0.2s;">
-                <img src="https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1974&auto=format&fit=crop" alt="Reparación Técnica">
-            </div>
+
+            <img src="image_13.png" class="features-image-small anim-up" alt="Reparación Técnica Especializada iCare Tech CR">
         </div>
     </section>
 
@@ -243,8 +265,17 @@
             <h2>Catálogo de Productos</h2>
         </div>
         
-        <div class="category-filters anim-up" id="cat-filters"></div>
-        <div class="services-grid" id="prod-c"></div>
+        <div class="catalog-controls anim-up">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="catSearch" placeholder="Busca tu pieza o equipo..." onkeyup="filterAll()">
+            </div>
+            <div class="category-filters" id="catFilters"></div>
+        </div>
+
+        <div class="catalog-scroll-wrapper anim-up">
+            <div class="services-grid-horizontal" id="prod-c"></div>
+        </div>
     </div>
 
     <section class="how-we-operate">
@@ -269,53 +300,81 @@
         </div>
     </section>
 
-    <section class="site-footer anim-up" id="contacto">
-        <div class="container footer-content">
-            <div class="contact-info">
-                <h3>CONTÁCTANOS</h3>
-                
-                <div style="margin-bottom: 25px;">
-                    <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img" style="height: 100px;"> 
-                </div>
-                
-                <div class="contact-item">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>+506 8755 0729</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fab fa-instagram"></i>
-                    <span>@icaretechcr</span>
-                </div>
-                <div class="contact-item">
-                    <i class="far fa-envelope"></i>
-                    <span>info@icaretechcr.com</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Todo Costa Rica</span>
-                </div>
+    <section class="reviews-section" id="clientes">
+        <div class="container">
+            <div class="section-header anim-up">
+                <h2>Clientes Satisfechos</h2>
+                <p style="color: var(--text-grey);">Lo que dicen quienes ya confiaron en iCare Tech CR</p>
             </div>
-
-            <div class="newsletter-social">
-                <p>¡Suscríbete a nuestro boletín de noticias!</p>
-                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('¡Gracias por suscribirte!');">
-                    <input type="email" class="newsletter-input" placeholder="Tu correo electrónico" required>
-                    <button type="submit" class="btn-neon" style="border-radius: 5px;">Suscríbete</button>
-                </form>
-                
-                <div class="social-links">
-                    <a href="https://www.facebook.com/iCareTechCR" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://instagram.com/icaretechcr" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
+            <div class="reviews-grid" id="rev-c">
                 </div>
+        </div>
+    </section>
+
+    <section class="review-form-container anim-up">
+        <div class="container">
+            <div class="review-form-card">
+                <h3>Cuéntanos tu experiencia</h3>
+                <div class="form-row">
+                    <input type="text" id="revPublicClient" placeholder="Tu Nombre">
+                    <input type="text" id="revPublicPos" placeholder="Tu Puesto/Empresa (Opcional)">
+                </div>
+                <textarea id="revPublicText" rows="4" placeholder="Escribe tu comentario aquí..." style="margin-bottom:20px;"></textarea>
+                <div style="margin-bottom:20px;">
+                    <label style="font-size:14px; color:var(--text-grey); display:block; margin-bottom:10px;">Tu Foto (Opcional):</label>
+                    <input type="file" id="revPublicFile" accept="image/*">
+                </div>
+                <button onclick="enviarResenaPublica()">Publicar mi Reseña</button>
             </div>
         </div>
     </section>
 
-    <footer class="final-footer">
+    <section class="partners-section" id="socios">
         <div class="container">
-            © 2026 iCare Tech CR. Todos los derechos reservados.
+            <div class="section-header anim-up" style="margin-top: 0; margin-bottom: 50px;">
+                <h2 style="font-size: 42px; font-weight: 800; color: var(--text-dark);">Nuestros Socios</h2>
+            </div>
+            <div class="partners-grid" id="partners-c">
+                </div>
+        </div>
+    </section>
+
+    <footer class="site-footer" id="contacto">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand img anim-up">
+                    <img src="Logo.png" alt="iCareTechCR Logo">
+                    <p>Especialistas en seguridad electrónica y soporte técnico avanzado en Costa Rica. Innovación y confianza para tu hogar o empresa.</p>
+                    <div class="social-row">
+                        <a href="https://www.facebook.com/iCareTechCR" target="_blank" class="social-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://instagram.com/icaretechcr" target="_blank" class="social-circle"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-circle"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links anim-up" style="transition-delay: 0.2s;">
+                    <h4 class="footer-title">Contacto Directo</h4>
+                    <p><i class="fab fa-whatsapp"></i> +506 8755 0729</p>
+                    <p><i class="far fa-envelope"></i> info@icaretechcr.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Todo Costa Rica</p>
+                    <p><i class="far fa-clock"></i> Lun - Sáb: 8am - 6pm</p>
+                </div>
+
+                <div class="footer-form anim-up" style="transition-delay: 0.4s;">
+                    <h4 class="footer-title">Registro de Clientes</h4>
+                    <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Únete a nuestra base de datos para recibir ofertas y soporte prioritario.</p>
+                    <form onsubmit="event.preventDefault(); alert('¡Gracias por registrarte, pronto te contactaremos!');">
+                        <input type="text" placeholder="Nombre completo" required>
+                        <input type="email" placeholder="Correo electrónico" required>
+                        <input type="tel" placeholder="Número de teléfono" required>
+                        <button type="submit">Crear mi Registro</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="final-copy anim-up">
+                © 2026 iCare Tech CR. Todos los derechos reservados. | Diseñado para la excelencia.
+            </div>
         </div>
     </footer>
 
@@ -326,6 +385,8 @@
     <script>
         const API = 'http://127.0.0.1:5001/api';
         let allProducts = [];
+        let currentCat = 'Todos';
+        let publicReviewImg = ""; // Para guardar la imagen base64 del cliente
         
         function openWA(m) { 
             window.open(`https://wa.me/50687550729?text=${encodeURIComponent(m)}`, "_blank"); 
@@ -346,23 +407,64 @@
             });
         }
 
-        window.filterProducts = function(category) {
+        // Lógica para procesar la imagen de la reseña pública
+        document.getElementById('revPublicFile').onchange = (e) => {
+            const r = new FileReader();
+            r.onload = () => publicReviewImg = r.result;
+            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
+        };
+
+        // Función para enviar la reseña desde la web
+        window.enviarResenaPublica = function() {
+            const data = {
+                cliente: document.getElementById('revPublicClient').value,
+                puesto: document.getElementById('revPublicPos').value,
+                comentario: document.getElementById('revPublicText').value,
+                imagen_cliente: publicReviewImg
+            };
+            
+            if(!data.cliente || !data.comentario) return alert("Por favor completa tu nombre y el comentario.");
+
+            fetch(`${API}/resenas`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => {
+                if(r.ok) {
+                    alert("¡Gracias por tu comentario! Se ha publicado correctamente.");
+                    location.reload();
+                }
+            });
+        };
+
+        window.setCategory = function(cat) {
+            currentCat = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if(btn.innerText === category) btn.classList.add('active');
+                if(btn.innerText === cat) btn.classList.add('active');
             });
+            filterAll();
+        };
 
-            const filtered = category === 'Todos' ? allProducts : allProducts.filter(p => (p.categoria || "Otros") === category);
-            
+        window.filterAll = function() {
+            const term = document.getElementById('catSearch').value.toLowerCase();
             const prodC = document.getElementById('prod-c');
             prodC.innerHTML = "";
+            const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', minimumFractionDigits: 2 });
+
+            const filtered = allProducts.filter(p => {
+                const matchesSearch = p.nombre.toLowerCase().includes(term);
+                const matchesCat = currentCat === 'Todos' || (p.categoria || "Otros") === currentCat;
+                return matchesSearch && matchesCat;
+            });
+
             filtered.forEach((p, index) => { 
                 let delay = index * 0.1;
                 prodC.innerHTML += `
-                    <div class="service-card anim-up visible" style="padding: 30px; transition-delay: ${delay}s;">
+                    <div class="service-card anim-up visible" style="padding: 30px; transition-delay: ${delay}s; width: 320px;">
                         <img src="${p.imagen}" class="service-img" style="height: 200px; object-fit: contain;">
                         <h3>${p.nombre}</h3>
-                        <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${p.precio}</p>
+                        <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${formatter.format(p.precio)}</p>
                         <button class="btn-ver-mas" onclick="openWA('Interés en producto: ${p.nombre}')">Cotizar</button>
                     </div>`; 
             });
@@ -389,12 +491,39 @@
 
                 allProducts = data.productos;
                 const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                const filterContainer = document.getElementById('cat-filters');
+                const filterContainer = document.getElementById('catFilters');
                 filterContainer.innerHTML = categories.map(cat => 
-                    `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="filterProducts('${cat}')">${cat}</button>`
+                    `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
                 ).join('');
 
-                filterProducts('Todos');
+                filterAll();
+                
+                const partC = document.getElementById('partners-c');
+                if (data.socios) {
+                    data.socios.forEach((p, index) => {
+                        let delay = index * 0.1;
+                        partC.innerHTML += `<div class="partner-card anim-up" style="transition-delay: ${delay}s;"><img src="${p.imagen}" alt="${p.nombre}" class="partner-logo"></div>`;
+                    });
+                }
+
+                // ✅ RENDER DE RESEÑAS
+                const revC = document.getElementById('rev-c');
+                if (data.resenas) {
+                    data.resenas.forEach((r, index) => {
+                        let delay = index * 0.1;
+                        revC.innerHTML += `
+                            <div class="review-card anim-up" style="transition-delay: ${delay}s;">
+                                <p class="review-text">"${r.comentario}"</p>
+                                <div class="reviewer-info">
+                                    <img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img">
+                                    <div class="reviewer-meta">
+                                        <div class="reviewer-name">${r.cliente}</div>
+                                        <div class="reviewer-pos">${r.puesto || ''}</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                }
 
                 applyAnimations();
 

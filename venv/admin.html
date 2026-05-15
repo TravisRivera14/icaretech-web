@@ -5,123 +5,140 @@
     <title>Admin iCare | Control Maestro</title>
     <style>
         :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); padding: 20px; }
-        
-        /* ✅ ESTILOS AÑADIDOS PARA LA CABECERA DEL ADMIN CON LOGO */
-        .admin-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            grid-column: 1 / -1; /* Ocupa todo el ancho superior */
-            margin-bottom: 30px;
-            background: #fff;
-            padding: 15px 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .admin-logo-img {
-            height: 60px; /* Altura del logo en el panel */
-            width: auto;
-        }
-        .admin-header h1 {
-            font-size: 24px;
-            color: var(--brand);
-            margin: 0;
-            font-weight: 700;
-        }
-
-        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
-        input, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline: none; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
         button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        label { font-size: 11px; color: #666; margin-top: 10px; display: block; font-weight: 600;}
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn-edit { background: var(--edit); width: auto; padding: 5px 12px; margin-right: 5px; font-size: 11px; }
+        .btn-del { background: var(--del); width: auto; padding: 5px 12px; font-size: 11px; }
     </style>
 </head>
 <body>
 <div class="container">
-    
-    <div class="admin-header">
-        <img src="logo.png" alt="iCareTech CR Logo" class="admin-logo-img">
-        <h1>Control Maestro | iCare Tech CR</h1>
-    </div>
-
+    <div style="grid-column: 1/-1;"><h1>Control Maestro iCare Tech CR</h1></div>
     <div>
         <div class="card">
-            <h2 id="srv-label">➕ Gestionar Servicio</h2>
-            <input type="text" id="sIcon" placeholder="Emoji o Icono (Ej: 📱)">
+            <h2 id="rev-label">⭐ Gestionar Clientes Satisfechos</h2>
+            <input type="text" id="revClient" placeholder="Nombre del Cliente">
+            <input type="text" id="revPos" placeholder="Puesto / Cargo">
+            <textarea id="revText" placeholder="Comentario de la reseña..."></textarea>
+            <label>Foto Cliente:</label><input type="file" id="revImgFile" accept="image/*">
+            <button onclick="subirResena()">Guardar Reseña</button>
+        </div>
+        <div class="card">
+            <h2 id="srv-label">💻 Gestionar Servicio</h2>
+            <input type="text" id="sIcon" placeholder="Icono/Emoji">
             <input type="text" id="sTitle" placeholder="Título">
-            <textarea id="sDesc" placeholder="Descripción breve" style="height: 100px;"></textarea>
-            <label>Imagen opcional (formato ancho recomendado):</label>
+            <textarea id="sDesc" placeholder="Descripción"></textarea>
             <input type="file" id="sImgFile" accept="image/*">
-            <button id="btn-srv" onclick="subirServicio()">Guardar Servicio</button>
+            <button onclick="subirServicio()">Guardar Servicio</button>
         </div>
         <div class="card">
-            <h2 id="prod-label">➕ Gestionar Producto</h2>
-            <input type="text" id="pName" placeholder="Nombre (Ej: iPhone 13 Pro)">
-            <input type="text" id="pPrice" placeholder="Precio (Ej: ₡450,000)">
-            <input type="text" id="pCat" placeholder="Categoría (Ej: Teléfonos, Cámaras, Accesorios...)">
-            <label>Imagen del Producto:</label>
-            <input type="file" id="pImgFile" accept="image/*">
-            <button id="btn-prod" onclick="subirProducto()">Guardar Producto</button>
+            <h2 id="partner-label">🤝 Gestionar Socios</h2>
+            <input type="text" id="partnerName" placeholder="Nombre del Socio">
+            <input type="file" id="partnerImgFile" accept="image/*">
+            <button onclick="subirSocio()">Guardar Socio</button>
         </div>
     </div>
     <div>
         <div class="card">
-            <h2>🎯 Textos Generales Web</h2>
-            <input type="text" id="h_titulo" placeholder="Título Hero Principal">
-            <label>Fondo Hero (Imagen Grande Principal):</label>
-            <input type="file" id="heroBgFile" accept="image/*">
-            <textarea id="mision" placeholder="Texto de Misión" style="height: 80px;"></textarea>
-            <textarea id="vision" placeholder="Texto de Visión" style="height: 80px;"></textarea>
-            <button onclick="updateConfig()">Actualizar Textos y Fondo</button>
+            <h2 id="prod-label">📦 Gestionar Producto</h2>
+            <input type="text" id="pName" placeholder="Nombre">
+            <input type="text" id="pPrice" placeholder="Precio">
+            <input type="text" id="pCat" placeholder="Categoría">
+            <input type="file" id="pImgFile" accept="image/*">
+            <button onclick="subirProducto()">Guardar Producto</button>
         </div>
-        <div class="card"><h2>📋 Gestión de Contenido Actual</h2><div id="master-list">Cargando...</div></div>
+        <div class="card">
+            <h2>🎯 Configuración General</h2>
+            <input type="text" id="h_titulo" placeholder="Título Hero">
+            <textarea id="mision" placeholder="Misión"></textarea>
+            <textarea id="vision" placeholder="Visión"></textarea>
+            <button onclick="updateConfig()">Actualizar Textos</button>
+        </div>
+        <div class="card">
+            <h2>📋 Gestión Actual</h2>
+            <div id="master-list">Cargando datos...</div>
+        </div>
     </div>
 </div>
 <script>
     const API = 'http://127.0.0.1:5001/api';
-    let imgS = "", imgP = "", imgH = "", editId = null, editType = null;
-    const v = (id) => document.getElementById(id).value;
-    const setV = (id, val) => document.getElementById(id).value = val || "";
+    let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
 
-    document.getElementById('sImgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgS = r.result; r.readAsDataURL(e.target.files[0]); };
-    document.getElementById('pImgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgP = r.result; r.readAsDataURL(e.target.files[0]); };
-    document.getElementById('heroBgFile').onchange = (e) => { const r = new FileReader(); r.onload = () => imgH = r.result; r.readAsDataURL(e.target.files[0]); };
+    const handleFile = (id, cb) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.onchange = (e) => {
+            const r = new FileReader(); r.onload = () => cb(r.result);
+            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
+        };
+    };
+    handleFile('sImgFile', res => imgS = res);
+    handleFile('pImgFile', res => imgP = res);
+    handleFile('revImgFile', res => imgRev = res);
+    handleFile('partnerImgFile', res => imgPartner = res);
 
     function loadContent() {
         fetch(`${API}/todo`).then(r=>r.json()).then(data => {
-            setV('h_titulo', data.config.hero_titulo); setV('mision', data.config.mision); setV('vision', data.config.vision);
-            let html = "<strong>Servicios:</strong>";
-            data.servicios.forEach(s => html += `<div class="list-item"><span>${s.titulo}</span><div><button onclick='prepararEdicion("servicios", ${JSON.stringify(s)})' style="background:blue; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer;">Edit</button><button onclick="deleteItem('servicios', ${s.id})" style="background:red; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer; margin-left:5px;">X</button></div></div>`);
-            html += "<br><strong>Productos:</strong>";
-            data.productos.forEach(p => html += `<div class="list-item"><span>${p.nombre} (${p.categoria || 'Otros'})</span><div><button onclick='prepararEdicion("productos", ${JSON.stringify(p)})' style="background:blue; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer;">Edit</button><button onclick="deleteItem("productos", ${p.id})" style="background:red; width:auto; padding:3px 10px; color:white; border-radius:5px; border:none; cursor:pointer; margin-left:5px;">X</button></div></div>`);
-            document.getElementById('master-list').innerHTML = html;
+            let h = "<b>Servicios:</b>";
+            data.servicios.forEach(s => h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick='prepararEdicion("servicios", ${JSON.stringify(s)})'>Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`);
+            
+            h += "<br><b>Productos:</b>";
+            data.productos.forEach(p => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick='prepararEdicion("productos", ${JSON.stringify(p)})'>Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`);
+            
+            h += "<br><b>Reseñas (Clientes):</b>";
+            // ✅ BOTÓN DE EDITAR AÑADIDO PARA RESEÑAS
+            data.resenas.forEach(r => h += `<div class="list-item"><span>${r.cliente}</span><div><button class="btn-edit" onclick='prepararEdicion("resenas", ${JSON.stringify(r)})'>Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`);
+            
+            h += "<br><b>Socios:</b>";
+            data.socios.forEach(p => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`);
+            
+            document.getElementById('master-list').innerHTML = h;
         });
     }
 
-    function subirServicio() { saveItem('servicios', { icono: v('sIcon'), titulo: v('sTitle'), descripcion: v('sDesc'), imagen: imgS }); }
-    function subirProducto() { saveItem('productos', { nombre: v('pName'), precio: v('pPrice'), categoria: v('pCat'), imagen: imgP }); }
-    
     function prepararEdicion(tipo, item) {
-        editId = item.id; editType = tipo; window.scrollTo(0,0);
-        if(tipo === 'servicios') { setV('sIcon', item.icono); setV('sTitle', item.titulo); setV('sDesc', item.descripcion); document.getElementById('srv-label').innerText = "📝 Editando Servicio"; }
-        if(tipo === 'productos') { setV('pName', item.nombre); setV('pPrice', item.precio); setV('pCat', item.categoria); document.getElementById('prod-label').innerText = "📝 Editando Producto"; }
+        editId = item.id; editType = tipo;
+        if(tipo === 'servicios') {
+            document.getElementById('sIcon').value = item.icono;
+            document.getElementById('sTitle').value = item.titulo;
+            document.getElementById('sDesc').value = item.descripcion;
+            imgS = item.imagen;
+            document.getElementById('srv-label').innerText = "📝 Editando Servicio";
+        }
+        if(tipo === 'productos') {
+            document.getElementById('pName').value = item.nombre;
+            document.getElementById('pPrice').value = item.precio;
+            document.getElementById('pCat').value = item.categoria;
+            imgP = item.imagen;
+            document.getElementById('prod-label').innerText = "📝 Editando Producto";
+        }
+        if(tipo === 'resenas') {
+            document.getElementById('revClient').value = item.cliente;
+            document.getElementById('revPos').value = item.puesto;
+            document.getElementById('revText').value = item.comentario;
+            imgRev = item.imagen_cliente;
+            document.getElementById('rev-label').innerText = "📝 Editando Reseña";
+        }
+        window.scrollTo(0,0);
     }
 
     function saveItem(path, data) {
-        let method = (editId && editType === path) ? 'PUT' : 'POST';
-        let url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        fetch(url, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(() => location.reload());
+        const method = (editId && editType === path) ? 'PUT' : 'POST';
+        const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
+        fetch(url, {method: method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}).then(()=>location.reload());
     }
 
-    function updateConfig() {
-        let d = { hero_titulo: v('h_titulo'), mision: v('mision'), vision: v('vision') }; if(imgH) d.hero_background = imgH;
-        fetch(`${API}/config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) }).then(() => alert("Web Actualizada"));
-    }
-
-    function deleteItem(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE' }).then(() => loadContent()); }
+    function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
+    function subirServicio() { saveItem('servicios', {icono:document.getElementById('sIcon').value, titulo:document.getElementById('sTitle').value, descripcion:document.getElementById('sDesc').value, imagen:imgS}); }
+    function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
+    function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
+    
+    function updateConfig() { fetch(`${API}/config`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value})}).then(()=>alert("Web Actualizada")); }
+    function del(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
     window.onload = loadContent;
 </script>
 </body>

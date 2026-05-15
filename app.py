@@ -4,7 +4,6 @@ import sqlite3
 
 app = Flask(__name__)
 CORS(app)
-# Límite de 16MB para permitir imágenes y logos pesados
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
 def db_query(query, params=(), fetch=False):
@@ -19,12 +18,10 @@ def db_query(query, params=(), fetch=False):
 def init_db():
     conn = sqlite3.connect('inventario.db')
     c = conn.cursor()
-    # Tablas originales restauradas al 100%
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, precio TEXT, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id INTEGER PRIMARY KEY AUTOINCREMENT, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS socios (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, imagen TEXT)''')
-    # Tabla de reseñas con soporte para fotos y puestos
     c.execute('''CREATE TABLE IF NOT EXISTS resenas (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente TEXT, puesto TEXT, comentario TEXT, imagen_cliente TEXT, estrellas INTEGER DEFAULT 5)''')
     conn.commit()
     conn.close()
@@ -39,19 +36,17 @@ def obtener_todo():
     reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True)]
     return jsonify({"config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews})
 
-@app.route('/api/config', methods=['POST'])
-def guardar_config():
-    data = request.json
-    for k, v in data.items():
-        exists = db_query("SELECT 1 FROM configuracion WHERE clave = ?", (k,), fetch=True)
-        if exists: db_query("UPDATE configuracion SET valor = ? WHERE clave = ?", (v, k))
-        else: db_query("INSERT INTO configuracion (clave, valor) VALUES (?, ?)", (k, v))
-    return jsonify({"mensaje": "✅"})
-
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json
     db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (?, ?, ?, ?)", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente', '')))
+    return jsonify({"mensaje": "✅"})
+
+# ✅ RUTA DE EDICIÓN PARA RESEÑAS AÑADIDA
+@app.route('/api/resenas/<int:id>', methods=['PUT'])
+def editar_resena(id):
+    d = request.json
+    db_query("UPDATE resenas SET cliente=?, puesto=?, comentario=?, imagen_cliente=? WHERE id=?", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente',''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/socios', methods=['POST'])
@@ -72,7 +67,6 @@ def guardar_producto():
     db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros')))
     return jsonify({"mensaje": "✅"})
 
-# RUTAS DE EDICIÓN (PUT) RESTAURADAS
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 def editar_servicio(id):
     d = request.json
@@ -83,12 +77,6 @@ def editar_servicio(id):
 def editar_producto(id):
     d = request.json
     db_query("UPDATE productos SET nombre=?, precio=?, imagen=?, categoria=? WHERE id=?", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros'), id))
-    return jsonify({"mensaje": "✅"})
-
-@app.route('/api/resenas/<int:id>', methods=['PUT'])
-def editar_resena(id):
-    d = request.json
-    db_query("UPDATE resenas SET cliente=?, puesto=?, comentario=?, imagen_cliente=? WHERE id=?", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente',''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])

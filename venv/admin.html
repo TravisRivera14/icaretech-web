@@ -65,9 +65,7 @@
     </div>
 </div>
 <script>
-    // ✅ API URL ACTUALIZADA PARA RENDER
-    const API = 'https://icaretech-web.onrender.com/api';
-    
+    const API = 'http://127.0.0.1:5001/api';
     let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
 
     const handleFile = (id, cb) => {
@@ -92,6 +90,7 @@
             data.productos.forEach(p => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick='prepararEdicion("productos", ${JSON.stringify(p)})'>Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`);
             
             h += "<br><b>Reseñas (Clientes):</b>";
+            // ✅ BOTÓN DE EDITAR AÑADIDO PARA RESEÑAS
             data.resenas.forEach(r => h += `<div class="list-item"><span>${r.cliente}</span><div><button class="btn-edit" onclick='prepararEdicion("resenas", ${JSON.stringify(r)})'>Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`);
             
             h += "<br><b>Socios:</b>";

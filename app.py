@@ -13,8 +13,6 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 def db_query(query, params=(), fetch=False):
     conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
-    # Postgres usa '%s' como marcador de posición en lugar de '?'
-    query = query.replace('?', '%s')
     c.execute(query, params)
     res = c.fetchall() if fetch else None
     conn.commit()
@@ -53,70 +51,69 @@ def obtener_todo():
     reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True)]
     return jsonify({"config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews})
 
-# ✅ RUTA ENLAZADA FALTANTE: Permite actualizar la Misión, Visión y Título desde el Admin
+# ✅ RUTA DE CONFIGURACIÓN AÑADIDA: Conecta con el botón del Admin
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json
     if 'hero_titulo' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['hero_titulo'],))
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['hero_titulo'],))
     if 'mision' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['mision'],))
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['mision'],))
     if 'vision' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['vision'],))
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['vision'],))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json
-    db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (?, ?, ?, ?)", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente', '')))
+    db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas/<int:id>', methods=['PUT'])
 def editar_resena(id):
     d = request.json
-    db_query("UPDATE resenas SET cliente=?, puesto=?, comentario=?, imagen_cliente=? WHERE id=?", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente',''), id))
+    db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente',''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/socios', methods=['POST'])
 def guardar_socio():
     d = request.json
-    db_query("INSERT INTO socios (nombre, imagen) VALUES (?, ?)", (d['nombre'], d.get('imagen', '')))
+    db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d['nombre'], d.get('imagen', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios', methods=['POST'])
 def guardar_servicio():
     d = request.json
-    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen) VALUES (?, ?, ?, ?)", (d['icono'], d['titulo'], d['descripcion'], d.get('imagen', '')))
+    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen) VALUES (%s, %s, %s, %s)", (d['icono'], d['titulo'], d['descripcion'], d.get('imagen', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos', methods=['POST'])
 def guardar_producto():
     d = request.json
-    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros')))
+    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 def editar_servicio(id):
     d = request.json
-    db_query("UPDATE servicios SET icono=?, titulo=?, descripcion=?, imagen=? WHERE id=?", (d['icono'], d['titulo'], d['descripcion'], d.get('imagen',''), id))
+    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s WHERE id=%s", (d['icono'], d['titulo'], d['descripcion'], d.get('imagen',''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
 def editar_producto(id):
     d = request.json
-    db_query("UPDATE productos SET nombre=?, precio=?, imagen=?, categoria=? WHERE id=?", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros'), id))
+    db_query("UPDATE productos SET nombre=%s, precio=%s, imagen=%s, categoria=%s WHERE id=%s", (d['nombre'], d['precio'], d['imagen'], d.get('categoria', 'Otros'), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 def eliminar_item(tabla, id):
-    # Validamos las tablas permitidas para evitar inyecciones SQL en Postgres
     tablas_permitidas = ['productos', 'configuracion', 'servicios', 'socios', 'resenas']
     if tabla in tablas_permitidas:
-        db_query(f"DELETE FROM {tabla} WHERE id = ?", (id,))
+        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "Tabla no válida"}), 400
 
-# --- RUTAS DE REDIRECCIÓN ESTÁTICA PARA FRONTEND EN VERCEL ---
+# --- MANEJO DE FRONTEND EN VERCEL ---
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend', 'index.html')

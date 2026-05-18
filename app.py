@@ -1,14 +1,20 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import sqlite3
+import os
+import psycopg2 # <- Cambiado de sqlite3 a psycopg2
 
 app = Flask(__name__)
 CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
+# Variable de conexión automática de Neon en Vercel
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
 def db_query(query, params=(), fetch=False):
-    conn = sqlite3.connect('inventario.db')
+    conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
+    # Postgres usa '%s' como marcador de posición en lugar de '?'
+    query = query.replace('?', '%s')
     c.execute(query, params)
     res = c.fetchall() if fetch else None
     conn.commit()
@@ -16,13 +22,14 @@ def db_query(query, params=(), fetch=False):
     return res
 
 def init_db():
-    conn = sqlite3.connect('inventario.db')
+    conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS productos (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, precio TEXT, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
+    # Cambiado INTEGER PRIMARY KEY AUTOINCREMENT por SERIAL PRIMARY KEY (sintaxis nativa de Postgres)
+    c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio TEXT, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS servicios (id INTEGER PRIMARY KEY AUTOINCREMENT, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS socios (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, imagen TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS resenas (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente TEXT, puesto TEXT, comentario TEXT, imagen_cliente TEXT, estrellas INTEGER DEFAULT 5)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS socios (id SERIAL PRIMARY KEY, nombre TEXT, imagen TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS resenas (id SERIAL PRIMARY KEY, cliente TEXT, puesto TEXT, comentario TEXT, imagen_cliente TEXT, estrellas INTEGER DEFAULT 5)''')
     conn.commit()
     conn.close()
 

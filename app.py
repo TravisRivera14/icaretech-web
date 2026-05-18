@@ -40,6 +40,7 @@ def obtener_todo():
     
     # --- AUTO-RELLENO DE RESPALDO SI LA BASE DE DATOS DE NEON ESTÁ VACÍA ---
     if not config:
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
         db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
         db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True)
@@ -51,6 +52,18 @@ def obtener_todo():
     parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in db_query("SELECT id, nombre, imagen FROM socios", fetch=True)]
     reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True)]
     return jsonify({"config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews})
+
+# ✅ RUTA ENLAZADA FALTANTE: Permite actualizar la Misión, Visión y Título desde el Admin
+@app.route('/api/config', methods=['POST'])
+def guardar_config():
+    d = request.json
+    if 'hero_titulo' in d:
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['hero_titulo'],))
+    if 'mision' in d:
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['mision'],))
+    if 'vision' in d:
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['vision'],))
+    return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
@@ -96,10 +109,14 @@ def editar_producto(id):
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 def eliminar_item(tabla, id):
-    db_query(f"DELETE FROM {tabla} WHERE id = ?", (id,))
-    return jsonify({"mensaje": "🗑️"})
+    # Validamos las tablas permitidas para evitar inyecciones SQL en Postgres
+    tablas_permitidas = ['productos', 'configuracion', 'servicios', 'socios', 'resenas']
+    if tabla in tablas_permitidas:
+        db_query(f"DELETE FROM {tabla} WHERE id = ?", (id,))
+        return jsonify({"mensaje": "🗑️"})
+    return jsonify({"error": "Tabla no válida"}), 400
 
-# --- RUTAS DE RENDICIÓN PARA EL FRONTEND EN VERCEL ---
+# --- RUTAS DE REDIRECCIÓN ESTÁTICA PARA FRONTEND EN VERCEL ---
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend', 'index.html')

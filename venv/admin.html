@@ -64,10 +64,14 @@
         </div>
     </div>
 </div>
+
 <script>
     /* ✅ CORRECCIÓN DE LA RUTA: Relativa de producción */
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
+    
+    // Almacén seguro en memoria para evitar romper etiquetas HTML con cadenas JSON
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [] };
 
     const handleFile = (id, cb) => {
         const el = document.getElementById(id);
@@ -83,44 +87,73 @@
     handleFile('partnerImgFile', res => imgPartner = res);
 
     function loadContent() {
-        fetch(`${API}/todo`).then(r=>r.json()).then(data => {
+        fetch(`${API}/todo`)
+        .then(r => {
+            if (!r.ok) throw new Error("Error en la respuesta del servidor");
+            return r.json();
+        })
+        .then(data => {
+            // Respaldamos los datos en memoria de forma segura
+            cacheData.servicios = data.servicios || [];
+            cacheData.productos = data.productos || [];
+            cacheData.resenas = data.resenas || [];
+            cacheData.socios = data.socios || [];
+
             let h = "<b>Servicios:</b>";
-            data.servicios.forEach(s => h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick='prepararEdicion("servicios", ${JSON.stringify(s)})'>Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`);
+            cacheData.servicios.forEach((s, idx) => {
+                h += `<div class="list-item"><span>${s.titulo || 'Sin título'}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`;
+            });
             
             h += "<br><b>Productos:</b>";
-            data.productos.forEach(p => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick='prepararEdicion("productos", ${JSON.stringify(p)})'>Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`);
+            cacheData.productos.forEach((p, idx) => {
+                h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`;
+            });
             
             h += "<br><b>Reseñas (Clientes):</b>";
-            data.resenas.forEach(r => h += `<div class="list-item"><span>${r.cliente}</span><div><button class="btn-edit" onclick='prepararEdicion("resenas", ${JSON.stringify(r)})'>Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`);
+            cacheData.resenas.forEach((r, idx) => {
+                h += `<div class="list-item"><span>${r.cliente || 'Anónimo'}</span><div><button class="btn-edit" onclick="prepararEdicion('resenas', ${idx})">Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`;
+            });
             
             h += "<br><b>Socios:</b>";
-            data.socios.forEach(p => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`);
+            cacheData.socios.forEach((p) => {
+                h += `<div class="list-item"><span>${p.nombre || 'Socio'}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`;
+            });
             
             document.getElementById('master-list').innerHTML = h;
+        })
+        .catch(err => {
+            console.error("Error al cargar datos en panel maestro:", err);
+            document.getElementById('master-list').innerHTML = "Error al cargar la gestión actual del servidor.";
         });
     }
 
-    function prepararEdicion(tipo, item) {
-        editId = item.id; editType = tipo;
+    function prepararEdicion(tipo, index) {
+        // Obtenemos el ítem desde el array mapeado por posición
+        const item = cacheData[tipo][index];
+        if (!item) return;
+
+        editId = item.id; 
+        editType = tipo;
+
         if(tipo === 'servicios') {
-            document.getElementById('sIcon').value = item.icono;
-            document.getElementById('sTitle').value = item.titulo;
-            document.getElementById('sDesc').value = item.descripcion;
-            imgS = item.imagen;
+            document.getElementById('sIcon').value = item.icono || '';
+            document.getElementById('sTitle').value = item.titulo || '';
+            document.getElementById('sDesc').value = item.descripcion || '';
+            imgS = item.imagen || '';
             document.getElementById('srv-label').innerText = "📝 Editando Servicio";
         }
         if(tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre;
-            document.getElementById('pPrice').value = item.precio;
-            document.getElementById('pCat').value = item.categoria;
-            imgP = item.imagen;
+            document.getElementById('pName').value = item.nombre || '';
+            document.getElementById('pPrice').value = item.precio || '';
+            document.getElementById('pCat').value = item.categoria || '';
+            imgP = item.imagen || '';
             document.getElementById('prod-label').innerText = "📝 Editando Producto";
         }
         if(tipo === 'resenas') {
-            document.getElementById('revClient').value = item.cliente;
-            document.getElementById('revPos').value = item.puesto;
-            document.getElementById('revText').value = item.comentario;
-            imgRev = item.imagen_cliente;
+            document.getElementById('revClient').value = item.cliente || '';
+            document.getElementById('revPos').value = item.puesto || '';
+            document.getElementById('revText').value = item.comentario || '';
+            imgRev = item.imagen_cliente || '';
             document.getElementById('rev-label').innerText = "📝 Editando Reseña";
         }
         window.scrollTo(0,0);
@@ -129,7 +162,11 @@
     function saveItem(path, data) {
         const method = (editId && editType === path) ? 'PUT' : 'POST';
         const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        fetch(url, {method: method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}).then(()=>location.reload());
+        fetch(url, {
+            method: method, 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify(data)
+        }).then(()=>location.reload());
     }
 
     function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }

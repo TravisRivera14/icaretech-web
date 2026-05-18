@@ -306,8 +306,7 @@
                 <h2>Clientes Satisfechos</h2>
                 <p style="color: var(--text-grey);">Lo que dicen quienes ya confiaron en iCare Tech CR</p>
             </div>
-            <div class="reviews-grid" id="rev-c">
-                </div>
+            <div class="reviews-grid" id="rev-c"></div>
         </div>
     </section>
 
@@ -334,8 +333,7 @@
             <div class="section-header anim-up" style="margin-top: 0; margin-bottom: 50px;">
                 <h2 style="font-size: 42px; font-weight: 800; color: var(--text-dark);">Nuestros Socios</h2>
             </div>
-            <div class="partners-grid" id="partners-c">
-                </div>
+            <div class="partners-grid" id="partners-c"></div>
         </div>
     </section>
 
@@ -448,11 +446,12 @@
         window.filterAll = function() {
             const term = document.getElementById('catSearch').value.toLowerCase();
             const prodC = document.getElementById('prod-c');
+            if (!prodC) return;
             prodC.innerHTML = "";
             const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', minimumFractionDigits: 2 });
 
             const filtered = allProducts.filter(p => {
-                const matchesSearch = p.nombre.toLowerCase().includes(term);
+                const matchesSearch = p.nombre && p.nombre.toLowerCase().includes(term);
                 const matchesCat = currentCat === 'Todos' || (p.categoria || "Otros") === currentCat;
                 return matchesSearch && matchesCat;
             });
@@ -461,9 +460,9 @@
                 let delay = index * 0.1;
                 prodC.innerHTML += `
                     <div class="service-card anim-up visible" style="padding: 30px; transition-delay: ${delay}s; width: 320px;">
-                        <img src="${p.imagen}" class="service-img" style="height: 200px; object-fit: contain;">
-                        <h3>${p.nombre}</h3>
-                        <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${formatter.format(p.precio)}</p>
+                        <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain;">
+                        <h3>${p.nombre || 'Producto sin nombre'}</h3>
+                        <p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${formatter.format(p.precio || 0)}</p>
                         <button class="btn-ver-mas" onclick="openWA('Interés en producto: ${p.nombre}')">Cotizar</button>
                     </div>`; 
             });
@@ -472,50 +471,70 @@
         document.addEventListener("DOMContentLoaded", () => {
             applyAnimations();
 
-            fetch(`${API}/todo`).then(r => r.json()).then(data => {
-                
-                if(data.config.hero_background) {
-                    document.getElementById('hero-sec').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${data.config.hero_background})`;
+            fetch(`${API}/todo`)
+            .then(r => {
+                if (!r.ok) throw new Error("Error en la respuesta del servidor");
+                return r.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                // 1. Validar Configuración de Textos de la App
+                if (data.config) {
+                    if(data.config.hero_background) {
+                        document.getElementById('hero-sec').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${data.config.hero_background})`;
+                    }
+                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
+                    document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
+                    document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
+                } else {
+                    document.getElementById('hero-title').innerText = "Servicio Técnico Profesional";
                 }
-                document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
-                document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
-                document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
                 
+                // 2. Validar y renderizar Servicios
                 const srvC = document.getElementById('srv-c');
-                data.servicios.forEach((s, index) => { 
-                    let delay = index * 0.1;
-                    let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`;
-                    srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo}</h3><p>${s.descripcion}</p><button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button></div>`; 
-                });
-
-                allProducts = data.productos;
-                const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                const filterContainer = document.getElementById('catFilters');
-                filterContainer.innerHTML = categories.map(cat => 
-                    `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
-                ).join('');
-
-                filterAll();
-                
-                const partC = document.getElementById('partners-c');
-                if (data.socios) {
-                    data.socios.forEach((p, index) => {
+                if (srvC && data.servicios && Array.isArray(data.servicios)) {
+                    data.servicios.forEach((s, index) => { 
                         let delay = index * 0.1;
-                        partC.innerHTML += `<div class="partner-card anim-up" style="transition-delay: ${delay}s;"><img src="${p.imagen}" alt="${p.nombre}" class="partner-logo"></div>`;
+                        let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono || '⚙'}</div>`;
+                        srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo || ''}</h3><p>${s.descripcion || ''}</p><button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button></div>`; 
                     });
                 }
 
+                // 3. Validar y renderizar Productos
+                if (data.productos && Array.isArray(data.productos)) {
+                    allProducts = data.productos;
+                    const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+                    const filterContainer = document.getElementById('catFilters');
+                    if (filterContainer) {
+                        filterContainer.innerHTML = categories.map(cat => 
+                            `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+                        ).join('');
+                    }
+                    filterAll();
+                }
+                
+                // 4. Validar y renderizar Socios (Partners)
+                const partC = document.getElementById('partners-c');
+                if (partC && data.socios && Array.isArray(data.socios)) {
+                    data.socios.forEach((p, index) => {
+                        let delay = index * 0.1;
+                        partC.innerHTML += `<div class="partner-card anim-up" style="transition-delay: ${delay}s;"><img src="${p.imagen}" alt="${p.nombre || 'Socio'}" class="partner-logo"></div>`;
+                    });
+                }
+
+                // 5. Validar y renderizar Reseñas
                 const revC = document.getElementById('rev-c');
-                if (data.resenas) {
+                if (revC && data.resenas && Array.isArray(data.resenas)) {
                     data.resenas.forEach((r, index) => {
                         let delay = index * 0.1;
                         revC.innerHTML += `
                             <div class="review-card anim-up" style="transition-delay: ${delay}s;">
-                                <p class="review-text">"${r.comentario}"</p>
+                                <p class="review-text">"${r.comentario || ''}"</p>
                                 <div class="reviewer-info">
                                     <img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img">
                                     <div class="reviewer-meta">
-                                        <div class="reviewer-name">${r.cliente}</div>
+                                        <div class="reviewer-name">${r.cliente || 'Anónimo'}</div>
                                         <div class="reviewer-pos">${r.puesto || ''}</div>
                                     </div>
                                 </div>
@@ -526,6 +545,7 @@
                 applyAnimations();
 
             }).catch(err => {
+                console.error("Error detallado:", err);
                 document.getElementById('hero-title').innerText = "Error cargando información.";
             });
         });

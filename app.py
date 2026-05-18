@@ -37,6 +37,16 @@ def init_db():
 def obtener_todo():
     config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True)
     config = {r[0]: r[1] for r in config_raw}
+    
+    # --- AUTO-RELLENO DE RESPALDO SI LA BASE DE DATOS DE NEON ESTÁ VACÍA ---
+    if not config:
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
+        db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
+        # Volvemos a consultar una vez insertados los valores de respaldo
+        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True)
+        config = {r[0]: r[1] for r in config_raw}
+    # ---------------------------------------------------------------------
+
     servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4]} for r in db_query("SELECT id, icono, titulo, descripcion, imagen FROM servicios", fetch=True)]
     prods = [{"id": r[0], "nombre": r[1], "precio": r[2], "imagen": r[3], "categoria": r[4]} for r in db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True)]
     parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in db_query("SELECT id, nombre, imagen FROM socios", fetch=True)]

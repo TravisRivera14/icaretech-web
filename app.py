@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 
@@ -83,6 +83,16 @@ def editar_producto(id):
 def eliminar_item(tabla, id):
     db_query(f"DELETE FROM {tabla} WHERE id = ?", (id,))
     return jsonify({"mensaje": "🗑️"})
+
+# --- RUTAS DE CONEXIÓN PARA EL FRONTEND EN VERCEL ---
+@app.route('/')
+def serve_frontend():
+    return send_from_directory('frontend', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('frontend', path)
+# ---------------------------------------------------
 
 if __name__ == '__main__':
     init_db()

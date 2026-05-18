@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
-import psycopg2 # <- Cambiado de sqlite3 a psycopg2
+import psycopg2
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +24,7 @@ def db_query(query, params=(), fetch=False):
 def init_db():
     conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
-    # Cambiado INTEGER PRIMARY KEY AUTOINCREMENT por SERIAL PRIMARY KEY (sintaxis nativa de Postgres)
+    # Sintaxis nativa de Postgres (SERIAL PRIMARY KEY)
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio TEXT, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT)''')
@@ -42,7 +42,6 @@ def obtener_todo():
     if not config:
         db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
         db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-        # Volvemos a consultar una vez insertados los valores de respaldo
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True)
         config = {r[0]: r[1] for r in config_raw}
     # ---------------------------------------------------------------------
@@ -59,7 +58,6 @@ def guardar_resena():
     db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (?, ?, ?, ?)", (d['cliente'], d.get('puesto', ''), d['comentario'], d.get('imagen_cliente', '')))
     return jsonify({"mensaje": "✅"})
 
-# ✅ RUTA DE EDICIÓN PARA RESEÑAS AÑADIDA
 @app.route('/api/resenas/<int:id>', methods=['PUT'])
 def editar_resena(id):
     d = request.json
@@ -101,7 +99,7 @@ def eliminar_item(tabla, id):
     db_query(f"DELETE FROM {tabla} WHERE id = ?", (id,))
     return jsonify({"mensaje": "🗑️"})
 
-# --- RUTAS DE CONEXIÓN PARA EL FRONTEND EN VERCEL ---
+# --- RUTAS DE RENDICIÓN PARA EL FRONTEND EN VERCEL ---
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend', 'index.html')
@@ -109,7 +107,6 @@ def serve_frontend():
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('frontend', path)
-# ---------------------------------------------------
 
 if __name__ == '__main__':
     init_db()

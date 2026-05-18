@@ -383,7 +383,8 @@
     </a>
 
     <script>
-        const API = 'http://127.0.0.1:5001/api';
+        /* ✅ CORRECCIÓN DE LA RUTA: Cambiado 'http://127.0.0.1:5001/api' por '/api' relativo */
+        const API = '/api';
         let allProducts = [];
         let currentCat = 'Todos';
         let publicReviewImg = ""; // Para guardar la imagen base64 del cliente

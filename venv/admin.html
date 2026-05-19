@@ -99,6 +99,13 @@
             cacheData.resenas = data.resenas || [];
             cacheData.socios = data.socios || [];
 
+            // Auto-rellenar la sección de configuración general si los datos existen
+            if (data.config) {
+                document.getElementById('h_titulo').value = data.config.hero_titulo || '';
+                document.getElementById('mision').value = data.config.mision || '';
+                document.getElementById('vision').value = data.config.vision || '';
+            }
+
             let h = "<b>Servicios:</b>";
             cacheData.servicios.forEach((s, idx) => {
                 h += `<div class="list-item"><span>${s.titulo || 'Sin título'}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`;
@@ -128,7 +135,6 @@
     }
 
     function prepararEdicion(tipo, index) {
-        // Obtenemos el ítem desde el array mapeado por posición
         const item = cacheData[tipo][index];
         if (!item) return;
 

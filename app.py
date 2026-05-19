@@ -57,7 +57,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ✅ SOLUCIÓN PARA VERCEL: Garantiza que las tablas existan en Neon al recibir la primera visita
+# ✅ SOLUCIÓN PARA VERCEL: Garantiza que las tablas existan en Neon al recibir tráfico
 @app.before_request
 def antes_de_la_peticion():
     try:
@@ -84,7 +84,6 @@ def obtener_todo():
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4]} for r in servs_raw]
         
         prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
-        # Convertimos el precio a float de forma segura para evitar romper el formato de moneda de JS
         prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]) if r[2] else 0.0, "imagen": r[3], "categoria": r[4]} for r in prods_raw]
         
         parts_raw = db_query("SELECT id, nombre, imagen FROM socios", fetch=True) or []
@@ -164,20 +163,22 @@ def editar_producto(id):
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 def eliminar_item(tabla, id):
-    # Restringimos a tablas que usan llaves numéricas 'id'
     tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas']
     if tabla in tablas_permitidas:
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "Tabla no válida o no eliminable por ID"}), 400
 
-# --- MANEJO DE FRONTEND EN VERCEL ---
+# --- MANEJO DE FRONTEND OPTIMIZADO PARA VERCEL ---
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend', 'index.html')
 
+# Evita que Flask choque o intente interceptar el enrutamiento estático nativo de Vercel
 @app.route('/<path:path>')
 def serve_static(path):
+    if path.startswith('api/'):
+        return jsonify({"error": "Ruta de API no encontrada"}), 404
     return send_from_directory('frontend', path)
 
 if __name__ == '__main__':

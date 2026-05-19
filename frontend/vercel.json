@@ -16,16 +16,12 @@
       "dest": "app.py"
     },
     {
-      "src": "/(index.html)?",
-      "dest": "frontend/index.html"
-    },
-    {
       "src": "/admin.html",
       "dest": "frontend/admin.html"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/$1"
+      "dest": "frontend/index.html"
     }
   ]
 }

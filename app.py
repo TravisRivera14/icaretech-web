@@ -34,18 +34,15 @@ def init_db():
         clave TEXT PRIMARY KEY, 
         valor TEXT
     )''')
-    
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (
         id SERIAL PRIMARY KEY, 
         icono TEXT, 
         titulo TEXT, 
         descripcion TEXT, 
-        imagen TEXT
+        imagen TEXT,
+        proceso TEXT,
+        beneficios TEXT
     )''')
-    
-    c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS proceso TEXT")
-    c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS beneficios TEXT")
-
     c.execute('''CREATE TABLE IF NOT EXISTS socios (
         id SERIAL PRIMARY KEY, 
         nombre TEXT, 
@@ -59,6 +56,15 @@ def init_db():
         imagen_cliente TEXT, 
         estrellas INTEGER DEFAULT 5
     )''')
+    
+    # ✅ NUEVA TABLA: Para almacenar dinámicamente infinitas tarjetas de beneficios
+    c.execute('''CREATE TABLE IF NOT EXISTS beneficios (
+        id SERIAL PRIMARY KEY,
+        icono TEXT DEFAULT 'fas fa-check',
+        titulo TEXT,
+        descripcion TEXT
+    )''')
+    
     conn.commit()
     conn.close()
 
@@ -75,7 +81,6 @@ def obtener_todo():
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
         
-        # --- AUTO-RELLENO DE RESPALDO SI LA BASE DE DATOS DE NEON ESTÁ VACÍA O FALTA LA NUEVA SECCIÓN ---
         if 'hero_titulo' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
         if 'mision' not in config:
@@ -83,24 +88,8 @@ def obtener_todo():
         if 'vision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
         
-        # ✅ TEXTOS POR DEFECTO PARA LA SECCIÓN "POR QUÉ ELEGIRNOS" MAPPED A LOS INPUTS DEL FRONTEND
-        if 'choose_t1' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t1', 'Técnicos Certificados') ON CONFLICT DO NOTHING")
-        if 'choose_d1' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d1', 'Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.') ON CONFLICT DO NOTHING")
-        if 'choose_t2' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t2', 'Repuestos Originales') ON CONFLICT DO NOTHING")
-        if 'choose_d2' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d2', 'Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.') ON CONFLICT DO NOTHING")
-        if 'choose_t3' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t3', 'Transparencia Total') ON CONFLICT DO NOTHING")
-        if 'choose_d3' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d3', 'Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.') ON CONFLICT DO NOTHING")
-        
-        # Volvemos a consultar para asegurarnos de enviar los datos recién creados
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
-        # ---------------------------------------------------------------------
 
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
@@ -114,12 +103,26 @@ def obtener_todo():
         reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
         reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
         
+        # ✅ CONSULTA DINÁMICA DE BENEFICIOS
+        ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
+        beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
+        
+        # --- AUTO-RELLENO DE RESPALDO CON TUS 3 TARJETAS ACTUALES SI LA TABLA ESTÁ VACÍA ---
+        if not beneficios:
+            db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-user-check', 'Técnicos Certificados', 'Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.')")
+            db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-shield-alt', 'Repuestos Originales', 'Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.')")
+            db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-handshake', 'Transparencia Total', 'Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.')")
+            ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
+            beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
+        # ---------------------------------------------------------------------------------
+
         return jsonify({
             "config": config, 
             "servicios": servs, 
             "productos": prods, 
             "socios": parts, 
-            "resenas": reviews
+            "resenas": reviews,
+            "beneficios": beneficios
         })
     except Exception as e:
         return jsonify({"error": "Error interno al procesar los datos", "detalles": str(e)}), 500
@@ -137,11 +140,25 @@ def obtener_servicio_individual(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ CRUD COMPLETAMENTE DINÁMICO PARA AGREGAR Y EDITAR TARJETAS DE BENEFICIOS
+@app.route('/api/beneficios', methods=['POST'])
+def guardar_beneficio():
+    d = request.json or {}
+    db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", 
+             (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/beneficios/<int:id>', methods=['PUT'])
+def editar_beneficio(id):
+    d = request.json or {}
+    db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", 
+             (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    return jsonify({"mensaje": "✅"})
+
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
-    # ✅ Soporte completo para recibir tanto los campos generales como los de la nueva sección de valor
-    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'choose_t1', 'choose_d1', 'choose_t2', 'choose_d2', 'choose_t3', 'choose_d3']
+    claves_permitidas = ['hero_titulo', 'mision', 'vision']
     for k in claves_permitidas:
         if k in d:
             db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
@@ -199,11 +216,11 @@ def editar_producto(id):
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas']
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios']
     if tabla in tablas_permitidas:
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
-    return jsonify({"error": "Tabla no válida o no eliminable por ID"}), 400
+    return jsonify({"error": "Tabla no válida"}), 400
 
 # --- MANEJO DE FRONTEND OPTIMIZADO PARA VERCEL ---
 @app.route('/')

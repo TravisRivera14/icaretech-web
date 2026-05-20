@@ -2,20 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>iCare Tech CR</title>
-</head>
+    <title>iCare Tech CR | Soporte Técnico</title>
+    </head>
 <body>
-    <h1>Catálogo</h1>
-    <div id="lista"></div>
     <script>
+        // MANTÉN TU LÓGICA DE CARGA ORIGINAL, SOLO ASEGÚRATE QUE EL FETCH APUNTE A:
         fetch('/api/todo')
-            .then(r => r.json())
-            .then(data => {
-                const l = document.getElementById('lista');
+        .then(r => r.json())
+        .then(data => {
+            // Ejemplo: si tienes un id="productos-lista" en tu HTML original:
+            const lista = document.getElementById('productos-lista');
+            if (lista && data.productos) {
+                lista.innerHTML = ''; // Limpiar antes de cargar
                 data.productos.forEach(p => {
-                    l.innerHTML += `<div><h3>${p.nombre}</h3><p>Precio: ₡${p.precio}</p></div>`;
+                    lista.innerHTML += `<div><h3>${p.nombre}</h3><p>₡${p.precio}</p></div>`;
                 });
-            });
+            }
+            // Aquí puedes añadir la lógica para Servicios, Reseñas, etc.
+        });
     </script>
 </body>
 </html>

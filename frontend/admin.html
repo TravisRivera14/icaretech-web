@@ -7,14 +7,13 @@
         :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; box-sizing: border-box; }
         input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
         button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
         button:hover { opacity: 0.9; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         .btn-edit { background: var(--edit); width: auto; padding: 5px 12px; margin-right: 5px; font-size: 11px; }
         .btn-del { background: var(--del); width: auto; padding: 5px 12px; font-size: 11px; }
-        .section-subtitle { font-size: 14px; font-weight: bold; color: #355c6b; margin-top: 10px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
@@ -67,22 +66,12 @@
         </div>
 
         <div class="card" style="border: 1px solid #355c6b;">
-            <h2 style="color: #355c6b;">🛡️ ¿Por qué elegir iCare Tech CR?</h2>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Cambia los títulos e historias de las 3 tarjetas informativas turquesas de la página de inicio.</p>
-            
-            <div class="section-subtitle">Beneficio 1</div>
-            <input type="text" id="cho_t1" placeholder="Título (Ej: Técnicos Certificados)">
-            <textarea id="cho_d1" rows="2" placeholder="Descripción corta del beneficio 1..."></textarea>
-            
-            <div class="section-subtitle">Beneficio 2</div>
-            <input type="text" id="cho_t2" placeholder="Título (Ej: Repuestos Originales)">
-            <textarea id="cho_d2" rows="2" placeholder="Descripción corta del beneficio 2..."></textarea>
-            
-            <div class="section-subtitle">Beneficio 3</div>
-            <input type="text" id="cho_t3" placeholder="Título (Ej: Transparencia Total)">
-            <textarea id="cho_d3" rows="2" placeholder="Descripción corta del beneficio 3..."></textarea>
-            
-            <button onclick="updateValueSection()" style="background: #355c6b;">Guardar Sección de Valor</button>
+            <h2 id="ben-label" style="color: #355c6b;">🛡️ ¿Por qué elegir iCare Tech CR?</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Agrega tantos beneficios como desees (puedes subir hasta 8 o más).</p>
+            <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
+            <input type="text" id="bTitle" placeholder="Título de la Ventaja">
+            <textarea id="bDesc" rows="2" placeholder="Descripción corta explicativa..."></textarea>
+            <button onclick="subirBeneficio()" style="background: #355c6b;">Guardar Tarjeta de Valor</button>
         </div>
 
         <div class="card">
@@ -95,7 +84,7 @@
 <script>
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [] };
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [] };
 
     const handleFile = (id, cb) => {
         const el = document.getElementById(id);
@@ -118,19 +107,12 @@
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
             cacheData.socios = data.socios || [];
+            cacheData.beneficios = data.beneficios || [];
 
             if (data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || '';
                 document.getElementById('mision').value = data.config.mision || '';
                 document.getElementById('vision').value = data.config.vision || '';
-                
-                // Mapear los elementos de la sección de valor
-                document.getElementById('cho_t1').value = data.config.choose_t1 || '';
-                document.getElementById('cho_d1').value = data.config.choose_d1 || '';
-                document.getElementById('cho_t2').value = data.config.choose_t2 || '';
-                document.getElementById('cho_d2').value = data.config.choose_d2 || '';
-                document.getElementById('cho_t3').value = data.config.choose_t3 || '';
-                document.getElementById('cho_d3').value = data.config.choose_d3 || '';
             }
 
             let h = "<b>Servicios:</b>";
@@ -141,6 +123,12 @@
             h += "<br><b>Productos:</b>";
             cacheData.productos.forEach((p, idx) => {
                 h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`;
+            });
+
+            // ✅ INYECCIÓN DINÁMICA DE BENEFICIOS EN LA LISTA DE GESTIÓN ACTUAL
+            h += "<br><b>Tarjetas de '¿Por qué elegirnos?':</b>";
+            cacheData.beneficios.forEach((b, idx) => {
+                h += `<div class="list-item"><span>${b.titulo || 'Ventaja'}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Edit</button><button class="btn-del" onclick="del('beneficios',${b.id})">X</button></div></div>`;
             });
             
             h += "<br><b>Reseñas (Clientes):</b>";
@@ -191,6 +179,13 @@
             imgRev = item.imagen_cliente || '';
             document.getElementById('rev-label').innerText = "📝 Editando Reseña";
         }
+        // ✅ MAPEADO EN CAJAS AL EDITAR UN BENEFICIO EXISTENTE
+        if(tipo === 'beneficios') {
+            document.getElementById('bIcon').value = item.icono || 'fas fa-check';
+            document.getElementById('bTitle').value = item.titulo || '';
+            document.getElementById('bDesc').value = item.descripcion || '';
+            document.getElementById('ben-label').innerText = "📝 Editando Tarjeta de Valor";
+        }
         window.scrollTo(0,0);
     }
 
@@ -218,6 +213,15 @@
     function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
     
+    // ✅ ACCIÓN DE GUARDADO / EDICIÓN PARA LAS VENTAJAS COMPETITIVAS
+    function subirBeneficio() {
+        saveItem('beneficios', {
+            icono: document.getElementById('bIcon').value,
+            titulo: document.getElementById('bTitle').value,
+            descripcion: document.getElementById('bDesc').value
+        });
+    }
+
     function updateConfig() { 
         fetch(`${API}/config`, {
             method:'POST', 
@@ -230,22 +234,7 @@
         }).then(()=>alert("Textos Principales Actualizados")); 
     }
 
-    function updateValueSection() {
-        fetch(`${API}/config`, {
-            method:'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({
-                choose_t1:document.getElementById('cho_t1').value,
-                choose_d1:document.getElementById('cho_d1').value,
-                choose_t2:document.getElementById('cho_t2').value,
-                choose_d2:document.getElementById('cho_d2').value,
-                choose_t3:document.getElementById('cho_t3').value,
-                choose_d3:document.getElementById('cho_d3').value
-            })
-        }).then(()=>alert("¡Sección '¿Por qué elegirnos?' Guardada con éxito!"));
-    }
-
-    function del(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
+    function del(t, id) { if(confirm("¿Eliminar este elemento permanentemente?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
     window.onload = loadContent;
 </script>
 </body>

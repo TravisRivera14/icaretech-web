@@ -83,7 +83,7 @@ def obtener_todo():
         if 'vision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
         
-        # ✅ TEXTOS POR DEFECTO PARA LA SECCIÓN "POR QUÉ ELEGIRNOS"
+        # ✅ TEXTOS POR DEFECTO PARA LA SECCIÓN "POR QUÉ ELEGIRNOS" MAPPED A LOS INPUTS DEL FRONTEND
         if 'choose_t1' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t1', 'Técnicos Certificados') ON CONFLICT DO NOTHING")
         if 'choose_d1' not in config:
@@ -140,6 +140,7 @@ def obtener_servicio_individual(id):
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
+    # ✅ Soporte completo para recibir tanto los campos generales como los de la nueva sección de valor
     claves_permitidas = ['hero_titulo', 'mision', 'vision', 'choose_t1', 'choose_d1', 'choose_t2', 'choose_d2', 'choose_t3', 'choose_d3']
     for k in claves_permitidas:
         if k in d:

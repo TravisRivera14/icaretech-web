@@ -10,14 +10,17 @@
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
         input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
         button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         .btn-edit { background: var(--edit); width: auto; padding: 5px 12px; margin-right: 5px; font-size: 11px; }
         .btn-del { background: var(--del); width: auto; padding: 5px 12px; font-size: 11px; }
+        .section-subtitle { font-size: 14px; font-weight: bold; color: #355c6b; margin-top: 10px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div style="grid-column: 1/-1;"><h1>Control Maestro iCare Tech CR</h1></div>
+    
     <div>
         <div class="card">
             <h2 id="rev-label">⭐ Gestionar Clientes Satisfechos</h2>
@@ -44,6 +47,7 @@
             <button onclick="subirSocio()">Guardar Socio</button>
         </div>
     </div>
+    
     <div>
         <div class="card">
             <h2 id="prod-label">📦 Gestionar Producto</h2>
@@ -53,13 +57,34 @@
             <input type="file" id="pImgFile" accept="image/*">
             <button onclick="subirProducto()">Guardar Producto</button>
         </div>
+
         <div class="card">
             <h2>🎯 Configuración General</h2>
             <input type="text" id="h_titulo" placeholder="Título Hero">
             <textarea id="mision" placeholder="Misión"></textarea>
             <textarea id="vision" placeholder="Visión"></textarea>
-            <button onclick="updateConfig()">Actualizar Textos</button>
+            <button onclick="updateConfig()">Actualizar Textos Principales</button>
         </div>
+
+        <div class="card" style="border: 1px solid #355c6b;">
+            <h2 style="color: #355c6b;">🛡️ ¿Por qué elegir iCare Tech CR?</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Cambia los títulos e historias de las 3 tarjetas informativas turquesas de la página de inicio.</p>
+            
+            <div class="section-subtitle">Beneficio 1</div>
+            <input type="text" id="cho_t1" placeholder="Título (Ej: Técnicos Certificados)">
+            <textarea id="cho_d1" rows="2" placeholder="Descripción corta del beneficio 1..."></textarea>
+            
+            <div class="section-subtitle">Beneficio 2</div>
+            <input type="text" id="cho_t2" placeholder="Título (Ej: Repuestos Originales)">
+            <textarea id="cho_d2" rows="2" placeholder="Descripción corta del beneficio 2..."></textarea>
+            
+            <div class="section-subtitle">Beneficio 3</div>
+            <input type="text" id="cho_t3" placeholder="Título (Ej: Transparencia Total)">
+            <textarea id="cho_d3" rows="2" placeholder="Descripción corta del beneficio 3..."></textarea>
+            
+            <button onclick="updateValueSection()" style="background: #355c6b;">Guardar Sección de Valor</button>
+        </div>
+
         <div class="card">
             <h2>📋 Gestión Actual</h2>
             <div id="master-list">Cargando datos...</div>
@@ -68,11 +93,8 @@
 </div>
 
 <script>
-    /* ✅ CORRECCIÓN DE LA RUTA: Relativa de producción */
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
-    
-    // Almacén seguro en memoria para evitar romper etiquetas HTML con cadenas JSON
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [] };
 
     const handleFile = (id, cb) => {
@@ -90,22 +112,25 @@
 
     function loadContent() {
         fetch(`${API}/todo`)
-        .then(r => {
-            if (!r.ok) throw new Error("Error en la respuesta del servidor");
-            return r.json();
-        })
+        .then(r => r.json())
         .then(data => {
-            // Respaldamos los datos en memoria de forma segura
             cacheData.servicios = data.servicios || [];
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
             cacheData.socios = data.socios || [];
 
-            // Auto-rellenar la sección de configuración general si los datos existen
             if (data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || '';
                 document.getElementById('mision').value = data.config.mision || '';
                 document.getElementById('vision').value = data.config.vision || '';
+                
+                // Mapear los elementos de la sección de valor
+                document.getElementById('cho_t1').value = data.config.choose_t1 || '';
+                document.getElementById('cho_d1').value = data.config.choose_d1 || '';
+                document.getElementById('cho_t2').value = data.config.choose_t2 || '';
+                document.getElementById('cho_d2').value = data.config.choose_d2 || '';
+                document.getElementById('cho_t3').value = data.config.choose_t3 || '';
+                document.getElementById('cho_d3').value = data.config.choose_d3 || '';
             }
 
             let h = "<b>Servicios:</b>";
@@ -131,8 +156,8 @@
             document.getElementById('master-list').innerHTML = h;
         })
         .catch(err => {
-            console.error("Error al cargar datos en panel maestro:", err);
-            document.getElementById('master-list').innerHTML = "Error al cargar la gestión actual del servidor.";
+            console.error("Error al cargar datos:", err);
+            document.getElementById('master-list').innerHTML = "Error al conectar con el servidor.";
         });
     }
 
@@ -147,7 +172,6 @@
             document.getElementById('sIcon').value = item.icono || '';
             document.getElementById('sTitle').value = item.titulo || '';
             document.getElementById('sDesc').value = item.descripcion || '';
-            // ✅ MAPEADO DE LOS NUEVOS CAMPOS EN EDICIÓN
             document.getElementById('sProcess').value = item.proceso || '';
             document.getElementById('sBenefits').value = item.beneficios || '';
             imgS = item.imagen || '';
@@ -181,8 +205,6 @@
     }
 
     function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
-    
-    // ✅ ACTUALIZADO PARA ENVIAR PROCESO Y BENEFICIOS
     function subirServicio() { 
         saveItem('servicios', {
             icono:document.getElementById('sIcon').value, 
@@ -193,11 +215,36 @@
             imagen:imgS
         }); 
     }
-    
     function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
     
-    function updateConfig() { fetch(`${API}/config`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value})}).then(()=>alert("Web Actualizada")); }
+    function updateConfig() { 
+        fetch(`${API}/config`, {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({
+                hero_titulo:document.getElementById('h_titulo').value, 
+                mision:document.getElementById('mision').value, 
+                vision:document.getElementById('vision').value
+            })
+        }).then(()=>alert("Textos Principales Actualizados")); 
+    }
+
+    function updateValueSection() {
+        fetch(`${API}/config`, {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({
+                choose_t1:document.getElementById('cho_t1').value,
+                choose_d1:document.getElementById('cho_d1').value,
+                choose_t2:document.getElementById('cho_t2').value,
+                choose_d2:document.getElementById('cho_d2').value,
+                choose_t3:document.getElementById('cho_t3').value,
+                choose_d3:document.getElementById('cho_d3').value
+            })
+        }).then(()=>alert("¡Sección '¿Por qué elegirnos?' Guardada con éxito!"));
+    }
+
     function del(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
     window.onload = loadContent;
 </script>

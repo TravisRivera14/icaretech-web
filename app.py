@@ -20,7 +20,7 @@ def db_query(query, params=(), fetch=False):
     return res
 
 def init_db():
-    """Crea las tablas de forma segura si no existen usando sintaxis nativa de Postgres."""
+    """Crea las tablas de forma segura si no existen e inyecta columnas faltantes."""
     conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS productos (
@@ -34,16 +34,20 @@ def init_db():
         clave TEXT PRIMARY KEY, 
         valor TEXT
     )''')
-    # ✅ SE AGREGAN LAS COLUMNAS 'proceso' Y 'beneficios' CON TIPO TEXT
+    
+    # Crea la tabla base si no existe en absoluto
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (
         id SERIAL PRIMARY KEY, 
         icono TEXT, 
         titulo TEXT, 
         descripcion TEXT, 
-        imagen TEXT,
-        proceso TEXT,
-        beneficios TEXT
+        imagen TEXT
     )''')
+    
+    # 🛠️ SOLUCIÓN AL ERROR: Forzar la migración de columnas en tablas ya existentes
+    c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS proceso TEXT")
+    c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS beneficios TEXT")
+
     c.execute('''CREATE TABLE IF NOT EXISTS socios (
         id SERIAL PRIMARY KEY, 
         nombre TEXT, 
@@ -83,7 +87,7 @@ def obtener_todo():
             config = {r[0]: r[1] for r in config_raw}
         # ---------------------------------------------------------------------
 
-        # Se añaden proceso y beneficios a la consulta general por si el caché mapea datos completos
+        # Mapeo completo incluyendo proceso y beneficios
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
         
@@ -106,7 +110,7 @@ def obtener_todo():
     except Exception as e:
         return jsonify({"error": "Error interno al procesar los datos", "detalles": str(e)}), 500
 
-# ✅ NUEVA RUTA: Obtener un único servicio por ID para la página dedicada
+# Obtener un único servicio por ID para la página dedicada
 @app.route('/api/servicios/<int:id>', methods=['GET'])
 def obtener_servicio_individual(id):
     try:
@@ -155,7 +159,6 @@ def guardar_socio():
     db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
     return jsonify({"mensaje": "✅"})
 
-# ✅ ACTUALIZADO: Procesa los parámetros 'proceso' y 'beneficios' al guardar
 @app.route('/api/servicios', methods=['POST'])
 def guardar_servicio():
     d = request.json or {}
@@ -172,7 +175,6 @@ def guardar_producto():
     db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (d.get('nombre', ''), precio, d.get('imagen', ''), d.get('categoria', 'Otros')))
     return jsonify({"mensaje": "✅"})
 
-# ✅ ACTUALIZADO: Procesa los parámetros 'proceso' y 'beneficios' al actualizar (PUT)
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 def editar_servicio(id):
     d = request.json or {}

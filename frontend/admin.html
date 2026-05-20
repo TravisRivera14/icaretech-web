@@ -31,7 +31,9 @@
             <h2 id="srv-label">💻 Gestionar Servicio</h2>
             <input type="text" id="sIcon" placeholder="Icono/Emoji">
             <input type="text" id="sTitle" placeholder="Título">
-            <textarea id="sDesc" placeholder="Descripción"></textarea>
+            <textarea id="sDesc" placeholder="Descripción Corta"></textarea>
+            <textarea id="sProcess" rows="3" placeholder="¿Qué se realiza en este servicio? (Explicación técnica para el cliente)"></textarea>
+            <textarea id="sBenefits" rows="3" placeholder="Beneficios clave (Escribe uno por línea o usa viñetas)"></textarea>
             <input type="file" id="sImgFile" accept="image/*">
             <button onclick="subirServicio()">Guardar Servicio</button>
         </div>
@@ -145,6 +147,9 @@
             document.getElementById('sIcon').value = item.icono || '';
             document.getElementById('sTitle').value = item.titulo || '';
             document.getElementById('sDesc').value = item.descripcion || '';
+            // ✅ MAPEADO DE LOS NUEVOS CAMPOS EN EDICIÓN
+            document.getElementById('sProcess').value = item.proceso || '';
+            document.getElementById('sBenefits').value = item.beneficios || '';
             imgS = item.imagen || '';
             document.getElementById('srv-label').innerText = "📝 Editando Servicio";
         }
@@ -176,7 +181,19 @@
     }
 
     function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
-    function subirServicio() { saveItem('servicios', {icono:document.getElementById('sIcon').value, titulo:document.getElementById('sTitle').value, descripcion:document.getElementById('sDesc').value, imagen:imgS}); }
+    
+    // ✅ ACTUALIZADO PARA ENVIAR PROCESO Y BENEFICIOS
+    function subirServicio() { 
+        saveItem('servicios', {
+            icono:document.getElementById('sIcon').value, 
+            titulo:document.getElementById('sTitle').value, 
+            descripcion:document.getElementById('sDesc').value, 
+            proceso:document.getElementById('sProcess').value, 
+            beneficios:document.getElementById('sBenefits').value, 
+            imagen:imgS
+        }); 
+    }
+    
     function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
     

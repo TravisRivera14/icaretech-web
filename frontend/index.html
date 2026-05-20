@@ -497,7 +497,8 @@
                     data.servicios.forEach((s, index) => { 
                         let delay = index * 0.1;
                         let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono || '⚙'}</div>`;
-                        srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo || ''}</h3><p>${s.descripcion || ''}</p><button class="btn-ver-mas" onclick="openWA('Interés en servicio: ${s.titulo}')">Ver Mas</button></div>`; 
+                        // ✅ MODIFICACIÓN: Redirección dinámica usando la URL 'servicio.html?id=...'
+                        srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo || ''}</h3><p>${s.descripcion || ''}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; 
                     });
                 }
 

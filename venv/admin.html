@@ -2,187 +2,32 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin iCare | Control Maestro</title>
-    <style>
-        :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .btn-edit { background: var(--edit); width: auto; padding: 5px 12px; margin-right: 5px; font-size: 11px; }
-        .btn-del { background: var(--del); width: auto; padding: 5px 12px; font-size: 11px; }
-    </style>
+    <title>Panel Admin</title>
 </head>
 <body>
-<div class="container">
-    <div style="grid-column: 1/-1;"><h1>Control Maestro iCare Tech CR</h1></div>
-    <div>
-        <div class="card">
-            <h2 id="rev-label">⭐ Gestionar Clientes Satisfechos</h2>
-            <input type="text" id="revClient" placeholder="Nombre del Cliente">
-            <input type="text" id="revPos" placeholder="Puesto / Cargo">
-            <textarea id="revText" placeholder="Comentario de la reseña..."></textarea>
-            <label>Foto Cliente:</label><input type="file" id="revImgFile" accept="image/*">
-            <button onclick="subirResena()">Guardar Reseña</button>
-        </div>
-        <div class="card">
-            <h2 id="srv-label">💻 Gestionar Servicio</h2>
-            <input type="text" id="sIcon" placeholder="Icono/Emoji">
-            <input type="text" id="sTitle" placeholder="Título">
-            <textarea id="sDesc" placeholder="Descripción"></textarea>
-            <input type="file" id="sImgFile" accept="image/*">
-            <button onclick="subirServicio()">Guardar Servicio</button>
-        </div>
-        <div class="card">
-            <h2 id="partner-label">🤝 Gestionar Socios</h2>
-            <input type="text" id="partnerName" placeholder="Nombre del Socio">
-            <input type="file" id="partnerImgFile" accept="image/*">
-            <button onclick="subirSocio()">Guardar Socio</button>
-        </div>
-    </div>
-    <div>
-        <div class="card">
-            <h2 id="prod-label">📦 Gestionar Producto</h2>
-            <input type="text" id="pName" placeholder="Nombre">
-            <input type="text" id="pPrice" placeholder="Precio">
-            <input type="text" id="pCat" placeholder="Categoría">
-            <input type="file" id="pImgFile" accept="image/*">
-            <button onclick="subirProducto()">Guardar Producto</button>
-        </div>
-        <div class="card">
-            <h2>🎯 Configuración General</h2>
-            <input type="text" id="h_titulo" placeholder="Título Hero">
-            <textarea id="mision" placeholder="Misión"></textarea>
-            <textarea id="vision" placeholder="Visión"></textarea>
-            <button onclick="updateConfig()">Actualizar Textos</button>
-        </div>
-        <div class="card">
-            <h2>📋 Gestión Actual</h2>
-            <div id="master-list">Cargando datos...</div>
-        </div>
-    </div>
-</div>
+    <h1>Gestionar Productos</h1>
+    <input id="nombre" placeholder="Nombre">
+    <input id="precio" placeholder="Precio">
+    <button onclick="guardar()">Guardar</button>
+    <hr>
+    <div id="lista-admin"></div>
 
-<script>
-    /* ✅ CORRECCIÓN DE LA RUTA: Relativa de producción */
-    const API = '/api';
-    let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
-    
-    // Almacén seguro en memoria para evitar romper etiquetas HTML con cadenas JSON
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [] };
+    <script>
+        function guardar() {
+            const data = { nombre: document.getElementById('nombre').value, precio: document.getElementById('precio').value };
+            fetch('/api/productos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(() => location.reload());
+        }
 
-    const handleFile = (id, cb) => {
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.onchange = (e) => {
-            const r = new FileReader(); r.onload = () => cb(r.result);
-            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
-        };
-    };
-    handleFile('sImgFile', res => imgS = res);
-    handleFile('pImgFile', res => imgP = res);
-    handleFile('revImgFile', res => imgRev = res);
-    handleFile('partnerImgFile', res => imgPartner = res);
-
-    function loadContent() {
-        fetch(`${API}/todo`)
-        .then(r => {
-            if (!r.ok) throw new Error("Error en la respuesta del servidor");
-            return r.json();
-        })
-        .then(data => {
-            // Respaldamos los datos en memoria de forma segura
-            cacheData.servicios = data.servicios || [];
-            cacheData.productos = data.productos || [];
-            cacheData.resenas = data.resenas || [];
-            cacheData.socios = data.socios || [];
-
-            // Auto-rellenar la sección de configuración general si los datos existen
-            if (data.config) {
-                document.getElementById('h_titulo').value = data.config.hero_titulo || '';
-                document.getElementById('mision').value = data.config.mision || '';
-                document.getElementById('vision').value = data.config.vision || '';
-            }
-
-            let h = "<b>Servicios:</b>";
-            cacheData.servicios.forEach((s, idx) => {
-                h += `<div class="list-item"><span>${s.titulo || 'Sin título'}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`;
+        fetch('/api/todo').then(r=>r.json()).then(data => {
+            const l = document.getElementById('lista-admin');
+            data.productos.forEach(p => {
+                l.innerHTML += `<p>${p.nombre} <button onclick="fetch('/api/eliminar/productos/${p.id}', {method:'DELETE'}).then(()=>location.reload())">X</button></p>`;
             });
-            
-            h += "<br><b>Productos:</b>";
-            cacheData.productos.forEach((p, idx) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`;
-            });
-            
-            h += "<br><b>Reseñas (Clientes):</b>";
-            cacheData.resenas.forEach((r, idx) => {
-                h += `<div class="list-item"><span>${r.cliente || 'Anónimo'}</span><div><button class="btn-edit" onclick="prepararEdicion('resenas', ${idx})">Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`;
-            });
-            
-            h += "<br><b>Socios:</b>";
-            cacheData.socios.forEach((p) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Socio'}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`;
-            });
-            
-            document.getElementById('master-list').innerHTML = h;
-        })
-        .catch(err => {
-            console.error("Error al cargar datos en panel maestro:", err);
-            document.getElementById('master-list').innerHTML = "Error al cargar la gestión actual del servidor.";
         });
-    }
-
-    function prepararEdicion(tipo, index) {
-        const item = cacheData[tipo][index];
-        if (!item) return;
-
-        editId = item.id; 
-        editType = tipo;
-
-        if(tipo === 'servicios') {
-            document.getElementById('sIcon').value = item.icono || '';
-            document.getElementById('sTitle').value = item.titulo || '';
-            document.getElementById('sDesc').value = item.descripcion || '';
-            imgS = item.imagen || '';
-            document.getElementById('srv-label').innerText = "📝 Editando Servicio";
-        }
-        if(tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre || '';
-            document.getElementById('pPrice').value = item.precio || '';
-            document.getElementById('pCat').value = item.categoria || '';
-            imgP = item.imagen || '';
-            document.getElementById('prod-label').innerText = "📝 Editando Producto";
-        }
-        if(tipo === 'resenas') {
-            document.getElementById('revClient').value = item.cliente || '';
-            document.getElementById('revPos').value = item.puesto || '';
-            document.getElementById('revText').value = item.comentario || '';
-            imgRev = item.imagen_cliente || '';
-            document.getElementById('rev-label').innerText = "📝 Editando Reseña";
-        }
-        window.scrollTo(0,0);
-    }
-
-    function saveItem(path, data) {
-        const method = (editId && editType === path) ? 'PUT' : 'POST';
-        const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        fetch(url, {
-            method: method, 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify(data)
-        }).then(()=>location.reload());
-    }
-
-    function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
-    function subirServicio() { saveItem('servicios', {icono:document.getElementById('sIcon').value, titulo:document.getElementById('sTitle').value, descripcion:document.getElementById('sDesc').value, imagen:imgS}); }
-    function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
-    function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
-    
-    function updateConfig() { fetch(`${API}/config`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value})}).then(()=>alert("Web Actualizada")); }
-    function del(t, id) { if(confirm("¿Eliminar?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
-    window.onload = loadContent;
-</script>
+    </script>
 </body>
 </html>

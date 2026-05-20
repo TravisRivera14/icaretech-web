@@ -62,6 +62,7 @@
             <input type="text" id="h_titulo" placeholder="Título Hero">
             <textarea id="mision" placeholder="Misión"></textarea>
             <textarea id="vision" placeholder="Visión"></textarea>
+            <textarea id="compromiso" placeholder="Compromiso Empresarial"></textarea>
             <button onclick="updateConfig()">Actualizar Textos Principales</button>
         </div>
 
@@ -113,6 +114,8 @@
                 document.getElementById('h_titulo').value = data.config.hero_titulo || '';
                 document.getElementById('mision').value = data.config.mision || '';
                 document.getElementById('vision').value = data.config.vision || '';
+                // ✅ MAPEADO AUTOMÁTICO EN EL PANEL
+                document.getElementById('compromiso').value = data.config.compromiso || '';
             }
 
             let h = "<b>Servicios:</b>";
@@ -125,7 +128,6 @@
                 h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`;
             });
 
-            // ✅ INYECCIÓN DINÁMICA DE BENEFICIOS EN LA LISTA DE GESTIÓN ACTUAL
             h += "<br><b>Tarjetas de '¿Por qué elegirnos?':</b>";
             cacheData.beneficios.forEach((b, idx) => {
                 h += `<div class="list-item"><span>${b.titulo || 'Ventaja'}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Edit</button><button class="btn-del" onclick="del('beneficios',${b.id})">X</button></div></div>`;
@@ -179,7 +181,6 @@
             imgRev = item.imagen_cliente || '';
             document.getElementById('rev-label').innerText = "📝 Editando Reseña";
         }
-        // ✅ MAPEADO EN CAJAS AL EDITAR UN BENEFICIO EXISTENTE
         if(tipo === 'beneficios') {
             document.getElementById('bIcon').value = item.icono || 'fas fa-check';
             document.getElementById('bTitle').value = item.titulo || '';
@@ -212,8 +213,6 @@
     }
     function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
-    
-    // ✅ ACCIÓN DE GUARDADO / EDICIÓN PARA LAS VENTAJAS COMPETITIVAS
     function subirBeneficio() {
         saveItem('beneficios', {
             icono: document.getElementById('bIcon').value,
@@ -222,6 +221,7 @@
         });
     }
 
+    // ✅ ACTUALIZADO ENVIAR COMPROMISO EMPRESARIAL
     function updateConfig() { 
         fetch(`${API}/config`, {
             method:'POST', 
@@ -229,7 +229,8 @@
             body:JSON.stringify({
                 hero_titulo:document.getElementById('h_titulo').value, 
                 mision:document.getElementById('mision').value, 
-                vision:document.getElementById('vision').value
+                vision:document.getElementById('vision').value,
+                compromiso:document.getElementById('compromiso').value
             })
         }).then(()=>alert("Textos Principales Actualizados")); 
     }

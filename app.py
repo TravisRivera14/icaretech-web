@@ -57,7 +57,6 @@ def init_db():
         estrellas INTEGER DEFAULT 5
     )''')
     
-    # ✅ NUEVA TABLA: Para almacenar dinámicamente infinitas tarjetas de beneficios
     c.execute('''CREATE TABLE IF NOT EXISTS beneficios (
         id SERIAL PRIMARY KEY,
         icono TEXT DEFAULT 'fas fa-check',
@@ -88,6 +87,10 @@ def obtener_todo():
         if 'vision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
         
+        # ✅ AUTO-RELLENO DE RESPALDO PARA EL COMPROMISO EMPRESARIAL
+        if 'compromiso' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
+
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
 
@@ -103,18 +106,15 @@ def obtener_todo():
         reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
         reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
         
-        # ✅ CONSULTA DINÁMICA DE BENEFICIOS
         ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
         beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
         
-        # --- AUTO-RELLENO DE RESPALDO CON TUS 3 TARJETAS ACTUALES SI LA TABLA ESTÁ VACÍA ---
         if not beneficios:
             db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-user-check', 'Técnicos Certificados', 'Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.')")
             db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-shield-alt', 'Repuestos Originales', 'Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.')")
             db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES ('fas fa-handshake', 'Transparencia Total', 'Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.')")
             ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
             beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
-        # ---------------------------------------------------------------------------------
 
         return jsonify({
             "config": config, 
@@ -140,7 +140,6 @@ def obtener_servicio_individual(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ✅ CRUD COMPLETAMENTE DINÁMICO PARA AGREGAR Y EDITAR TARJETAS DE BENEFICIOS
 @app.route('/api/beneficios', methods=['POST'])
 def guardar_beneficio():
     d = request.json or {}
@@ -155,10 +154,11 @@ def editar_beneficio(id):
              (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
+# ✅ CLAVE 'compromiso' INYECTADA EN EL FILTRO DE GUARDADO MASIVO
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
-    claves_permitidas = ['hero_titulo', 'mision', 'vision']
+    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'compromiso']
     for k in claves_permitidas:
         if k in d:
             db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
@@ -221,17 +221,6 @@ def eliminar_item(tabla, id):
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "Tabla no válida"}), 400
-
-# --- MANEJO DE FRONTEND OPTIMIZADO PARA VERCEL ---
-@app.route('/')
-def serve_frontend():
-    return send_from_directory('frontend', 'index.html')
-
-@app.route('/<path:path>')
-def serve_static(path):
-    if path.startswith('api/'):
-        return jsonify({"error": "Ruta de API no encontrada"}), 404
-    return send_from_directory('frontend', path)
 
 if __name__ == '__main__':
     init_db()

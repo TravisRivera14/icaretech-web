@@ -64,7 +64,7 @@
         .section-header { text-align: center; margin: 80px 0 50px; }
         .section-header h2 { font-size: 42px; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
 
-        /* ✅ TARJETAS DE SERVICIOS */
+        /* Tarjetas de Servicios */
         .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding-bottom: 60px; }
         .service-card { background: var(--white); padding: 50px 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eaeaea; transition: transform 0.3s, box-shadow 0.3s; }
         .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
@@ -78,10 +78,13 @@
         /* SECCIÓN NOSOTROS */
         .features-section { background: var(--white); padding: 80px 0; }
         .about-flex-container { display: flex; flex-direction: column; align-items: center; gap: 40px; }
-        .mission-vision-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; width: 100%; }
-        .feature-box { background: var(--white); border: 1px solid #eee; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .feature-box h4 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
-        .features-image-small { width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        
+        /* ✅ AJUSTADO A 3 COLUMNAS SIMÉTRICAS PARA DAR ESPACIO AL COMPROMISO EMPRESARIAL */
+        .mission-vision-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; width: 100%; }
+        .feature-box { background: var(--white); border: 1px solid #eee; padding: 30px 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .feature-box h4 { font-size: 19px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
+        .feature-box p { font-size: 15px; color: #333; line-height: 1.7; }
+        .features-image-small { width: 100%; max-width: 550px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-top: 15px; }
 
         /* SECCIÓN PROCESO */
         .process-section { background: linear-gradient(135deg, #4ea5ce 0%, #355c6b 100%); padding: 100px 0; margin-top: 60px; }
@@ -119,14 +122,14 @@
         .anim-up { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; will-change: opacity, transform; }
         .anim-up.visible { opacity: 1; transform: translateY(0); }
 
-        /* ✅ ESTILOS DE LA SECCIÓN DE SOCIOS */
+        /* SECCIÓN DE SOCIOS */
         .partners-section { background: var(--white); padding: 80px 0; border-top: 1px solid #eee; }
         .partners-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; justify-content: center; }
         .partner-card { background: var(--white); border-radius: 12px; padding: 30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #eee; height: 140px; transition: transform 0.3s, box-shadow 0.3s; }
         .partner-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
         .partner-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* ✅ SECCIÓN DE RESEÑAS */
+        /* SECCIÓN DE RESEÑAS */
         .reviews-section { background-color: #fcfcfc; padding: 100px 0; border-top: 1px solid #eee; }
         .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
         .review-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f0; transition: 0.3s; }
@@ -137,7 +140,7 @@
         .reviewer-name { font-weight: 700; color: #111; font-size: 17px; }
         .reviewer-pos { color: #888; font-size: 14px; }
 
-        /* ✅ FORMULARIO PÚBLICO DE RESEÑAS */
+        /* FORMULARIO PÚBLICO DE RESEÑAS */
         .review-form-container { background: var(--white); padding: 60px 0; }
         .review-form-card { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; border: 1px solid #eee; }
         .review-form-card h3 { font-size: 28px; margin-bottom: 25px; text-align: center; color: var(--text-dark); }
@@ -245,6 +248,10 @@
                     <h4><i class="fas fa-eye" style="color:var(--icon-blue)"></i> Visión</h4>
                     <p id="v-t">Cargando visión/descripción...</p>
                 </div>
+                <div class="feature-box">
+                    <h4><i class="fas fa-handshake" style="color:var(--icon-blue)"></i> Compromiso Empresarial</h4>
+                    <p id="c-t">Cargando compromiso/descripción...</p>
+                </div>
             </div>
 
             <img src="image_13.png" class="features-image-small anim-up" alt="Reparación Técnica Especializada iCare Tech CR">
@@ -300,7 +307,7 @@
             <div class="timeline-grid">
                 <div class="timeline-card anim-up">
                     <h3>Diagnóstico Rápido</h3>
-                    <p>En iCareTech CR realizamos un análisis rápido de tu equipo identificar el problema en el menor tiempo posible.</p>
+                    <p>En iCareTech CR realizamos un análisis rápido de tu equipo identificar el problem en el menor tiempo posible.</p>
                 </div>
                 <div class="timeline-card anim-up" style="transition-delay: 0.2s;">
                     <h3>Reparaciones Ágiles</h3>
@@ -500,17 +507,19 @@
                     document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
                     document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
                     document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
+                    
+                    // ✅ RENDERIZADO DINÁMICO DE COMPROMISO EMPRESARIAL
+                    document.getElementById('c-t').innerText = data.config.compromiso || "Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.";
                 } else {
                     document.getElementById('hero-title').innerText = "Servicio Técnico Profesional";
                 }
                 
-                // ✅ RENDERIZADO DINÁMICO E ILIMITADO DE LA SECCIÓN "POR QUÉ ELEGIRNOS"
+                // RENDERIZADO DINÁMICO E ILIMITADO DE LA SECCIÓN "POR QUÉ ELEGIRNOS"
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios && Array.isArray(data.beneficios)) {
-                    choGrid.innerHTML = ""; // Limpiamos el texto de carga
+                    choGrid.innerHTML = "";
                     data.beneficios.forEach((b, index) => {
                         let delay = index * 0.1;
-                        // Extraemos el icono de fontawesome o colocamos uno por defecto seguro
                         let iconClass = b.icono ? b.icono : "fas fa-check";
                         choGrid.innerHTML += `
                             <div class="anim-up" style="background: rgba(255, 255, 255, 0.05); padding: 40px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); transition-delay: ${delay}s;">

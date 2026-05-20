@@ -214,6 +214,38 @@
         <div class="services-grid" id="srv-c"></div>
     </div>
 
+    <section style="background: linear-gradient(135deg, #1e333d 0%, #355c6b 100%); padding: 90px 0; color: var(--white);">
+        <div class="container">
+            <div class="section-header anim-up" style="margin-top: 0; margin-bottom: 60px;">
+                <span style="font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-green); display: block; margin-bottom: 10px;">Tu Valor Garantizado</span>
+                <h2 style="color: var(--white); font-size: 38px;">¿Por qué elegir iCare Tech CR?</h2>
+                <p style="color: #b0c4cc; font-size: 16px; margin-top: 10px; max-width: 700px; margin-left: auto; margin-right: auto;">Nos enfocamos en ofrecer un estándar de calidad superior, combinando velocidad técnica con transparencia absoluta en cada diagnóstico.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                
+                <div class="anim-up" style="background: rgba(255, 255, 255, 0.05); padding: 40px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+                    <div style="font-size: 40px; color: var(--neon-green); margin-bottom: 20px;"><i class="fas fa-user-check"></i></div>
+                    <h3 id="cho-t1" style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: var(--white);">Técnicos Certificados</h3>
+                    <p id="cho-d1" style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos con alta trayectoria en soporte multimarca y servidores.</p>
+                </div>
+
+                <div class="anim-up" style="background: rgba(255, 255, 255, 0.05); padding: 40px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); transition-delay: 0.1s;">
+                    <div style="font-size: 40px; color: var(--neon-green); margin-bottom: 20px;"><i class="fas fa-shield-alt"></i></div>
+                    <h3 id="cho-t2" style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: var(--white);">Repuestos Originales</h3>
+                    <p id="cho-d2" style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">No comprometemos el rendimiento. Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad post-reparación.</p>
+                </div>
+
+                <div class="anim-up" style="background: rgba(255, 255, 255, 0.05); padding: 40px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); transition-delay: 0.2s;">
+                    <div style="font-size: 40px; color: var(--neon-green); margin-bottom: 20px;"><i class="fas fa-handshake"></i></div>
+                    <h3 id="cho-t3" style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: var(--white);">Transparencia Total</h3>
+                    <p id="cho-d3" style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">Sin costos ocultos ni sorpresas en tu factura. Te explicamos a fondo el problema y validamos el presupuesto contigo antes de proceder.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <section class="features-section" id="nosotros">
         <div class="container about-flex-container">
             <div class="section-header anim-up" style="margin-bottom: 20px;">
@@ -381,7 +413,6 @@
     </a>
 
     <script>
-        /* ✅ CORRECCIÓN DE LA RUTA: Relativa de producción */
         const API = '/api';
         let allProducts = [];
         let currentCat = 'Todos';
@@ -487,6 +518,14 @@
                     document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
                     document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
                     document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
+                    
+                    // ✅ PINTAR DINÁMICAMENTE LA SECCIÓN POR QUÉ ELEGIR
+                    if(data.config.choose_t1) document.getElementById('cho-t1').innerText = data.config.choose_t1;
+                    if(data.config.choose_d1) document.getElementById('cho-d1').innerText = data.config.choose_d1;
+                    if(data.config.choose_t2) document.getElementById('cho-t2').innerText = data.config.choose_t2;
+                    if(data.config.choose_d2) document.getElementById('cho-d2').innerText = data.config.choose_d2;
+                    if(data.config.choose_t3) document.getElementById('cho-t3').innerText = data.config.choose_t3;
+                    if(data.config.choose_d3) document.getElementById('cho-d3').innerText = data.config.choose_d3;
                 } else {
                     document.getElementById('hero-title').innerText = "Servicio Técnico Profesional";
                 }
@@ -497,7 +536,6 @@
                     data.servicios.forEach((s, index) => { 
                         let delay = index * 0.1;
                         let media = s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono || '⚙'}</div>`;
-                        // ✅ MODIFICACIÓN: Redirección dinámica usando la URL 'servicio.html?id=...'
                         srvC.innerHTML += `<div class="service-card anim-up" style="transition-delay: ${delay}s;">${media}<h3>${s.titulo || ''}</h3><p>${s.descripcion || ''}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; 
                     });
                 }

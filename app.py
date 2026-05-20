@@ -35,7 +35,6 @@ def init_db():
         valor TEXT
     )''')
     
-    # Crea la tabla base si no existe en absoluto
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (
         id SERIAL PRIMARY KEY, 
         icono TEXT, 
@@ -44,7 +43,6 @@ def init_db():
         imagen TEXT
     )''')
     
-    # 🛠️ SOLUCIÓN AL ERROR: Forzar la migración de columnas en tablas ya existentes
     c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS proceso TEXT")
     c.execute("ALTER TABLE servicios ADD COLUMN IF NOT EXISTS beneficios TEXT")
 
@@ -64,7 +62,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ✅ SOLUCIÓN PARA VERCEL: Garantiza que las tablas existan en Neon al recibir tráfico
 @app.before_request
 def antes_de_la_peticion():
     try:
@@ -87,7 +84,6 @@ def obtener_todo():
             config = {r[0]: r[1] for r in config_raw}
         # ---------------------------------------------------------------------
 
-        # Mapeo completo incluyendo proceso y beneficios
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
         
@@ -110,7 +106,6 @@ def obtener_todo():
     except Exception as e:
         return jsonify({"error": "Error interno al procesar los datos", "detalles": str(e)}), 500
 
-# Obtener un único servicio por ID para la página dedicada
 @app.route('/api/servicios/<int:id>', methods=['GET'])
 def obtener_servicio_individual(id):
     try:
@@ -118,27 +113,20 @@ def obtener_servicio_individual(id):
         if res:
             r = res[0]
             return jsonify({
-                "id": r[0], 
-                "icono": r[1], 
-                "titulo": r[2], 
-                "descripcion": r[3], 
-                "imagen": r[4],
-                "proceso": r[5],
-                "beneficios": r[6]
+                "id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]
             })
         return jsonify({"error": "Servicio no encontrado"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ ACTUALIZADO: Registra y actualiza dinámicamente las claves de la nueva sección
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
-    if 'hero_titulo' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['hero_titulo'],))
-    if 'mision' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['mision'],))
-    if 'vision' in d:
-        db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (d['vision'],))
+    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'choose_t1', 'choose_d1', 'choose_t2', 'choose_d2', 'choose_t3', 'choose_d3']
+    for k in claves_permitidas:
+        if k in d:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas', methods=['POST'])

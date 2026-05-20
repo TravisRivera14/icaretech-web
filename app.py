@@ -75,13 +75,31 @@ def obtener_todo():
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
         
-        # --- AUTO-RELLENO DE RESPALDO SI LA BASE DE DATOS DE NEON ESTÁ VACÍA ---
-        if not config:
+        # --- AUTO-RELLENO DE RESPALDO SI LA BASE DE DATOS DE NEON ESTÁ VACÍA O FALTA LA NUEVA SECCIÓN ---
+        if 'hero_titulo' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
+        if 'mision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
+        if 'vision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-            config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
-            config = {r[0]: r[1] for r in config_raw}
+        
+        # ✅ TEXTOS POR DEFECTO PARA LA SECCIÓN "POR QUÉ ELEGIRNOS"
+        if 'choose_t1' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t1', 'Técnicos Certificados') ON CONFLICT DO NOTHING")
+        if 'choose_d1' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d1', 'Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.') ON CONFLICT DO NOTHING")
+        if 'choose_t2' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t2', 'Repuestos Originales') ON CONFLICT DO NOTHING")
+        if 'choose_d2' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d2', 'Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.') ON CONFLICT DO NOTHING")
+        if 'choose_t3' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_t3', 'Transparencia Total') ON CONFLICT DO NOTHING")
+        if 'choose_d3' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('choose_d3', 'Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.') ON CONFLICT DO NOTHING")
+        
+        # Volvemos a consultar para asegurarnos de enviar los datos recién creados
+        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
+        config = {r[0]: r[1] for r in config_raw}
         # ---------------------------------------------------------------------
 
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
@@ -119,7 +137,6 @@ def obtener_servicio_individual(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ✅ ACTUALIZADO: Registra y actualiza dinámicamente las claves de la nueva sección
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}

@@ -245,64 +245,14 @@
             letter-spacing: -0.5px;
         }
 
-        /* ✅ ESTILOS COMPARTIDOS DEL CARRUSEL (SERVICIOS Y CATÁLOGO) */
-        .carousel-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 0 20px;
+        /* TARJETAS DE SERVICIOS ESTÁNDAR */
+        .services-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); 
+            gap: 30px; 
+            padding-bottom: 60px; 
         }
         
-        .items-carousel {
-            display: flex;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            gap: 25px;
-            padding: 20px 5px 40px 5px; /* Espacio para las sombras al hacer hover */
-            width: 100%;
-            -ms-overflow-style: none; /* Ocultar scrollbar IE y Edge */
-            scrollbar-width: none; /* Ocultar scrollbar Firefox */
-        }
-        
-        .items-carousel::-webkit-scrollbar {
-            display: none; /* Ocultar scrollbar Chrome, Safari y Opera */
-        }
-        
-        .carousel-item {
-            flex: 0 0 auto;
-            min-width: 310px;
-            max-width: 310px;
-        }
-
-        .carousel-arrow {
-            background: var(--white);
-            border: 1px solid #eee;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: var(--icon-blue);
-            cursor: pointer;
-            position: absolute;
-            z-index: 10;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: var(--transition-smooth);
-        }
-        
-        .carousel-arrow:hover {
-            background: var(--neon-green);
-            color: #000;
-            transform: scale(1.1);
-        }
-        
-        .left-arrow { left: -15px; }
-        .right-arrow { right: -15px; }
-
-        /* ESTILOS INTERNOS DE LAS TARJETAS */
         .service-card { 
             background: var(--white); 
             padding: 45px 30px; 
@@ -569,7 +519,7 @@
             margin-bottom: 28px; 
         }
 
-        /* SECCIÓN CATÁLOGO DE PRODUCTOS RESPONSIVO */
+        /* ✅ SECCIÓN CATÁLOGO DE PRODUCTOS (CARRUSEL CON FLECHAS) */
         .catalog-section {
             padding: 90px 0;
             background-color: var(--bg-light);
@@ -659,6 +609,63 @@
             outline: none;
             font-size: 15px;
         }
+
+        /* ESTILOS DEL CONTENEDOR CARRUSEL Y SUS FLECHAS */
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .catalog-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            gap: 25px;
+            padding: 20px 5px 40px 5px; 
+            width: 100%;
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
+        
+        .catalog-carousel::-webkit-scrollbar {
+            display: none; 
+        }
+        
+        .catalog-card {
+            flex: 0 0 auto;
+            min-width: 310px;
+            max-width: 310px;
+        }
+
+        .carousel-arrow {
+            background: var(--white);
+            border: 1px solid #eee;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--icon-blue);
+            cursor: pointer;
+            position: absolute;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: var(--transition-smooth);
+        }
+        
+        .carousel-arrow:hover {
+            background: var(--neon-green);
+            color: #000;
+            transform: scale(1.1);
+        }
+        
+        .left-arrow { left: -15px; }
+        .right-arrow { right: -15px; }
 
         /* SECCIÓN DETALLE EXTENDIDO (ESTILO INTELEC - TOTALMENTE ENCAJADO) */
         .expanded-service-section {
@@ -1216,12 +1223,7 @@
         <div class="section-header anim-up">
             <h2>Reparamos Computadoras,<br>Laptop's y Servidores<br>Empresariales en Costa Rica</h2>
         </div>
-        
-        <div class="carousel-wrapper anim-up">
-            <button class="carousel-arrow left-arrow" onclick="scrollCarousel('srv-c', -1)"><i class="fas fa-chevron-left"></i></button>
-            <div class="items-carousel" id="srv-c"></div>
-            <button class="carousel-arrow right-arrow" onclick="scrollCarousel('srv-c', 1)"><i class="fas fa-chevron-right"></i></button>
-        </div>
+        <div class="services-grid" id="srv-c"></div>
     </div>
 
     <section class="value-section">
@@ -1312,9 +1314,9 @@
             </div>
             
             <div class="carousel-wrapper anim-up">
-                <button class="carousel-arrow left-arrow" onclick="scrollCarousel('prod-c', -1)"><i class="fas fa-chevron-left"></i></button>
-                <div class="items-carousel" id="prod-c"></div>
-                <button class="carousel-arrow right-arrow" onclick="scrollCarousel('prod-c', 1)"><i class="fas fa-chevron-right"></i></button>
+                <button class="carousel-arrow left-arrow" onclick="scrollCatalog(-1)"><i class="fas fa-chevron-left"></i></button>
+                <div class="catalog-carousel" id="prod-c"></div>
+                <button class="carousel-arrow right-arrow" onclick="scrollCatalog(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
 
             <div class="expanded-service-section" id="detalle-servicio-bloque">
@@ -1391,10 +1393,17 @@
                     <p><i class="fab fa-whatsapp"></i> +506 8639 0631</p>
                     <p><i class="far fa-envelope"></i> info@icaretechcr.com</p>
                 </div>
+                
                 <div class="footer-form anim-up" style="transition-delay: 0.4s;">
                     <h4 class="footer-title">Registro de Clientes</h4>
-                    <form onsubmit="event.preventDefault(); alert('¡Registrado!');"><input type="text" placeholder="Nombre completo" required><button type="submit">Crear mi Registro</button></form>
+                    <form onsubmit="event.preventDefault(); alert('¡Registrado!');">
+                        <input type="text" placeholder="Nombre completo" required>
+                        <input type="email" placeholder="Correo electrónico" required>
+                        <input type="tel" placeholder="Número de teléfono" required>
+                        <button type="submit">Crear mi Registro</button>
+                    </form>
                 </div>
+                
             </div>
             <div class="final-copy">© 2026 iCare Tech CR. Todos los derechos reservados.</div>
         </div>
@@ -1442,11 +1451,9 @@
             fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(() => location.reload());
         };
 
-        // ✅ FUNCIÓN UNIFICADA PARA MOVER CUALQUIER CARRUSEL (SERVICIOS O PRODUCTOS)
-        window.scrollCarousel = function(containerId, direction) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const scrollAmount = 335; // Ancho de la tarjeta (310px) + gap (25px)
+        window.scrollCatalog = function(direction) {
+            const container = document.getElementById('prod-c');
+            const scrollAmount = 335; 
             container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
         };
 
@@ -1470,9 +1477,8 @@
             const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
 
             allProducts.filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre && p.nombre.toLowerCase().includes(term))).forEach((p) => { 
-                // Asignamos la clase "carousel-item" para que encaje perfecto en el slider
                 prodC.innerHTML += `
-                    <div class="service-card visible carousel-item" style="padding: 30px;">
+                    <div class="service-card visible catalog-card" style="padding: 30px;">
                         <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
                         <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center;">${p.nombre}</h3>
                         <p style="color:var(--icon-blue); font-weight:bold; font-size:19px; margin-bottom: 25px;">${formatter.format(p.precio)}</p>
@@ -1480,11 +1486,9 @@
                     </div>`; 
             });
             
-            // Volver al inicio del carrusel cuando se filtra
             prodC.scrollLeft = 0;
         };
 
-        // ✅ LÓGICA DE ACTUALIZACIÓN DEL PANEL INFERIOR
         window.mostrarDetalleServicio = function(id) {
             const servicio = cacheServicios.find(s => s.id === id);
             if(!servicio) return;
@@ -1549,9 +1553,8 @@
                 if (srvC && data.servicios) {
                     cacheServicios = data.servicios; 
                     data.servicios.forEach(s => { 
-                        // Asignamos la clase "carousel-item" para que los servicios también se puedan deslizar
                         srvC.innerHTML += `
-                            <div class="service-card anim-up carousel-item">
+                            <div class="service-card anim-up">
                                 ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
                                 <h3>${s.titulo}</h3>
                                 <p>${s.descripcion}</p>
@@ -1559,7 +1562,6 @@
                             </div>`; 
                     });
 
-                    // Inicializar el bloque explicativo con el primer servicio
                     if(cacheServicios.length > 0) {
                         const prim = cacheServicios[0];
                         document.getElementById('det-titulo').innerText = prim.titulo;

@@ -63,6 +63,14 @@ def init_db():
         titulo TEXT,
         descripcion TEXT
     )''')
+
+    # ✅ NUEVA TABLA: Clientes Objetivos Ilimitados
+    c.execute('''CREATE TABLE IF NOT EXISTS clientes_objetivos (
+        id SERIAL PRIMARY KEY,
+        icono TEXT DEFAULT 'fas fa-bullseye',
+        titulo TEXT,
+        descripcion TEXT
+    )''')
     
     conn.commit()
     conn.close()
@@ -86,8 +94,6 @@ def obtener_todo():
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
         if 'vision' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-        
-        # ✅ AUTO-RELLENO DE RESPALDO PARA EL COMPROMISO EMPRESARIAL
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
@@ -116,13 +122,25 @@ def obtener_todo():
             ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
             beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
 
+        # ✅ LOGICA DE RETORNO Y AUTO-RELLENO PARA CLIENTES OBJETIVOS
+        obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
+        objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
+
+        if not objetivos:
+            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-building', 'Sector Corporativo', 'Grandes empresas y oficinas que requieren planes de mantenimiento preventivo y alta disponibilidad.')")
+            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-store', 'PYMES y Comercios', 'Locales comerciales y startups que buscan optimizar su rendimiento e infraestructura segura.')")
+            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-home', 'Clientes Particulares', 'Usuarios del hogar que necesitan reparaciones express, ensambles gaming y soporte garantizado.')")
+            obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
+            objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
+
         return jsonify({
             "config": config, 
             "servicios": servs, 
             "productos": prods, 
             "socios": parts, 
             "resenas": reviews,
-            "beneficios": beneficios
+            "beneficios": beneficios,
+            "objetivos": objetivos
         })
     except Exception as e:
         return jsonify({"error": "Error interno al procesar los datos", "detalles": str(e)}), 500
@@ -154,7 +172,21 @@ def editar_beneficio(id):
              (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
-# ✅ CLAVE 'compromiso' INYECTADA EN EL FILTRO DE GUARDADO MASIVO
+# ✅ ENDPOINTS CRUD EXCLUSIVOS PARA MANEJAR LOS CLIENTES OBJETIVOS
+@app.route('/api/objetivos', methods=['POST'])
+def guardar_objetivo():
+    d = request.json or {}
+    db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", 
+             (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/objetivos/<int:id>', methods=['PUT'])
+def editar_objetivo(id):
+    d = request.json or {}
+    db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", 
+             (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    return jsonify({"mensaje": "✅"})
+
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
@@ -216,7 +248,7 @@ def editar_producto(id):
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios']
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos']
     if tabla in tablas_permitidas:
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})

@@ -78,8 +78,6 @@
         /* SECCIÓN NOSOTROS */
         .features-section { background: var(--white); padding: 80px 0; }
         .about-flex-container { display: flex; flex-direction: column; align-items: center; gap: 40px; }
-        
-        /* ✅ AJUSTADO A 3 COLUMNAS SIMÉTRICAS PARA DAR ESPACIO AL COMPROMISO EMPRESARIAL */
         .mission-vision-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; width: 100%; }
         .feature-box { background: var(--white); border: 1px solid #eee; padding: 30px 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
         .feature-box h4 { font-size: 19px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
@@ -255,6 +253,20 @@
             </div>
 
             <img src="image_13.png" class="features-image-small anim-up" alt="Reparación Técnica Especializada iCare Tech CR">
+        </div>
+    </section>
+
+    <section style="background-color: #f8fafc; padding: 90px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="container">
+            <div class="section-header anim-up" style="margin-top: 0; margin-bottom: 50px;">
+                <span style="font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--icon-blue); display: block; margin-bottom: 10px;">Soluciones a Medida</span>
+                <h2 style="font-size: 38px;">Clientes Objetivos</h2>
+                <p style="color: var(--text-grey); font-size: 16px; margin-top: 10px;">Estructuramos planes y asistencias especializadas según las necesidades de cada perfil corporativo o personal.</p>
+            </div>
+
+            <div id="obj-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px;">
+                Cargando perfiles de clientes objetivos...
+            </div>
         </div>
     </section>
 
@@ -499,7 +511,7 @@
             .then(data => {
                 if (!data) return;
 
-                // 1. Validar Configuración de Textos de la App
+                // 1. Configuración de Textos
                 if (data.config) {
                     if(data.config.hero_background) {
                         document.getElementById('hero-sec').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${data.config.hero_background})`;
@@ -507,14 +519,12 @@
                     document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
                     document.getElementById('m-t').innerText = data.config.mision || "Trabajamos con repuestos originales, lo que garantiza una larga vida útil.";
                     document.getElementById('v-t').innerText = data.config.vision || "Ofrecemos servicios de reparación de computadoras de escritorio, laptops y mantenimiento preventivo.";
-                    
-                    // ✅ RENDERIZADO DINÁMICO DE COMPROMISO EMPRESARIAL
-                    document.getElementById('c-t').innerText = data.config.compromiso || "Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.";
+                    document.getElementById('c-t').innerText = data.config.compromiso || "Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas.";
                 } else {
                     document.getElementById('hero-title').innerText = "Servicio Técnico Profesional";
                 }
                 
-                // RENDERIZADO DINÁMICO E ILIMITADO DE LA SECCIÓN "POR QUÉ ELEGIRNOS"
+                // Por qué elegirnos (Beneficios)
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios && Array.isArray(data.beneficios)) {
                     choGrid.innerHTML = "";
@@ -529,8 +539,24 @@
                             </div>`;
                     });
                 }
+
+                // ✅ RENDERIZADO DINÁMICO E ILIMITADO DE CLIENTES OBJETIVOS
+                const objGrid = document.getElementById('obj-grid');
+                if (objGrid && data.objetivos && Array.isArray(data.objetivos)) {
+                    objGrid.innerHTML = "";
+                    data.objetivos.forEach((o, index) => {
+                        let delay = index * 0.1;
+                        let iconClass = o.icono ? o.icono : "fas fa-bullseye";
+                        objGrid.innerHTML += `
+                            <div class="service-card anim-up" style="background: var(--white); padding: 40px 30px; border-radius: 12px; text-align: left; transition-delay: ${delay}s;">
+                                <div style="font-size: 40px; color: var(--icon-blue); margin-bottom: 20px;"><i class="${iconClass}"></i></div>
+                                <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">${o.titulo || 'Cliente Objetivo'}</h3>
+                                <p style="font-size: 14px; color: var(--text-grey); line-height: 1.6; margin-bottom: 0;">${o.descripcion || ''}</p>
+                            </div>`;
+                    });
+                }
                 
-                // 2. Validar y renderizar Servicios
+                // 2. Servicios
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios && Array.isArray(data.servicios)) {
                     data.servicios.forEach((s, index) => { 
@@ -540,7 +566,7 @@
                     });
                 }
 
-                // 3. Validar y renderizar Productos
+                // 3. Productos
                 if (data.productos && Array.isArray(data.productos)) {
                     allProducts = data.productos;
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
@@ -553,7 +579,7 @@
                     filterAll();
                 }
                 
-                // 4. Validar y renderizar Socios (Partners)
+                // 4. Socios (Partners)
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios && Array.isArray(data.socios)) {
                     data.socios.forEach((p, index) => {
@@ -562,7 +588,7 @@
                     });
                 }
 
-                // 5. Validar y renderizar Reseñas
+                // 5. Reseñas
                 const revC = document.getElementById('rev-c');
                 if (revC && data.resenas && Array.isArray(data.resenas)) {
                     data.resenas.forEach((r, index) => {

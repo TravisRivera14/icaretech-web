@@ -75,6 +75,15 @@
             <button onclick="subirBeneficio()" style="background: #355c6b;">Guardar Tarjeta de Valor</button>
         </div>
 
+        <div class="card" style="border: 1px solid #4ea5ce;">
+            <h2 id="obj-label" style="color: #4ea5ce;">🎯 Clientes Objetivos</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Agrega y segmenta los diferentes perfiles comerciales a los que va dirigido el soporte.</p>
+            <input type="text" id="objIcon" placeholder="Icono FontAwesome (Ej: fas fa-building)">
+            <input type="text" id="objTitle" placeholder="Título del Perfil (Ej: Sector Corporativo)">
+            <textarea id="objDesc" rows="2" placeholder="Explicación detallada del plan o servicio a medida..."></textarea>
+            <button onclick="subirObjetivo()" style="background: #4ea5ce;">Guardar Perfil de Cliente</button>
+        </div>
+
         <div class="card">
             <h2>📋 Gestión Actual</h2>
             <div id="master-list">Cargando datos...</div>
@@ -85,7 +94,7 @@
 <script>
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [] };
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [] };
 
     const handleFile = (id, cb) => {
         const el = document.getElementById(id);
@@ -109,12 +118,12 @@
             cacheData.resenas = data.resenas || [];
             cacheData.socios = data.socios || [];
             cacheData.beneficios = data.beneficios || [];
+            cacheData.objetivos = data.objetivos || [];
 
             if (data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || '';
                 document.getElementById('mision').value = data.config.mision || '';
                 document.getElementById('vision').value = data.config.vision || '';
-                // ✅ MAPEADO AUTOMÁTICO EN EL PANEL
                 document.getElementById('compromiso').value = data.config.compromiso || '';
             }
 
@@ -131,6 +140,12 @@
             h += "<br><b>Tarjetas de '¿Por qué elegirnos?':</b>";
             cacheData.beneficios.forEach((b, idx) => {
                 h += `<div class="list-item"><span>${b.titulo || 'Ventaja'}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Edit</button><button class="btn-del" onclick="del('beneficios',${b.id})">X</button></div></div>`;
+            });
+
+            // ✅ INYECCIÓN DINÁMICA DE CLIENTES OBJETIVOS EN LA LISTA
+            h += "<br><b>Clientes Objetivos:</b>";
+            cacheData.objetivos.forEach((o, idx) => {
+                h += `<div class="list-item"><span>${o.titulo || 'Perfil'}</span><div><button class="btn-edit" onclick="prepararEdicion('objetivos', ${idx})">Edit</button><button class="btn-del" onclick="del('clientes_objetivos',${o.id})">X</button></div></div>`;
             });
             
             h += "<br><b>Reseñas (Clientes):</b>";
@@ -187,6 +202,13 @@
             document.getElementById('bDesc').value = item.descripcion || '';
             document.getElementById('ben-label').innerText = "📝 Editando Tarjeta de Valor";
         }
+        // ✅ MAPEADO PARA LA EDICIÓN DE UN CLIENTE OBJETIVO
+        if(tipo === 'objetivos') {
+            document.getElementById('objIcon').value = item.icono || 'fas fa-bullseye';
+            document.getElementById('objTitle').value = item.titulo || '';
+            document.getElementById('objDesc').value = item.descripcion || '';
+            document.getElementById('obj-label').innerText = "📝 Editando Cliente Objetivo";
+        }
         window.scrollTo(0,0);
     }
 
@@ -220,8 +242,15 @@
             descripcion: document.getElementById('bDesc').value
         });
     }
+    // ✅ ACCIÓN DE GUARDADO / EDICIÓN PARA LOS CLIENTES OBJETIVOS
+    function subirObjetivo() {
+        saveItem('objetivos', {
+            icono: document.getElementById('objIcon').value,
+            titulo: document.getElementById('objTitle').value,
+            descripcion: document.getElementById('objDesc').value
+        });
+    }
 
-    // ✅ ACTUALIZADO ENVIAR COMPROMISO EMPRESARIAL
     function updateConfig() { 
         fetch(`${API}/config`, {
             method:'POST', 

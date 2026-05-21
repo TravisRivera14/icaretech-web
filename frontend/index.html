@@ -203,6 +203,22 @@
             line-height: 1.6; 
             margin-bottom: 30px; 
         }
+        .btn-ver-mas { 
+            background: var(--neon-green); 
+            color: #000; 
+            padding: 10px 25px; 
+            border-radius: 25px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: 700; 
+            display: inline-block; 
+            transition: 0.3s; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .btn-ver-mas:hover { 
+            background: var(--neon-green-hover); 
+        }
 
         /* SECCIÓN NOSOTROS */
         .features-section { 
@@ -285,7 +301,7 @@
             margin-bottom: 25px; 
         }
 
-        /* CATÁLOGO DE PRODUCTOS HORIZONTAL Y VERTICAL */
+        /* ✅ CATÁLOGO DE PRODUCTOS RESTAURADO COMPLETAMENTE AL ESTILO ORIGINAL */
         .catalog-controls { 
             display: flex; 
             flex-direction: column; 
@@ -331,27 +347,6 @@
         .cat-btn.active, .cat-btn:hover { 
             background: var(--neon-green); 
             color: #000; 
-        }
-        .catalog-scroll-wrapper { 
-            width: 100%; 
-            overflow-x: auto; 
-            padding-bottom: 25px; 
-            scroll-behavior: smooth; 
-            -webkit-overflow-scrolling: touch; 
-        }
-        .catalog-scroll-wrapper::-webkit-scrollbar { 
-            height: 8px; 
-        }
-        .catalog-scroll-wrapper::-webkit-scrollbar-thumb { 
-            background: var(--neon-green); 
-            border-radius: 10px; 
-        }
-        .services-grid-horizontal { 
-            display: grid; 
-            grid-template-rows: repeat(2, auto); 
-            grid-auto-flow: column; 
-            grid-auto-columns: minmax(320px, 1fr); 
-            gap: 30px; 
         }
 
         /* EFICIENCIA Y RAPIDEZ (TIMELINE) */
@@ -791,12 +786,17 @@
     </section>
 
     <div class="container" id="catalogo" style="padding: 80px 0;">
-        <div class="section-header anim-up" style="margin-top: 0;"><h2>Catálogo de Productos</h2></div>
+        <div class="section-header anim-up" style="margin-top: 0;">
+            <h2>Catálogo de Productos</h2>
+        </div>
         <div class="catalog-controls anim-up">
-            <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="catSearch" placeholder="Busca tu pieza..." onkeyup="filterAll()"></div>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="catSearch" placeholder="Busca tu pieza o equipo..." onkeyup="filterAll()">
+            </div>
             <div class="category-filters" id="catFilters"></div>
         </div>
-        <div class="catalog-scroll-wrapper anim-up"><div class="services-grid-horizontal" id="prod-c"></div></div>
+        <div class="services-grid" id="prod-c"></div>
     </div>
 
     <section class="how-we-operate">
@@ -885,13 +885,22 @@
 
         window.setCategory = function(cat) { currentCat = cat; filterAll(); };
 
+        // ✅ REESTRUCTURADO PARA PINTAR LAS TARJETAS ORIGINALES DE FORMA VERTICAL
         window.filterAll = function() {
             const term = document.getElementById('catSearch').value.toLowerCase();
-            const prodC = document.getElementById('prod-c'); if (!prodC) return; prodC.innerHTML = "";
+            const prodC = document.getElementById('prod-c'); 
+            if (!prodC) return; 
+            prodC.innerHTML = "";
             const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
 
             allProducts.filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre && p.nombre.toLowerCase().includes(term))).forEach((p) => { 
-                prodC.innerHTML += `<div class="service-card visible" style="padding: 30px; width: 320px;"><img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain;"><h3>${p.nombre}</h3><p style="color:var(--icon-blue); font-weight:bold; font-size:18px;">${formatter.format(p.precio)}</p><button class="btn-ver-mas" onclick="openWA('Interés en: ${p.nombre}')">Cotizar</button></div>`; 
+                prodC.innerHTML += `
+                    <div class="service-card visible" style="padding: 30px;">
+                        <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
+                        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center;">${p.nombre}</h3>
+                        <p style="color:var(--icon-blue); font-weight:bold; font-size:20px; margin-bottom: 25px;">${formatter.format(p.precio)}</p>
+                        <button class="btn-ver-mas" onclick="openWA('Interés en el producto: ${p.nombre}')">Cotizar</button>
+                    </div>`; 
             });
         };
 
@@ -926,7 +935,20 @@
                 if (srvC && data.servicios) {
                     data.servicios.forEach(s => { srvC.innerHTML += `<div class="service-card anim-up">${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}<h3>${s.titulo}</h3><p>${s.descripcion}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; });
                 }
-                if (data.productos) { allProducts = data.productos; filterAll(); }
+                
+                // Mapear filtros de categorías dinámicas
+                if (data.productos) { 
+                    allProducts = data.productos; 
+                    const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+                    const filterContainer = document.getElementById('catFilters');
+                    if (filterContainer) {
+                        filterContainer.innerHTML = categories.map(cat => 
+                            `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+                        ).join('');
+                    }
+                    filterAll(); 
+                }
+
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios) { data.socios.forEach(p => { partC.innerHTML += `<div class="partner-card anim-up"><img src="${p.imagen}" alt="${p.nombre}" class="partner-logo"></div>`; }); }
                 const revC = document.getElementById('rev-c');

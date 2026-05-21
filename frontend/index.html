@@ -245,7 +245,7 @@
             letter-spacing: -0.5px;
         }
 
-        /* TARJETAS DE SERVICIOS ESTÁNDAR */
+        /* TARJETAS ESTÁNDAR (USADO EN CATÁLOGO Y OTROS LUGARES) */
         .services-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); 
@@ -323,6 +323,67 @@
             background: var(--neon-green-hover); 
             transform: translateY(-2px);
         }
+
+        /* ✅ ESTILOS DEL NUEVO CARRUSEL INTERACTIVO DE SERVICIOS */
+        .services-carousel-wrapper {
+            overflow: hidden;
+            width: 100%;
+            padding: 20px 0 60px;
+            position: relative;
+        }
+        
+        .services-carousel-track {
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+            padding: 10px; /* Para que la sombra de la tarjeta no se corte al hacer hover */
+        }
+        
+        .services-carousel-track::-webkit-scrollbar {
+            display: none; /* Oculta la barra de scroll en Chrome/Safari */
+        }
+        
+        .services-carousel-track .service-card {
+            min-width: 330px;
+            max-width: 350px;
+            flex: 0 0 auto;
+            scroll-snap-align: start;
+        }
+        
+        /* Botones de Flecha del Carrusel */
+        .carousel-arrow {
+            position: absolute;
+            top: 55%;
+            transform: translateY(-50%);
+            background: var(--white);
+            color: var(--icon-blue);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 10;
+            transition: var(--transition-smooth);
+            display: grid;
+            place-items: center;
+        }
+        
+        .carousel-arrow:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(124, 245, 166, 0.4);
+            border-color: var(--neon-green);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .left-arrow { left: -25px; }
+        .right-arrow { right: -25px; }
 
         /* SECCIÓN POR QUÉ ELEGIRNOS OPTIMIZADA Y COMPACTADA */
         .value-section {
@@ -592,7 +653,6 @@
             box-shadow: 0 4px 15px rgba(124, 245, 166, 0.3);
         }
 
-        /* selector para smartphone móvil */
         .mobile-selector-container {
             display: none;
             width: 100%;
@@ -611,7 +671,7 @@
             font-size: 15px;
         }
 
-        /* ✅ SECCIÓN DETALLE EXTENDIDO (ESTILO INTELEC - TOTALMENTE ENCAJADO) */
+        /* SECCIÓN DETALLE EXTENDIDO (ESTILO INTELEC) */
         .expanded-service-section {
             background-color: var(--white);
             border: 1px solid #e2e8f0;
@@ -619,7 +679,7 @@
             padding: 45px;
             margin-top: 40px;
             box-shadow: 0 15px 45px rgba(0,0,0,0.04);
-            display: block; /* Siempre visible nativo */
+            display: block; 
             scroll-margin-top: 110px;
             animation: fadeInBlock 0.5s ease-out;
         }
@@ -1123,6 +1183,15 @@
             .mobile-selector-container { display: block; }
             .expanded-service-section { padding: 24px; }
             .expanded-info h3 { font-size: 25px; }
+            
+            .left-arrow { left: 5px; }
+            .right-arrow { right: 5px; }
+        }
+
+        /* Ajuste de flechas en monitores medianos */
+        @media (max-width: 1300px) and (min-width: 901px) {
+            .left-arrow { left: 10px; }
+            .right-arrow { right: 10px; }
         }
     </style>
 </head>
@@ -1160,11 +1229,18 @@
         </div>
     </section>
 
-    <div class="container" id="servicios">
+    <div class="container" id="servicios" style="position: relative;">
         <div class="section-header anim-up">
             <h2>Reparamos Computadoras,<br>Laptop's y Servidores<br>Empresariales en Costa Rica</h2>
         </div>
-        <div class="services-grid" id="srv-c"></div>
+        
+        <button class="carousel-arrow left-arrow" onclick="scrollServices(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right-arrow" onclick="scrollServices(1)"><i class="fas fa-chevron-right"></i></button>
+
+        <div class="services-carousel-wrapper anim-up">
+            <div class="services-carousel-track" id="srv-c">
+                </div>
+        </div>
     </div>
 
     <section class="value-section">
@@ -1357,6 +1433,14 @@
             }
         });
 
+        // ✅ LOGICA DE DESPLAZAMIENTO DEL CARRUSEL DE SERVICIOS
+        window.scrollServices = function(direction) {
+            const track = document.getElementById('srv-c');
+            // Calcula aproximadamente cuánto mover el carrusel (el ancho de una tarjeta + el espacio)
+            const scrollAmount = track.offsetWidth > 400 ? 360 : track.offsetWidth; 
+            track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        };
+
         const animObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => { 
                 if (entry.isIntersecting) { 
@@ -1411,7 +1495,6 @@
             });
         };
 
-        // ✅ LOGICA DE ACTUALIZACIÓN DINÁMICA CON SCROLL (ESTILO INTELEC COMPLETO)
         window.mostrarDetalleServicio = function(id) {
             const servicio = cacheServicios.find(s => s.id === id);
             if(!servicio) return;
@@ -1476,6 +1559,7 @@
                 if (srvC && data.servicios) {
                     cacheServicios = data.servicios; 
                     data.servicios.forEach(s => { 
+                        // Note: As this is now a carousel, the cards are appended directly inside track
                         srvC.innerHTML += `
                             <div class="service-card anim-up">
                                 ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
@@ -1485,7 +1569,6 @@
                             </div>`; 
                     });
 
-                    // Inicializar el bloque inferior con el primer servicio disponible
                     if(cacheServicios.length > 0) {
                         const prim = cacheServicios[0];
                         document.getElementById('det-titulo').innerText = prim.titulo;

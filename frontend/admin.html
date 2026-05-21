@@ -14,6 +14,7 @@
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         .btn-edit { background: var(--edit); width: auto; padding: 5px 12px; margin-right: 5px; font-size: 11px; }
         .btn-del { background: var(--del); width: auto; padding: 5px 12px; font-size: 11px; }
+        .form-section-title { font-size: 13px; font-weight: bold; color: var(--brand); margin-top: 15px; border-bottom: 1px solid #eee; padding-bottom: 4px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -59,11 +60,20 @@
 
         <div class="card">
             <h2>🎯 Configuración General</h2>
+            <div class="form-section-title">Textos de la Web</div>
             <input type="text" id="h_titulo" placeholder="Título Hero">
             <textarea id="mision" placeholder="Misión"></textarea>
             <textarea id="vision" placeholder="Visión"></textarea>
             <textarea id="compromiso" placeholder="Compromiso Empresarial"></textarea>
-            <button onclick="updateConfig()">Actualizar Textos Principales</button>
+            
+            <div class="form-section-title">Canales de Contacto Directo</div>
+            <input type="text" id="phone_wa" placeholder="WhatsApp Global (Ej: 50687550729 sin espacios)">
+            <input type="email" id="mail_contact" placeholder="Correo Electrónico de Contacto (Ej: info@icaretechcr.com)">
+            
+            <div class="form-section-title">Imagen Sección Nosotros</div>
+            <input type="file" id="aboutImgFile" accept="image/*">
+            
+            <button onclick="updateConfig()">Actualizar Canales y Textos</button>
         </div>
 
         <div class="card" style="border: 1px solid #355c6b;">
@@ -84,9 +94,8 @@
 
         <div class="card" style="border: 1px solid #1e333d;">
             <h2 id="emp-label" style="color: #1e333d;">🏢 Empresas que nos Recomiendan</h2>
-            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Añade logos de empresas locales o marcas aliadas que recomiendan tus reparaciones.</p>
-            <input type="text" id="empName" placeholder="Nombre de la Empresa (Ej: Taller Central)">
-            <label>Logo de la Empresa:</label><input type="file" id="empImgFile" accept="image/*">
+            <input type="text" id="empName" placeholder="Nombre de la Empresa">
+            <input type="file" id="empImgFile" accept="image/*">
             <button onclick="subirEmpresa()" style="background: #1e333d;">Guardar Logotipo Comercial</button>
         </div>
 
@@ -99,7 +108,7 @@
 
 <script>
     const API = '/api';
-    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
+    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", imgAbout="", editId=null, editType=null;
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
 
     const handleFile = (id, cb) => {
@@ -113,7 +122,8 @@
     handleFile('pImgFile', res => imgP = res);
     handleFile('revImgFile', res => imgRev = res);
     handleFile('partnerImgFile', res => imgPartner = res);
-    handleFile('empImgFile', res => imgEmp = res); // Escucha de archivo nuevo
+    handleFile('empImgFile', res => imgEmp = res);
+    handleFile('aboutImgFile', res => imgAbout = res); // Escucha imagen Nosotros
 
     function loadContent() {
         fetch(`${API}/todo`).then(r => r.json()).then(data => {
@@ -127,6 +137,11 @@
                 document.getElementById('mision').value = data.config.mision || '';
                 document.getElementById('vision').value = data.config.vision || '';
                 document.getElementById('compromiso').value = data.config.compromiso || '';
+                
+                // ✅ MAPEADO EN LOS INPUTS CORRESPONDIENTES
+                document.getElementById('phone_wa').value = data.config.telefono_wa || '';
+                document.getElementById('mail_contact').value = data.config.correo_contacto || '';
+                imgAbout = data.config.imagen_nosotros || '';
             }
 
             let h = "<b>Servicios:</b>";
@@ -141,7 +156,6 @@
             h += "<br><b>Clientes Objetivos:</b>";
             cacheData.objetivos.forEach((o, idx) => { h += `<div class="list-item"><span>${o.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('objetivos', ${idx})">Edit</button><button class="btn-del" onclick="del('clientes_objetivos',${o.id})">X</button></div></div>`; });
             
-            // ✅ INYECCIÓN DINÁMICA EN EL ADMINISTRADOR
             h += "<br><b>Empresas que Recomiendan:</b>";
             cacheData.empresas.forEach((e, idx) => { h += `<div class="list-item"><span>${e.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('empresas_recomiendan', ${idx})">Edit</button><button class="btn-del" onclick="del('empresas_recomiendan',${e.id})">X</button></div></div>`; });
 
@@ -178,7 +192,6 @@
             document.getElementById('objIcon').value = item.icono || ''; document.getElementById('objTitle').value = item.titulo || '';
             document.getElementById('objDesc').value = item.descripcion || ''; document.getElementById('obj-label').innerText = "📝 Editando Perfil";
         }
-        // ✅ MAPEADO PARA RECOMIENDAN
         if(tipo === 'empresas_recomiendan') {
             document.getElementById('empName').value = item.nombre || ''; imgEmp = item.imagen || '';
             document.getElementById('emp-label').innerText = "📝 Editando Empresa Recomendante";
@@ -198,12 +211,23 @@
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
     function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
     function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
-    
-    // ✅ ACCIÓN DE ENVÍO PARA RECOMIENDAN
     function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }
 
+    // ✅ ACTUALIZADO PARA ENVIAR CONTACTO GENERAL E IMAGEN DE NOSOTROS AL BACKEND
     function updateConfig() { 
-        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value, compromiso:document.getElementById('compromiso').value}) }).then(()=>alert("Textos Principales Actualizados")); 
+        fetch(`${API}/config`, { 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({
+                hero_titulo:document.getElementById('h_titulo').value, 
+                mision:document.getElementById('mision').value, 
+                vision:document.getElementById('vision').value, 
+                compromiso:document.getElementById('compromiso').value,
+                telefono_wa:document.getElementById('phone_wa').value,
+                correo_contacto:document.getElementById('mail_contact').value,
+                imagen_nosotros:imgAbout
+            }) 
+        }).then(()=>alert("¡Web e información de Contacto Actualizados!")); 
     }
 
     function del(t, id) { if(confirm("¿Eliminar permanentemente?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }

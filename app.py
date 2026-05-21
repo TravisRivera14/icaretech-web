@@ -68,14 +68,11 @@ def init_db():
         titulo TEXT,
         descripcion TEXT
     )''')
-
-    # ✅ NUEVA TABLA: Empresas que recomiendan el soporte de iCare
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (
         id SERIAL PRIMARY KEY,
         nombre TEXT,
         imagen TEXT
     )''')
-    
     conn.commit()
     conn.close()
 
@@ -92,6 +89,7 @@ def obtener_todo():
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
         
+        # --- VALORES POR DEFECTO CORPORATIVOS ---
         if 'hero_titulo' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
         if 'mision' not in config:
@@ -100,6 +98,14 @@ def obtener_todo():
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
+        
+        # ✅ NUEVOS CAMPOS GLOBALES DE CONTACTO E IMAGEN POR DEFECTO
+        if 'telefono_wa' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('telefono_wa', '50687550729') ON CONFLICT DO NOTHING")
+        if 'correo_contacto' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('correo_contacto', 'info@icaretechcr.com') ON CONFLICT DO NOTHING")
+        if 'imagen_nosotros' not in config:
+            db_query("INSERT INTO configuracion (clave, valor) VALUES ('imagen_nosotros', 'image_13.png') ON CONFLICT DO NOTHING")
 
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
@@ -129,29 +135,14 @@ def obtener_todo():
         obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
         objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
 
-        if not objetivos:
-            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-building', 'Sector Corporativo', 'Grandes empresas que requieren mantenimiento preventivo y alta disponibilidad.')")
-            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-store', 'PYMES y Comercios', 'Locales comerciales que buscan optimizar su rendimiento e infraestructura.')")
-            db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES ('fas fa-home', 'Clientes Particulares', 'Usuarios que necesitan reparaciones express y soporte garantizado.')")
-            obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
-            objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
-
-        # ✅ CONSULTA DINÁMICA DE EMPRESAS QUE RECOMIENDAN
         emp_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan ORDER BY id ASC", fetch=True) or []
         empresas = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in emp_raw]
 
         return jsonify({
-            "config": config, 
-            "servicios": servs, 
-            "productos": prods, 
-            "socios": parts, 
-            "resenas": reviews,
-            "beneficios": beneficios,
-            "objetivos": objetivos,
-            "empresas": empresas
+            "config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews, "beneficios": beneficios, "objetivos": objetivos, "empresas": empresas
         })
     except Exception as e:
-        return jsonify({"error": "Error interno al procesar los datos", "detalles": str(e)}), 500
+        return jsonify({"error": "Error interno", "detalles": str(e)}), 500
 
 @app.route('/api/servicios/<int:id>', methods=['GET'])
 def obtener_servicio_individual(id):
@@ -159,42 +150,35 @@ def obtener_servicio_individual(id):
         res = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios WHERE id = %s", (id,), fetch=True)
         if res:
             r = res[0]
-            return jsonify({
-                "id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]
-            })
-        return jsonify({"error": "Servicio no encontrado"}), 404
+            return jsonify({"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]})
+        return jsonify({"error": "No encontrado"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/beneficios', methods=['POST'])
 def guardar_beneficio():
     d = request.json or {}
-    db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", 
-             (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
+    db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/beneficios/<int:id>', methods=['PUT'])
 def editar_beneficio(id):
     d = request.json or {}
-    db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", 
-             (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos', methods=['POST'])
 def guardar_objetivo():
     d = request.json or {}
-    db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", 
-             (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
+    db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos/<int:id>', methods=['PUT'])
 def editar_objetivo(id):
     d = request.json or {}
-    db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", 
-             (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
-# ✅ ENDPOINTS CRUD EXCLUSIVOS PARA LAS EMPRESAS QUE RECOMIENDAN EL SOPORTE
 @app.route('/api/recomiendan', methods=['POST'])
 def guardar_empresa():
     d = request.json or {}
@@ -207,10 +191,11 @@ def editar_empresa(id):
     db_query("UPDATE empresas_recomiendan SET nombre=%s, imagen=%s WHERE id=%s", (d.get('nombre', 'Empresa'), d.get('imagen', ''), id))
     return jsonify({"mensaje": "✅"})
 
+# ✅ ACTUALIZADO PARA DAR SOPORTE A LAS NUEVAS CLAVES DE CONTACTO GENERAL
 @app.route('/api/config', methods=['POST'])
 def guardar_config():
     d = request.json or {}
-    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'compromiso']
+    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'compromiso', 'telefono_wa', 'correo_contacto', 'imagen_nosotros']
     for k in claves_permitidas:
         if k in d:
             db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
@@ -237,8 +222,7 @@ def guardar_socio():
 @app.route('/api/servicios', methods=['POST'])
 def guardar_servicio():
     d = request.json or {}
-    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", 
-             (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
+    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos', methods=['POST'])
@@ -253,8 +237,7 @@ def guardar_producto():
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 def editar_servicio(id):
     d = request.json or {}
-    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", 
-             (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
+    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
@@ -272,7 +255,7 @@ def eliminar_item(tabla, id):
     if tabla in tablas_permitidas:
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
-    return jsonify({"error": "Tabla no válida"}), 400
+    return jsonify({"error": "No válida"}), 400
 
 if __name__ == '__main__':
     init_db()

@@ -34,13 +34,13 @@
             <input type="text" id="sIcon" placeholder="Icono/Emoji">
             <input type="text" id="sTitle" placeholder="Título">
             <textarea id="sDesc" placeholder="Descripción Corta"></textarea>
-            <textarea id="sProcess" rows="3" placeholder="¿Qué se realiza en este servicio? (Explicación técnica para el cliente)"></textarea>
-            <textarea id="sBenefits" rows="3" placeholder="Beneficios clave (Escribe uno por línea o usa viñetas)"></textarea>
+            <textarea id="sProcess" rows="3" placeholder="¿Qué se realiza en este servicio?"></textarea>
+            <textarea id="sBenefits" rows="3" placeholder="Beneficios clave..."></textarea>
             <input type="file" id="sImgFile" accept="image/*">
             <button onclick="subirServicio()">Guardar Servicio</button>
         </div>
         <div class="card">
-            <h2 id="partner-label">🤝 Gestionar Socios</h2>
+            <h2 id="partner-label">🤝 Gestionar Socios (Marcas Autorizadas)</h2>
             <input type="text" id="partnerName" placeholder="Nombre del Socio">
             <input type="file" id="partnerImgFile" accept="image/*">
             <button onclick="subirSocio()">Guardar Socio</button>
@@ -68,7 +68,6 @@
 
         <div class="card" style="border: 1px solid #355c6b;">
             <h2 id="ben-label" style="color: #355c6b;">🛡️ ¿Por qué elegir iCare Tech CR?</h2>
-            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Agrega tantos beneficios como desees (puedes subir hasta 8 o más).</p>
             <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
             <input type="text" id="bTitle" placeholder="Título de la Ventaja">
             <textarea id="bDesc" rows="2" placeholder="Descripción corta explicativa..."></textarea>
@@ -77,11 +76,18 @@
 
         <div class="card" style="border: 1px solid #4ea5ce;">
             <h2 id="obj-label" style="color: #4ea5ce;">🎯 Clientes Objetivos</h2>
-            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Agrega y segmenta los diferentes perfiles comerciales a los que va dirigido el soporte.</p>
             <input type="text" id="objIcon" placeholder="Icono FontAwesome (Ej: fas fa-building)">
-            <input type="text" id="objTitle" placeholder="Título del Perfil (Ej: Sector Corporativo)">
-            <textarea id="objDesc" rows="2" placeholder="Explicación detallada del plan o servicio a medida..."></textarea>
+            <input type="text" id="objTitle" placeholder="Título del Perfil">
+            <textarea id="objDesc" rows="2" placeholder="Explicación del plan..."></textarea>
             <button onclick="subirObjetivo()" style="background: #4ea5ce;">Guardar Perfil de Cliente</button>
+        </div>
+
+        <div class="card" style="border: 1px solid #1e333d;">
+            <h2 id="emp-label" style="color: #1e333d;">🏢 Empresas que nos Recomiendan</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Añade logos de empresas locales o marcas aliadas que recomiendan tus reparaciones.</p>
+            <input type="text" id="empName" placeholder="Nombre de la Empresa (Ej: Taller Central)">
+            <label>Logo de la Empresa:</label><input type="file" id="empImgFile" accept="image/*">
+            <button onclick="subirEmpresa()" style="background: #1e333d;">Guardar Logotipo Comercial</button>
         </div>
 
         <div class="card">
@@ -93,12 +99,11 @@
 
 <script>
     const API = '/api';
-    let imgS="", imgP="", imgRev="", imgPartner="", editId=null, editType=null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [] };
+    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
 
     const handleFile = (id, cb) => {
-        const el = document.getElementById(id);
-        if(!el) return;
+        const el = document.getElementById(id); if(!el) return;
         el.onchange = (e) => {
             const r = new FileReader(); r.onload = () => cb(r.result);
             if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
@@ -108,17 +113,14 @@
     handleFile('pImgFile', res => imgP = res);
     handleFile('revImgFile', res => imgRev = res);
     handleFile('partnerImgFile', res => imgPartner = res);
+    handleFile('empImgFile', res => imgEmp = res); // Escucha de archivo nuevo
 
     function loadContent() {
-        fetch(`${API}/todo`)
-        .then(r => r.json())
-        .then(data => {
-            cacheData.servicios = data.servicios || [];
-            cacheData.productos = data.productos || [];
-            cacheData.resenas = data.resenas || [];
-            cacheData.socios = data.socios || [];
-            cacheData.beneficios = data.beneficios || [];
-            cacheData.objetivos = data.objetivos || [];
+        fetch(`${API}/todo`).then(r => r.json()).then(data => {
+            cacheData.servicios = data.servicios || []; cacheData.productos = data.productos || [];
+            cacheData.resenas = data.resenas || []; cacheData.socios = data.socios || [];
+            cacheData.beneficios = data.beneficios || []; cacheData.objetivos = data.objetivos || [];
+            cacheData.empresas = data.empresas || [];
 
             if (data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || '';
@@ -128,86 +130,58 @@
             }
 
             let h = "<b>Servicios:</b>";
-            cacheData.servicios.forEach((s, idx) => {
-                h += `<div class="list-item"><span>${s.titulo || 'Sin título'}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`;
-            });
+            cacheData.servicios.forEach((s, idx) => { h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Edit</button><button class="btn-del" onclick="del('servicios',${s.id})">X</button></div></div>`; });
             
             h += "<br><b>Productos:</b>";
-            cacheData.productos.forEach((p, idx) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`;
-            });
+            cacheData.productos.forEach((p, idx) => { h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Edit</button><button class="btn-del" onclick="del('productos',${p.id})">X</button></div></div>`; });
 
-            h += "<br><b>Tarjetas de '¿Por qué elegirnos?':</b>";
-            cacheData.beneficios.forEach((b, idx) => {
-                h += `<div class="list-item"><span>${b.titulo || 'Ventaja'}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Edit</button><button class="btn-del" onclick="del('beneficios',${b.id})">X</button></div></div>`;
-            });
+            h += "<br><b>Tarjetas '¿Por qué elegirnos?':</b>";
+            cacheData.beneficios.forEach((b, idx) => { h += `<div class="list-item"><span>${b.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Edit</button><button class="btn-del" onclick="del('beneficios',${b.id})">X</button></div></div>`; });
 
-            // ✅ INYECCIÓN DINÁMICA DE CLIENTES OBJETIVOS EN LA LISTA
             h += "<br><b>Clientes Objetivos:</b>";
-            cacheData.objetivos.forEach((o, idx) => {
-                h += `<div class="list-item"><span>${o.titulo || 'Perfil'}</span><div><button class="btn-edit" onclick="prepararEdicion('objetivos', ${idx})">Edit</button><button class="btn-del" onclick="del('clientes_objetivos',${o.id})">X</button></div></div>`;
-            });
+            cacheData.objetivos.forEach((o, idx) => { h += `<div class="list-item"><span>${o.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('objetivos', ${idx})">Edit</button><button class="btn-del" onclick="del('clientes_objetivos',${o.id})">X</button></div></div>`; });
             
+            // ✅ INYECCIÓN DINÁMICA EN EL ADMINISTRADOR
+            h += "<br><b>Empresas que Recomiendan:</b>";
+            cacheData.empresas.forEach((e, idx) => { h += `<div class="list-item"><span>${e.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('empresas_recomiendan', ${idx})">Edit</button><button class="btn-del" onclick="del('empresas_recomiendan',${e.id})">X</button></div></div>`; });
+
             h += "<br><b>Reseñas (Clientes):</b>";
-            cacheData.resenas.forEach((r, idx) => {
-                h += `<div class="list-item"><span>${r.cliente || 'Anónimo'}</span><div><button class="btn-edit" onclick="prepararEdicion('resenas', ${idx})">Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`;
-            });
+            cacheData.resenas.forEach((r, idx) => { h += `<div class="list-item"><span>${r.cliente}</span><div><button class="btn-edit" onclick="prepararEdicion('resenas', ${idx})">Edit</button><button class="btn-del" onclick="del('resenas',${r.id})">X</button></div></div>`; });
             
             h += "<br><b>Socios:</b>";
-            cacheData.socios.forEach((p) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Socio'}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`;
-            });
+            cacheData.socios.forEach((p) => { h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-del" onclick="del('socios',${p.id})">X</button></div></div>`; });
             
             document.getElementById('master-list').innerHTML = h;
-        })
-        .catch(err => {
-            console.error("Error al cargar datos:", err);
-            document.getElementById('master-list').innerHTML = "Error al conectar con el servidor.";
         });
     }
 
     function prepararEdicion(tipo, index) {
-        const item = cacheData[tipo][index];
-        if (!item) return;
-
-        editId = item.id; 
-        editType = tipo;
+        const item = cacheData[tipo === 'empresas_recomiendan' ? 'empresas' : tipo][index]; if (!item) return;
+        editId = item.id; editType = tipo;
 
         if(tipo === 'servicios') {
-            document.getElementById('sIcon').value = item.icono || '';
-            document.getElementById('sTitle').value = item.titulo || '';
-            document.getElementById('sDesc').value = item.descripcion || '';
-            document.getElementById('sProcess').value = item.proceso || '';
-            document.getElementById('sBenefits').value = item.beneficios || '';
-            imgS = item.imagen || '';
+            document.getElementById('sIcon').value = item.icono || ''; document.getElementById('sTitle').value = item.titulo || '';
+            document.getElementById('sDesc').value = item.descripcion || ''; document.getElementById('sProcess').value = item.proceso || '';
+            document.getElementById('sBenefits').value = item.beneficios || ''; imgS = item.imagen || '';
             document.getElementById('srv-label').innerText = "📝 Editando Servicio";
         }
         if(tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre || '';
-            document.getElementById('pPrice').value = item.precio || '';
-            document.getElementById('pCat').value = item.categoria || '';
-            imgP = item.imagen || '';
+            document.getElementById('pName').value = item.nombre || ''; document.getElementById('pPrice').value = item.precio || '';
+            document.getElementById('pCat').value = item.categoria || ''; imgP = item.imagen || '';
             document.getElementById('prod-label').innerText = "📝 Editando Producto";
         }
-        if(tipo === 'resenas') {
-            document.getElementById('revClient').value = item.cliente || '';
-            document.getElementById('revPos').value = item.puesto || '';
-            document.getElementById('revText').value = item.comentario || '';
-            imgRev = item.imagen_cliente || '';
-            document.getElementById('rev-label').innerText = "📝 Editando Reseña";
-        }
         if(tipo === 'beneficios') {
-            document.getElementById('bIcon').value = item.icono || 'fas fa-check';
-            document.getElementById('bTitle').value = item.titulo || '';
-            document.getElementById('bDesc').value = item.descripcion || '';
-            document.getElementById('ben-label').innerText = "📝 Editando Tarjeta de Valor";
+            document.getElementById('bIcon').value = item.icono || ''; document.getElementById('bTitle').value = item.titulo || '';
+            document.getElementById('bDesc').value = item.descripcion || ''; document.getElementById('ben-label').innerText = "📝 Editando Tarjeta";
         }
-        // ✅ MAPEADO PARA LA EDICIÓN DE UN CLIENTE OBJETIVO
         if(tipo === 'objetivos') {
-            document.getElementById('objIcon').value = item.icono || 'fas fa-bullseye';
-            document.getElementById('objTitle').value = item.titulo || '';
-            document.getElementById('objDesc').value = item.descripcion || '';
-            document.getElementById('obj-label').innerText = "📝 Editando Cliente Objetivo";
+            document.getElementById('objIcon').value = item.icono || ''; document.getElementById('objTitle').value = item.titulo || '';
+            document.getElementById('objDesc').value = item.descripcion || ''; document.getElementById('obj-label').innerText = "📝 Editando Perfil";
+        }
+        // ✅ MAPEADO PARA RECOMIENDAN
+        if(tipo === 'empresas_recomiendan') {
+            document.getElementById('empName').value = item.nombre || ''; imgEmp = item.imagen || '';
+            document.getElementById('emp-label').innerText = "📝 Editando Empresa Recomendante";
         }
         window.scrollTo(0,0);
     }
@@ -215,56 +189,24 @@
     function saveItem(path, data) {
         const method = (editId && editType === path) ? 'PUT' : 'POST';
         const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        fetch(url, {
-            method: method, 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify(data)
-        }).then(()=>location.reload());
+        fetch(url, { method: method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(()=>location.reload());
     }
 
     function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
-    function subirServicio() { 
-        saveItem('servicios', {
-            icono:document.getElementById('sIcon').value, 
-            titulo:document.getElementById('sTitle').value, 
-            descripcion:document.getElementById('sDesc').value, 
-            proceso:document.getElementById('sProcess').value, 
-            beneficios:document.getElementById('sBenefits').value, 
-            imagen:imgS
-        }); 
-    }
+    function subirServicio() { saveItem('servicios', {icono:document.getElementById('sIcon').value, titulo:document.getElementById('sTitle').value, descripcion:document.getElementById('sDesc').value, proceso:document.getElementById('sProcess').value, beneficios:document.getElementById('sBenefits').value, imagen:imgS}); }
     function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
     function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
-    function subirBeneficio() {
-        saveItem('beneficios', {
-            icono: document.getElementById('bIcon').value,
-            titulo: document.getElementById('bTitle').value,
-            descripcion: document.getElementById('bDesc').value
-        });
-    }
-    // ✅ ACCIÓN DE GUARDADO / EDICIÓN PARA LOS CLIENTES OBJETIVOS
-    function subirObjetivo() {
-        saveItem('objetivos', {
-            icono: document.getElementById('objIcon').value,
-            titulo: document.getElementById('objTitle').value,
-            descripcion: document.getElementById('objDesc').value
-        });
-    }
+    function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
+    function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
+    
+    // ✅ ACCIÓN DE ENVÍO PARA RECOMIENDAN
+    function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }
 
     function updateConfig() { 
-        fetch(`${API}/config`, {
-            method:'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({
-                hero_titulo:document.getElementById('h_titulo').value, 
-                mision:document.getElementById('mision').value, 
-                vision:document.getElementById('vision').value,
-                compromiso:document.getElementById('compromiso').value
-            })
-        }).then(()=>alert("Textos Principales Actualizados")); 
+        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value, compromiso:document.getElementById('compromiso').value}) }).then(()=>alert("Textos Principales Actualizados")); 
     }
 
-    function del(t, id) { if(confirm("¿Eliminar este elemento permanentemente?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
+    function del(t, id) { if(confirm("¿Eliminar permanentemente?")) fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(()=>loadContent()); }
     window.onload = loadContent;
 </script>
 </body>

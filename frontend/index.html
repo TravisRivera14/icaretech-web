@@ -394,6 +394,86 @@
             color: #000; 
         }
 
+        /* ✅ NUEVOS ESTILOS PARA EL PANEL EXPLICATIVO AMPLIADO (ESTILO INTELEC) */
+        .expanded-service-section {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 40px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: none; /* Oculto inicialmente */
+            scroll-margin-top: 100px; /* Margen para que al bajar no lo tape el header fijo */
+        }
+        .expanded-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .expanded-info h3 {
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+        .expanded-info h4 {
+            font-size: 16px;
+            color: var(--icon-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .expanded-info p {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+        .expanded-bullets {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        .expanded-bullets li {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        .expanded-bullets i {
+            color: var(--neon-green-hover);
+            font-size: 16px;
+        }
+        .expanded-image img {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+        .close-expanded-btn {
+            background: #f1f5f9;
+            color: #334155;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .close-expanded-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
         /* TIMELINE OPERATIVO */
         .how-we-operate { 
             background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); 
@@ -676,43 +756,18 @@
         }
         
         @media (max-width: 900px) {
-            header {
-                padding: 10px 20px;
-            }
-            .nav-links, .search-bar { 
-                display: none; 
-            }
-            .nav-bar {
-                justify-content: space-between;
-            }
-            .logo-img {
-                height: 55px;
-            }
-            .btn-neon {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-            .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row { 
-                grid-template-columns: 1fr !important; 
-            }
-            .timeline-wrapper::before { 
-                display: none; 
-            } 
-            .timeline-card { 
-                min-height: auto; 
-                padding: 35px 20px; 
-            }
-            .section-header {
-                margin: 50px 0 30px;
-                padding: 0 10px;
-            }
-            .category-filters {
-                gap: 6px;
-            }
-            .cat-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
+            header { padding: 10px 20px; }
+            .nav-links, .search-bar { display: none; }
+            .nav-bar { justify-content: space-between; }
+            .logo-img { height: 55px; }
+            .btn-neon { padding: 10px 20px; font-size: 14px; }
+            .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row, .expanded-grid { grid-template-columns: 1fr !important; gap: 20px; }
+            .timeline-wrapper::before { display: none; } 
+            .timeline-card { min-height: auto; padding: 35px 20px; }
+            .section-header { margin: 50px 0 30px; padding: 0 10px; }
+            .category-filters { gap: 6px; }
+            .cat-btn { padding: 6px 12px; font-size: 12px; }
+            .expanded-service-section { padding: 20px; }
         }
         
         .wa-float { 
@@ -731,9 +786,6 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.25); 
             text-decoration: none; 
             transition: 0.3s; 
-        }
-        .wa-float:hover {
-            transform: scale(1.1);
         }
     </style>
 </head>
@@ -784,8 +836,7 @@
                 <h2 style="font-size: clamp(24px, 3.5vw, 34px);">¿Por qué elegir iCare Tech CR?</h2>
                 <p style="color: #b0c4cc; font-size: 14px; margin-top: 5px; max-width: 700px; margin-left: auto; margin-right: auto;">Nos enfocamos en ofrecer un estándar de calidad superior, combinando velocidad técnica con transparencia absoluta en cada diagnóstico.</p>
             </div>
-            <div id="cho-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                </div>
+            <div id="cho-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;"></div>
         </div>
     </section>
 
@@ -867,6 +918,23 @@
             <div class="category-filters" id="catFilters"></div>
         </div>
         <div class="services-grid" id="prod-c"></div>
+
+        <div class="expanded-service-section" id="detalle-servicio-bloque">
+            <div class="expanded-grid">
+                <div class="expanded-info">
+                    <h4 id="det-sub">Información Detallada</h4>
+                    <h3 id="det-titulo">Nombre del Servicio</h3>
+                    <p id="det-descripcion">Cargando explicación detallada de la labor...</p>
+                    <div style="font-weight:700; margin-bottom:10px; font-size:15px; color:var(--text-dark);">¿Qué incluye nuestro soporte técnico?</div>
+                    <ul class="expanded-bullets" id="det-beneficios">
+                        </ul>
+                    <button class="close-expanded-btn" onclick="cerrarDetalle()"><i class="fas fa-times"></i> Cerrar Detalle</button>
+                </div>
+                <div class="expanded-image">
+                    <img id="det-imagen" src="https://via.placeholder.com/400x300" alt="Detalle del soporte iCare">
+                </div>
+            </div>
+        </div>
     </div>
 
     <section class="how-we-operate">
@@ -931,6 +999,7 @@
     <script>
         const API = '/api';
         let allProducts = [];
+        let cacheServicios = []; // Guarda servicios locales para la consulta dinámica
         let currentCat = 'Todos';
         let publicReviewImg = ""; 
         
@@ -990,6 +1059,36 @@
             });
         };
 
+        // ✅ FUNCIÓN INTERACTIVA PARA MOSTRAR LA INFORMACIÓN AMPLIADA (ESTILO INTELEC)
+        window.mostrarDetalleServicio = function(id) {
+            const servicio = cacheServicios.find(s => s.id === id);
+            if(!servicio) return;
+
+            document.getElementById('det-titulo').innerText = servicio.titulo;
+            document.getElementById('det-descripcion').innerText = servicio.proceso || "Contamos con ingenieros listos para resolver tu requerimiento de forma ágil y transparente.";
+            document.getElementById('det-imagen').src = servicio.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
+            
+            // Procesar renglones de beneficios clave
+            const lista = document.getElementById('det-beneficios');
+            lista.innerHTML = "";
+            const lineas = servicio.beneficios ? servicio.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico transparente de hardware", "Técnicos certificados"];
+            lineas.forEach(linea => {
+                if(linea.trim()) {
+                    lista.innerHTML += `<li><i class="fas fa-check-circle"></i> <span>${linea}</span></li>`;
+                }
+            });
+
+            // Desplegar bloque y realizar auto-scroll fluido
+            const bloque = document.getElementById('detalle-servicio-bloque');
+            bloque.style.display = "block";
+            bloque.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cerrarDetalle = function() {
+            document.getElementById('detalle-servicio-bloque').style.display = "none";
+            document.getElementById('servicios').scrollIntoView({ behavior: 'smooth' });
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
             fetch(`${API}/todo`).then(r => r.json()).then(data => {
                 if (data.config) {
@@ -999,7 +1098,6 @@
                     document.getElementById('c-t').innerText = data.config.compromiso || "";
                 }
                 
-                // ✅ RENDEREADO COMPACTADO Y OPTIMIZADO PARA LAS TARJETAS DE VALOR DE NEON
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios) {
                     choGrid.innerHTML = "";
@@ -1025,9 +1123,21 @@
                 if (empGrid && data.empresas) {
                     data.empresas.forEach(e => { empGrid.innerHTML += `<div class="partner-card anim-up"><img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}"></div>`; });
                 }
+                
+                // Mapear Servicios e Inyectar la nueva llamada interna
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios) {
-                    data.servicios.forEach(s => { srvC.innerHTML += `<div class="service-card anim-up">${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}<h3>${s.titulo}</h3><p>${s.descripcion}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; });
+                    cacheServicios = data.servicios; // Guardar en caché local
+                    data.servicios.forEach(s => { 
+                        // El botón "Ver Más" ahora llama a mostrarDetalleServicio en lugar de cambiar de archivo html externo
+                        srvC.innerHTML += `
+                            <div class="service-card anim-up">
+                                ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
+                                <h3>${s.titulo}</h3>
+                                <p>${s.descripcion}</p>
+                                <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
+                            </div>`; 
+                    });
                 }
                 
                 if (data.productos) { 

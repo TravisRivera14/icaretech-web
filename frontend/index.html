@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            /* ✅ COLOR TURQUESA CON 40% DE TRANSPARENCIA */
             --nav-bg: rgba(53, 92, 107, 0.6); 
             --neon-green: #7cf5a6; 
             --neon-green-hover: #65d98e;
@@ -22,19 +21,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-        /* NAVEGACIÓN */
-        header { 
-            background: var(--nav-bg); 
-            padding: 5px 40px; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-        }
+        header { background: var(--nav-bg); padding: 5px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
-        .logo-area { display: flex; align-items: center; text-decoration: none; }
         .logo-img { height: 75px; width: auto; object-fit: contain; display: block; } 
         
         .nav-links { display: flex; gap: 30px; align-items: center; }
@@ -46,25 +34,14 @@
         .btn-neon { background: var(--neon-green); color: #000; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-size: 16px; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; }
         .btn-neon:hover { background: var(--neon-green-hover); transform: scale(1.05); }
 
-        /* HERO BANNER Y ANIMACIÓN DE ENTRADA */
-        .hero-banner { 
-            width: 100%; height: 60vh; 
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80'); 
-            background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--white);
-        }
-        .hero-banner h1 { 
-            font-size: clamp(40px, 5vw, 60px); font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 900px; line-height: 1.2; 
-            animation: heroFadeIn 1.5s ease-out forwards;
-            opacity: 0;
-            transform: translateY(30px);
-        }
+        .hero-banner { width: 100%; height: 60vh; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--white); }
+        .hero-banner h1 { font-size: clamp(40px, 5vw, 60px); font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 900px; line-height: 1.2; animation: heroFadeIn 1.5s ease-out forwards; opacity: 0; transform: translateY(30px); }
         @keyframes heroFadeIn { to { opacity: 1; transform: translateY(0); } }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .section-header { text-align: center; margin: 80px 0 50px; }
         .section-header h2 { font-size: 42px; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
 
-        /* Tarjetas de Servicios */
         .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding-bottom: 60px; }
         .service-card { background: var(--white); padding: 50px 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eaeaea; transition: transform 0.3s, box-shadow 0.3s; }
         .service-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
@@ -75,7 +52,6 @@
         .btn-ver-mas { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 700; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
         .btn-ver-mas:hover { background: var(--neon-green-hover); }
 
-        /* SECCIÓN NOSOTROS */
         .features-section { background: var(--white); padding: 80px 0; }
         .about-flex-container { display: flex; flex-direction: column; align-items: center; gap: 40px; }
         .mission-vision-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; width: 100%; }
@@ -84,7 +60,6 @@
         .feature-box p { font-size: 15px; color: #333; line-height: 1.7; }
         .features-image-small { width: 100%; max-width: 550px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-top: 15px; }
 
-        /* SECCIÓN PROCESO */
         .process-section { background: linear-gradient(135deg, #4ea5ce 0%, #355c6b 100%); padding: 100px 0; margin-top: 60px; }
         .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
         .process-card { background: var(--white); padding: 50px 30px; border-radius: 15px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
@@ -92,7 +67,6 @@
         .process-card h3 { font-size: 24px; margin-bottom: 15px; }
         .process-card p { font-size: 15px; color: var(--text-grey); line-height: 1.6; margin-bottom: 25px; }
 
-        /* CATÁLOGO */
         .catalog-controls { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 40px; }
         .search-wrapper { position: relative; width: 100%; max-width: 500px; }
         .search-wrapper input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 30px; border: 1px solid #ddd; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -106,7 +80,6 @@
         .catalog-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
         .services-grid-horizontal { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: minmax(320px, 1fr); gap: 30px; }
 
-        /* EFICIENCIA Y RAPIDEZ */
         .how-we-operate { background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); padding: 100px 0; text-align: center; }
         .how-we-operate .subtitle { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.7); margin-bottom: 15px; font-weight: 600; }
         .how-we-operate h2 { font-size: 42px; font-weight: 800; color: #111; margin-bottom: 60px; }
@@ -120,14 +93,19 @@
         .anim-up { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; will-change: opacity, transform; }
         .anim-up.visible { opacity: 1; transform: translateY(0); }
 
-        /* SECCIÓN DE SOCIOS */
         .partners-section { background: var(--white); padding: 80px 0; border-top: 1px solid #eee; }
         .partners-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; justify-content: center; }
         .partner-card { background: var(--white); border-radius: 12px; padding: 30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #eee; height: 140px; transition: transform 0.3s, box-shadow 0.3s; }
         .partner-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
         .partner-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* SECCIÓN DE RESEÑAS */
+        /* NUEVA SECCIÓN ESTILOS */
+        .clientes-section { padding: 80px 0; background: #ffffff; text-align: center; border-top: 1px solid #eee; }
+        .logos-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 40px; }
+        .card-logo { width: 250px; height: 120px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 10px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card-logo:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.1); transform: translateY(-5px); }
+        .card-logo img { max-width: 70%; max-height: 70%; object-fit: contain; }
+
         .reviews-section { background-color: #fcfcfc; padding: 100px 0; border-top: 1px solid #eee; }
         .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
         .review-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f0; transition: 0.3s; }
@@ -138,7 +116,6 @@
         .reviewer-name { font-weight: 700; color: #111; font-size: 17px; }
         .reviewer-pos { color: #888; font-size: 14px; }
 
-        /* FORMULARIO PÚBLICO DE RESEÑAS */
         .review-form-container { background: var(--white); padding: 60px 0; }
         .review-form-card { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; border: 1px solid #eee; }
         .review-form-card h3 { font-size: 28px; margin-bottom: 25px; text-align: center; color: var(--text-dark); }
@@ -148,7 +125,6 @@
         .review-form-card button { width: 100%; padding: 15px; border-radius: 30px; background: var(--neon-green); color: #000; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; font-size: 16px; }
         .review-form-card button:hover { background: var(--neon-green-hover); transform: translateY(-3px); }
 
-        /* FOOTER */
         .site-footer { background-color: var(--footer-dark); color: #fff; padding: 80px 0 40px; border-top: 4px solid var(--neon-green); }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; margin-bottom: 50px; }
         .footer-brand img { height: 80px; margin-bottom: 20px; filter: brightness(0) invert(1); }
@@ -370,6 +346,19 @@
         </div>
     </section>
 
+    <section class="clientes-section">
+        <div class="container">
+            <div class="section-header anim-up">
+                <h2 style="font-size: 42px; font-weight: 800; color: var(--text-dark);">Ellos confían en nosotros</h2>
+            </div>
+            <div class="logos-grid">
+                <div class="card-logo"><img src="logo-empresa1.png" alt="Empresa 1"></div>
+                <div class="card-logo"><img src="logo-empresa2.png" alt="Empresa 2"></div>
+                <div class="card-logo"><img src="logo-empresa3.png" alt="Empresa 3"></div>
+            </div>
+        </div>
+    </section>
+
     <footer class="site-footer" id="contacto">
         <div class="container">
             <div class="footer-grid">
@@ -511,7 +500,6 @@
             .then(data => {
                 if (!data) return;
 
-                // 1. Configuración de Textos
                 if (data.config) {
                     if(data.config.hero_background) {
                         document.getElementById('hero-sec').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${data.config.hero_background})`;
@@ -524,7 +512,6 @@
                     document.getElementById('hero-title').innerText = "Servicio Técnico Profesional";
                 }
                 
-                // Por qué elegirnos (Beneficios)
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios && Array.isArray(data.beneficios)) {
                     choGrid.innerHTML = "";
@@ -540,7 +527,6 @@
                     });
                 }
 
-                // ✅ RENDERIZADO DINÁMICO E ILIMITADO DE CLIENTES OBJETIVOS
                 const objGrid = document.getElementById('obj-grid');
                 if (objGrid && data.objetivos && Array.isArray(data.objetivos)) {
                     objGrid.innerHTML = "";
@@ -556,7 +542,6 @@
                     });
                 }
                 
-                // 2. Servicios
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios && Array.isArray(data.servicios)) {
                     data.servicios.forEach((s, index) => { 
@@ -566,7 +551,6 @@
                     });
                 }
 
-                // 3. Productos
                 if (data.productos && Array.isArray(data.productos)) {
                     allProducts = data.productos;
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
@@ -579,7 +563,6 @@
                     filterAll();
                 }
                 
-                // 4. Socios (Partners)
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios && Array.isArray(data.socios)) {
                     data.socios.forEach((p, index) => {
@@ -588,7 +571,6 @@
                     });
                 }
 
-                // 5. Reseñas
                 const revC = document.getElementById('rev-c');
                 if (revC && data.resenas && Array.isArray(data.resenas)) {
                     data.resenas.forEach((r, index) => {

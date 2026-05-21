@@ -80,7 +80,7 @@
             color: var(--neon-green); 
         }
 
-        /* ✅ ESTILOS DEL DROPDOWN DE CATEGORÍAS (ESTILO EXTREME TECH) */
+        /* DROPDOWN DE CATEGORÍAS */
         .dropdown-menu-container {
             position: relative;
             display: inline-block;
@@ -341,7 +341,7 @@
             margin-bottom: 25px; 
         }
 
-        /* CATÁLOGO DE PRODUCTOS REJILLA ORIGINAL */
+        /* CATÁLOGO DE PRODUCTOS */
         .catalog-controls { 
             display: flex; 
             flex-direction: column; 
@@ -389,7 +389,7 @@
             color: #000; 
         }
 
-        /* EFICIENCIA Y RAPIDEZ (TIMELINE) */
+        /* TIMELINE OPERATIVO */
         .how-we-operate { 
             background: linear-gradient(135deg, #324e63 0%, #7d929f 100%); 
             padding: 100px 0; 
@@ -468,7 +468,7 @@
             transform: translateY(0); 
         }
 
-        /* SECCIONES COMPARTIDAS DE LOGOS */
+        /* LOGOS DE SOCIOS Y RECOMENDACIONES */
         .partners-section { 
             background: var(--white); 
             padding: 80px 0; 
@@ -515,7 +515,7 @@
             opacity: 1; 
         }
 
-        /* SECCIÓN DE RESEÑAS */
+        /* RESEÑAS */
         .reviews-section { 
             background-color: #fcfcfc; 
             padding: 100px 0; 
@@ -602,7 +602,6 @@
             border: 1px solid #ddd; 
             outline: none; 
             font-size: 15px; 
-            transition: 0.3s; 
         }
         .review-form-card button { 
             width: 100%; 
@@ -615,10 +614,6 @@
             cursor: pointer; 
             transition: 0.3s; 
             font-size: 16px; 
-        }
-        .review-form-card button:hover { 
-            background: var(--neon-green-hover); 
-            transform: translateY(-3px); 
         }
 
         /* FOOTER */
@@ -678,23 +673,6 @@
             .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row { flex-direction: column; grid-template-columns: 1fr; }
             .timeline-wrapper::before { display: none; } 
         }
-        .wa-float { 
-            position: fixed; 
-            bottom: 30px; 
-            right: 30px; 
-            background: #25D366; 
-            color: white; 
-            width: 65px; 
-            height: 65px; 
-            border-radius: 50%; 
-            display: grid; 
-            place-items: center; 
-            font-size: 35px; 
-            z-index: 2000; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2); 
-            text-decoration: none; 
-            transition: 0.3s; 
-        }
     </style>
 </head>
 <body>
@@ -707,8 +685,7 @@
             <nav class="nav-links">
                 <div class="dropdown-menu-container">
                     <a class="dropdown-trigger">Ver Categorías ▾</a>
-                    <div class="dropdown-content" id="nav-dropdown-cats">
-                        </div>
+                    <div class="dropdown-content" id="nav-dropdown-cats"></div>
                 </div>
                 <a href="#nosotros">Proyectos</a>
                 <a href="#catalogo">Tienda</a>
@@ -867,7 +844,7 @@
                 </div>
                 <div class="footer-links anim-up" style="transition-delay: 0.2s;">
                     <h4 class="footer-title">Contacto Directo</h4>
-                    <p><i class="fab fa-whatsapp"></i> +506 8755 0729</p>
+                    <p><i class="fab fa-whatsapp"></i> +506 8639 0631</p>
                     <p><i class="far fa-envelope"></i> info@icaretechcr.com</p>
                 </div>
                 <div class="footer-form anim-up" style="transition-delay: 0.4s;">
@@ -887,7 +864,8 @@
         let currentCat = 'Todos';
         let publicReviewImg = ""; 
         
-        function openWA(m) { window.open(`https://wa.me/50687550729?text=${encodeURIComponent(m)}`, "_blank"); }
+        // ✅ NÚMERO DE WHATSAPP ACTUALIZADO GLOBALMENTE EN LA FUNCIÓN
+        function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
         const animObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
@@ -955,15 +933,12 @@
                 }
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios) {
-                    data.servicios.forEach(s => { srvC.innerHTML += `<div class="service-card anim-up">${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}<h3>${s.titulo}</h3><p>${s.descripcion}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; });
+                    data.servicios.forEach(s => { srvC.innerHTML += `<div class="service-card anim-up">${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}  <h3>${s.titulo}</h3><p>${s.descripcion}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; });
                 }
                 
-                // Mapear filtros e inyectar el Dropdown dinámico
                 if (data.productos) { 
                     allProducts = data.productos; 
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                    
-                    // Rellenar botones de la sección de abajo
                     const filterContainer = document.getElementById('catFilters');
                     if (filterContainer) {
                         filterContainer.innerHTML = categories.map(cat => 
@@ -971,10 +946,8 @@
                         ).join('');
                     }
 
-                    // ✅ RELLENAR MENÚ SUPERIOR (DROPDOWN ESTILO EXTREME TECH)
                     const dropdownContainer = document.getElementById('nav-dropdown-cats');
                     if (dropdownContainer) {
-                        // Omitimos "Todos" para el menú superior para que abra directo cada sección dedicada
                         const realCats = categories.filter(c => c !== "Todos");
                         dropdownContainer.innerHTML = realCats.map(cat => 
                             `<a href="tienda.html?cat=${encodeURIComponent(cat)}"><span>${cat}</span> <i class="fas fa-chevron-right" style="font-size:10px; color:#ccc;"></i></a>`

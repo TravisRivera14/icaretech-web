@@ -79,6 +79,46 @@
         .nav-links a:hover { 
             color: var(--neon-green); 
         }
+
+        /* ✅ ESTILOS DEL DROPDOWN DE CATEGORÍAS (ESTILO EXTREME TECH) */
+        .dropdown-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-trigger {
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--white);
+            min-width: 240px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            padding: 10px 0;
+            z-index: 1100;
+            border: 1px solid #eee;
+        }
+        .dropdown-content a {
+            color: var(--text-dark) !important;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f5f9;
+            color: var(--icon-blue) !important;
+        }
+        .dropdown-menu-container:hover .dropdown-content {
+            display: block;
+        }
+
         .nav-actions { 
             display: flex; 
             gap: 20px; 
@@ -301,7 +341,7 @@
             margin-bottom: 25px; 
         }
 
-        /* ✅ CATÁLOGO DE PRODUCTOS RESTAURADO COMPLETAMENTE AL ESTILO ORIGINAL */
+        /* CATÁLOGO DE PRODUCTOS REJILLA ORIGINAL */
         .catalog-controls { 
             display: flex; 
             flex-direction: column; 
@@ -428,7 +468,7 @@
             transform: translateY(0); 
         }
 
-        /* SECCIONES COMPARTIDAS DE LOGOS (SOCIOS Y RECOMENDACIONES) */
+        /* SECCIONES COMPARTIDAS DE LOGOS */
         .partners-section { 
             background: var(--white); 
             padding: 80px 0; 
@@ -564,9 +604,6 @@
             font-size: 15px; 
             transition: 0.3s; 
         }
-        .review-form-card input:focus, .review-form-card textarea:focus { 
-            border-color: var(--neon-green); 
-        }
         .review-form-card button { 
             width: 100%; 
             padding: 15px; 
@@ -622,40 +659,25 @@
             gap: 10px; 
             color: #ccc; 
         }
-        .footer-links i { 
-            color: var(--neon-green); 
-            width: 20px; 
-        }
         .footer-form input, .footer-form button { 
             width: 100%; 
             padding: 12px; 
             margin-bottom: 10px; 
             border-radius: 8px; 
             border: none; 
-            outline: none; 
-        }
-        .footer-form input { 
-            background: #333; 
-            color: white; 
         }
         .footer-form button { 
             background: var(--neon-green); 
             color: #000; 
             font-weight: 700; 
             cursor: pointer; 
-            transition: 0.3s; 
-        }
-        .footer-form button:hover { 
-            background: var(--neon-green-hover); 
         }
         
         @media (max-width: 900px) {
             .nav-links, .search-bar { display: none; }
             .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row { flex-direction: column; grid-template-columns: 1fr; }
             .timeline-wrapper::before { display: none; } 
-            .timeline-card { min-height: auto; padding: 40px 20px; }
         }
-        
         .wa-float { 
             position: fixed; 
             bottom: 30px; 
@@ -673,9 +695,6 @@
             text-decoration: none; 
             transition: 0.3s; 
         }
-        .wa-float:hover { 
-            transform: scale(1.1); 
-        }
     </style>
 </head>
 <body>
@@ -686,7 +705,11 @@
                 <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
             </a>
             <nav class="nav-links">
-                <a href="#servicios">Ayuda técnica ▾</a>
+                <div class="dropdown-menu-container">
+                    <a class="dropdown-trigger">Ver Categorías ▾</a>
+                    <div class="dropdown-content" id="nav-dropdown-cats">
+                        </div>
+                </div>
                 <a href="#nosotros">Proyectos</a>
                 <a href="#catalogo">Tienda</a>
                 <a href="#clientes">Reseñas</a>
@@ -885,7 +908,6 @@
 
         window.setCategory = function(cat) { currentCat = cat; filterAll(); };
 
-        // ✅ REESTRUCTURADO PARA PINTAR LAS TARJETAS ORIGINALES DE FORMA VERTICAL
         window.filterAll = function() {
             const term = document.getElementById('catSearch').value.toLowerCase();
             const prodC = document.getElementById('prod-c'); 
@@ -936,16 +958,29 @@
                     data.servicios.forEach(s => { srvC.innerHTML += `<div class="service-card anim-up">${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}<h3>${s.titulo}</h3><p>${s.descripcion}</p><a href="servicio.html?id=${s.id}" class="btn-ver-mas">Ver Mas</a></div>`; });
                 }
                 
-                // Mapear filtros de categorías dinámicas
+                // Mapear filtros e inyectar el Dropdown dinámico
                 if (data.productos) { 
                     allProducts = data.productos; 
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+                    
+                    // Rellenar botones de la sección de abajo
                     const filterContainer = document.getElementById('catFilters');
                     if (filterContainer) {
                         filterContainer.innerHTML = categories.map(cat => 
                             `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
                         ).join('');
                     }
+
+                    // ✅ RELLENAR MENÚ SUPERIOR (DROPDOWN ESTILO EXTREME TECH)
+                    const dropdownContainer = document.getElementById('nav-dropdown-cats');
+                    if (dropdownContainer) {
+                        // Omitimos "Todos" para el menú superior para que abra directo cada sección dedicada
+                        const realCats = categories.filter(c => c !== "Todos");
+                        dropdownContainer.innerHTML = realCats.map(cat => 
+                            `<a href="tienda.html?cat=${encodeURIComponent(cat)}"><span>${cat}</span> <i class="fas fa-chevron-right" style="font-size:10px; color:#ccc;"></i></a>`
+                        ).join('');
+                    }
+                    
                     filterAll(); 
                 }
 

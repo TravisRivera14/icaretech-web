@@ -5,35 +5,50 @@
     <title>Admin iCare | Control Maestro</title>
     <style>
         :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; margin: 0; }
-        h1 { font-size: 28px; font-weight: 700; color: #111; margin-bottom: 20px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
-        .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #222; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 6px 0 12px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .btn-edit { background: var(--edit); width: auto; padding: 6px 14px; margin-right: 5px; border-radius: 4px; display: inline-block; color: white; cursor: pointer; border: none; }
-        .btn-del { background: var(--del); width: auto; padding: 6px 14px; border-radius: 4px; display: inline-block; color: white; cursor: pointer; border: none; }
-        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        input, textarea, button { width: 100%; padding: 12px; margin: 6px 0 12px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; }
+        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .list-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn-edit { background: var(--edit); padding: 6px 14px; border-radius: 4px; color: white; border: none; cursor: pointer; }
+        .btn-del { background: var(--del); padding: 6px 14px; border-radius: 4px; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div style="grid-column: 1/-1;"><h1>Control Maestro iCare Tech CR</h1></div>
+    <h1>Control Maestro iCare Tech CR</h1>
     
     <div>
         <div class="card">
-            <h2 id="rev-label">⭐ Gestionar Reseñas</h2>
-            <input type="text" id="revClient" placeholder="Nombre del Cliente">
-            <input type="text" id="revPos" placeholder="Puesto / Empresa">
-            <textarea id="revText" rows="3" placeholder="Comentario..."></textarea>
+            <h2>⭐ Gestionar Reseñas</h2>
+            <input type="text" id="revClient" placeholder="Nombre">
+            <input type="text" id="revPos" placeholder="Puesto">
+            <textarea id="revText" rows="3" placeholder="Comentario"></textarea>
             <button id="btn-save-rev">Guardar Reseña</button>
         </div>
+        
+        <div class="card">
+            <h2>💻 Gestionar Servicio</h2>
+            <input type="text" id="sIcon" placeholder="Icono">
+            <input type="text" id="sTitle" placeholder="Título">
+            <textarea id="sDesc" placeholder="Descripción"></textarea>
+            <textarea id="sProcess" placeholder="Proceso"></textarea>
+            <textarea id="sBenefits" placeholder="Beneficios (uno por línea)"></textarea>
+            <button id="btn-save-srv">Guardar Servicio</button>
         </div>
-    
+    </div>
+
     <div>
-        <div class="card" style="grid-column: 1/-1;">
+        <div class="card">
+            <h2>📦 Gestionar Producto</h2>
+            <input type="text" id="pName" placeholder="Nombre">
+            <input type="text" id="pPrice" placeholder="Precio">
+            <input type="text" id="pCat" placeholder="Categoría">
+            <button id="btn-save-prod">Guardar Producto</button>
+        </div>
+        
+        <div class="card">
             <h2>📋 Gestión Actual</h2>
             <div id="master-list">Cargando...</div>
         </div>
@@ -44,8 +59,10 @@
     const API = '/api';
     let cacheData = { servicios: [], productos: [], resenas: [] };
 
-    // Corrección crítica: Usamos listeners en lugar de onclick
+    // Asignación de eventos segura
     document.getElementById('btn-save-rev').addEventListener('click', subirResena);
+    document.getElementById('btn-save-srv').addEventListener('click', subirServicio);
+    document.getElementById('btn-save-prod').addEventListener('click', subirProducto);
 
     function loadContent() {
         fetch(`${API}/todo`)
@@ -55,45 +72,62 @@
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
             renderList();
-        })
-        .catch(() => document.getElementById('master-list').innerText = "Error cargando datos.");
+        });
     }
 
     function renderList() {
         const list = document.getElementById('master-list');
         list.innerHTML = "";
-        
         cacheData.servicios.forEach((s, idx) => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<span>${s.titulo}</span> <div id="actions-${idx}"></div>`;
+            div.innerHTML = `<span>${s.titulo}</span>`;
             
-            const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn-edit';
-            btnEdit.innerText = 'Editar';
-            btnEdit.addEventListener('click', () => prepararEdicion('servicios', idx));
+            const btnDel = document.createElement('button');
+            btnDel.className = 'btn-del';
+            btnDel.innerText = 'Eliminar';
+            btnDel.addEventListener('click', () => del('servicios', s.id));
             
-            div.querySelector(`#actions-${idx}`).appendChild(btnEdit);
+            div.appendChild(btnDel);
             list.appendChild(div);
         });
     }
 
-    function prepararEdicion(tipo, index) {
-        console.log("Editando:", cacheData[tipo][index]);
-        // Aquí tu lógica de edición...
-    }
-
     function subirResena() {
-        const data = {
+        const data = { 
             cliente: document.getElementById('revClient').value,
             puesto: document.getElementById('revPos').value,
             comentario: document.getElementById('revText').value
         };
-        fetch(`${API}/resenas`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(() => loadContent());
+        fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+        .then(() => loadContent());
+    }
+
+    function subirServicio() {
+        const data = {
+            titulo: document.getElementById('sTitle').value,
+            descripcion: document.getElementById('sDesc').value,
+            proceso: document.getElementById('sProcess').value,
+            beneficios: document.getElementById('sBenefits').value
+        };
+        fetch(`${API}/servicios`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+        .then(() => loadContent());
+    }
+
+    function subirProducto() {
+        const data = {
+            nombre: document.getElementById('pName').value,
+            precio: document.getElementById('pPrice').value,
+            categoria: document.getElementById('pCat').value
+        };
+        fetch(`${API}/productos`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+        .then(() => loadContent());
+    }
+
+    function del(t, id) {
+        if(confirm("¿Eliminar?")) {
+            fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE' }).then(() => loadContent());
+        }
     }
 
     window.onload = loadContent;

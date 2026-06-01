@@ -16,14 +16,6 @@
       "dest": "app.py"
     },
     {
-      "src": "/admin.html",
-      "dest": "frontend/admin.html"
-    },
-    {
-      "src": "/servicio.html",
-      "dest": "frontend/servicio.html"
-    },
-    {
       "src": "/(.*)",
       "dest": "frontend/$1"
     }

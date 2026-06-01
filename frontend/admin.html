@@ -186,8 +186,8 @@
 
         <div class="card" style="border: 1px solid #4ea5ce;">
             <h2 id="obj-label" style="color: #4ea5ce;">🎯 Clientes Objetivos</h2>
-            <input type="text" id="objIcon" placeholder="Icono FontAwesome (Ej: fas fa-building)"></input>
-            <input type="text" id="objTitle" placeholder="Título del Perfil (Ej: Sector Corporativo)"></input>
+            <input type="text" id="objIcon" placeholder="Icono FontAwesome (Ej: fas fa-building)">
+            <input type="text" id="objTitle" placeholder="Título del Perfil (Ej: Sector Corporativo)">
             <textarea id="objDesc" rows="2" placeholder="Explicación detallada de la solución a medida..."></textarea>
             <button onclick="subirObjetivo()" style="background: #4ea5ce;">Guardar Perfil de Cliente</button>
         </div>
@@ -203,7 +203,7 @@
         <div class="card" style="grid-column: 1/-1;">
             <h2>📋 Gestión Actual de Contenidos</h2>
             <div id="master-list" style="max-height: 500px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
-                Cargando base de datos de Neon...
+                Conectando con el servidor de Vercel...
             </div>
         </div>
     </div>
@@ -232,7 +232,13 @@
 
     function loadContent() {
         fetch(`${API}/todo`)
-        .then(r => r.json())
+        .then(async r => {
+            if (!r.ok) {
+                const errData = await r.json().catch(() => ({}));
+                throw new Error(errData.detalles || "Fallo en la API");
+            }
+            return r.json();
+        })
         .then(data => {
             cacheData.servicios = data.servicios || [];
             cacheData.productos = data.productos || [];
@@ -288,12 +294,11 @@
         })
         .catch(err => {
             console.error(err);
-            document.getElementById('master-list').innerHTML = "Error al conectar con la base de datos de Neon.";
+            document.getElementById('master-list').innerHTML = `<div style="color:#ff3b30; padding:10px; font-weight:bold;">⚠️ Error de comunicación técnico: ${err.message}</div>`;
         });
     }
 
     function prepararEdicion(tipo, index) {
-        // Corrección de puntero para lectura segura del caché
         const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
         const item = cacheData[datosReales][index];
         if (!item) return;
@@ -352,9 +357,19 @@
             method: method, 
             headers:{'Content-Type':'application/json'}, 
             body:JSON.stringify(data)
-        }).then(() => {
+        })
+        .then(async r => {
+            if(!r.ok) {
+                const txt = await r.json().catch(() => ({}));
+                throw new Error(txt.error || "Error al procesar");
+            }
+            return r.json();
+        })
+        .then(() => {
+            alert("¡Cambio guardado con éxito!");
             location.reload();
-        }).catch(err => alert("Error al guardar elemento."));
+        })
+        .catch(err => alert("Error al guardar elemento: " + err.message));
     }
 
     function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
@@ -384,12 +399,23 @@
                 vision:document.getElementById('vision').value,
                 compromiso:document.getElementById('compromiso').value
             })
-        }).then(() => alert("¡Textos institucionales de iCare Tech actualizados con éxito!")); 
+        })
+        .then(async r => {
+            if(!r.ok) throw new Error("Error de red");
+            alert("¡Textos institucionales de iCare Tech actualizados con éxito!");
+            loadContent();
+        })
+        .catch(err => alert("Error al guardar textos: " + err.message));
     }
 
     function del(t, id) { 
         if(confirm("¿Estás seguro de que deseas eliminar este elemento permanentemente de Neon?")) {
-            fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(() => loadContent()); 
+            fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'})
+            .then(async r => {
+                if(!r.ok) throw new Error("No se pudo eliminar");
+                loadContent();
+            })
+            .catch(err => alert(err.message)); 
         }
     }
     

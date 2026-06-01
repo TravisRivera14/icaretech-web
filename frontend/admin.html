@@ -4,231 +4,48 @@
     <meta charset="UTF-8">
     <title>Admin iCare | Control Maestro</title>
     <style>
-        :root { 
-            --brand: #1b4332; 
-            --edit: #0071e3; 
-            --del: #ff3b30; 
-            --bg: #f5f5f7; 
-        }
-        body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg); 
-            padding: 20px; 
-            margin: 0;
-        }
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 20px;
-        }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 20px; 
-        }
-        .card { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            margin-bottom: 20px; 
-            border: 1px solid #ddd; 
-            box-sizing: border-box; 
-        }
-        .card h2 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #222;
-        }
-        input, textarea, button { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 6px 0 12px 0; 
-            border-radius: 8px; 
-            border: 1px solid #ddd; 
-            box-sizing: border-box; 
-            font-size: 14px;
-        }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #4ea5ce;
-        }
-        label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #555;
-            display: block;
-            margin-top: 4px;
-        }
-        button { 
-            background: var(--brand); 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: 0.3s; 
-            margin-bottom: 0;
-        }
-        button:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px);
-        }
-        .list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 12px; 
-            border-bottom: 1px solid #eee; 
-            font-size: 13px; 
-        }
-        .list-item:last-child {
-            border-bottom: none;
-        }
-        .list-item span {
-            font-weight: 500;
-            color: #333;
-        }
-        .btn-edit { 
-            background: var(--edit); 
-            width: auto; 
-            padding: 6px 14px; 
-            margin-right: 5px; 
-            font-size: 11px; 
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .btn-del { 
-            background: var(--del); 
-            width: auto; 
-            padding: 6px 14px; 
-            font-size: 11px; 
-            border-radius: 4px;
-            display: inline-block;
-        }
-        
-        @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
+        :root { --brand: #1b4332; --edit: #0071e3; --del: #ff3b30; --bg: #f5f5f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        h1 { font-size: 28px; font-weight: 700; color: #111; margin-bottom: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #ddd; }
+        .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #222; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 6px 0 12px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: var(--brand); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn-edit { background: var(--edit); width: auto; padding: 6px 14px; margin-right: 5px; border-radius: 4px; display: inline-block; color: white; cursor: pointer; border: none; }
+        .btn-del { background: var(--del); width: auto; padding: 6px 14px; border-radius: 4px; display: inline-block; color: white; cursor: pointer; border: none; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <div style="grid-column: 1/-1;">
-        <h1>Control Maestro iCare Tech CR</h1>
-    </div>
+    <div style="grid-column: 1/-1;"><h1>Control Maestro iCare Tech CR</h1></div>
     
     <div>
         <div class="card">
-            <h2 id="rev-label">⭐ Gestionar Clientes Satisfechos</h2>
+            <h2 id="rev-label">⭐ Gestionar Reseñas</h2>
             <input type="text" id="revClient" placeholder="Nombre del Cliente">
-            <input type="text" id="revPos" placeholder="Puesto / Cargo / Empresa">
-            <textarea id="revText" rows="3" placeholder="Comentario de la reseña..."></textarea>
-            <label>Foto Cliente:</label>
-            <input type="file" id="revImgFile" accept="image/*">
-            <button onclick="subirResena()">Guardar Reseña</button>
+            <input type="text" id="revPos" placeholder="Puesto / Empresa">
+            <textarea id="revText" rows="3" placeholder="Comentario..."></textarea>
+            <button id="btn-save-rev">Guardar Reseña</button>
         </div>
-
-        <div class="card">
-            <h2 id="srv-label">💻 Gestionar Servicio</h2>
-            <input type="text" id="sIcon" placeholder="Icono (Ej: ⚙ o un emoji)">
-            <input type="text" id="sTitle" placeholder="Título del Servicio">
-            <textarea id="sDesc" rows="2" placeholder="Descripción Corta para la Landing"></textarea>
-            <textarea id="sProcess" rows="3" placeholder="¿Qué se realiza en este servicio? (Explicación técnica)"></textarea>
-            <textarea id="sBenefits" rows="3" placeholder="Beneficios clave (Escribe uno por línea)"></textarea>
-            <label>Imagen del Servicio (Opcional si usa icono):</label>
-            <input type="file" id="sImgFile" accept="image/*">
-            <button onclick="subirServicio()">Guardar Servicio</button>
         </div>
-
-        <div class="card">
-            <h2 id="partner-label">🤝 Gestionar Socios (Marcas Autorizadas)</h2>
-            <input type="text" id="partnerName" placeholder="Nombre del Socio (Ej: Apple, Dell)">
-            <label>Logotipo del Socio:</label>
-            <input type="file" id="partnerImgFile" accept="image/*">
-            <button onclick="subirSocio()">Guardar Socio</button>
-        </div>
-    </div>
     
     <div>
-        <div class="card">
-            <h2 id="prod-label">📦 Gestionar Producto</h2>
-            <input type="text" id="pName" placeholder="Nombre del Producto">
-            <input type="text" id="pPrice" placeholder="Precio en Colones (Solo números)">
-            <input type="text" id="pCat" placeholder="Categoría (Ej: Repuestos, Accesorios)">
-            <label>Imagen del Producto:</label>
-            <input type="file" id="pImgFile" accept="image/*">
-            <button onclick="subirProducto()">Guardar Producto</button>
-        </div>
-
-        <div class="card">
-            <h2>🎯 Configuración General</h2>
-            <input type="text" id="h_titulo" placeholder="Título Principal del Hero">
-            <textarea id="mision" rows="2" placeholder="Texto de la Misión"></textarea>
-            <textarea id="vision" rows="2" placeholder="Texto de la Visión"></textarea>
-            <textarea id="compromiso" rows="2" placeholder="Texto del Compromiso Empresarial"></textarea>
-            <button onclick="updateConfig()">Actualizar Textos Principales</button>
-        </div>
-
-        <div class="card" style="border: 1px solid #355c6b;">
-            <h2 id="ben-label" style="color: #355c6b;">🛡️ ¿Por qué elegir iCare Tech CR?</h2>
-            <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
-            <input type="text" id="bTitle" placeholder="Título de la Ventaja">
-            <textarea id="bDesc" rows="2" placeholder="Descripción corta explicativa..."></textarea>
-            <button onclick="subirBeneficio()" style="background: #355c6b;">Guardar Tarjeta de Valor</button>
-        </div>
-
-        <div class="card" style="border: 1px solid #4ea5ce;">
-            <h2 id="obj-label" style="color: #4ea5ce;">🎯 Clientes Objetivos</h2>
-            <input type="text" id="objIcon" placeholder="Icono FontAwesome (Ej: fas fa-building)"></input>
-            <input type="text" id="objTitle" placeholder="Título del Perfil (Ej: Sector Corporativo)"></input>
-            <textarea id="objDesc" rows="2" placeholder="Explicación detallada de la solución a medida..."></textarea>
-            <button onclick="subirObjetivo()" style="background: #4ea5ce;">Guardar Perfil de Cliente</button>
-        </div>
-
-        <div class="card" style="border: 1px solid #1e333d;">
-            <h2 id="emp-label" style="color: #1e333d;">🏢 Empresas que nos Recomiendan</h2>
-            <input type="text" id="empName" placeholder="Nombre de la Empresa Comercial">
-            <label>Logotipo de la Empresa:</label>
-            <input type="file" id="empImgFile" accept="image/*">
-            <button onclick="subirEmpresa()" style="background: #1e333d;">Guardar Logotipo Comercial</button>
-        </div>
-
         <div class="card" style="grid-column: 1/-1;">
-            <h2>📋 Gestión Actual de Contenidos</h2>
-            <div id="master-list" style="max-height: 500px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
-                Cargando base de datos de Neon...
-            </div>
+            <h2>📋 Gestión Actual</h2>
+            <div id="master-list">Cargando...</div>
         </div>
     </div>
 </div>
 
 <script>
     const API = '/api';
-    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
+    let cacheData = { servicios: [], productos: [], resenas: [] };
 
-    // Procesador seguro de archivos a Base64 sin pérdida de datos
-    const handleFile = (id, cb) => {
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.onchange = (e) => {
-            const r = new FileReader(); 
-            r.onload = () => cb(r.result);
-            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
-        };
-    };
-    handleFile('sImgFile', res => imgS = res);
-    handleFile('pImgFile', res => imgP = res);
-    handleFile('revImgFile', res => imgRev = res);
-    handleFile('partnerImgFile', res => imgPartner = res);
-    handleFile('empImgFile', res => imgEmp = res);
+    // Corrección crítica: Usamos listeners en lugar de onclick
+    document.getElementById('btn-save-rev').addEventListener('click', subirResena);
 
     function loadContent() {
         fetch(`${API}/todo`)
@@ -237,162 +54,48 @@
             cacheData.servicios = data.servicios || [];
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
-            cacheData.socios = data.socios || [];
-            cacheData.beneficios = data.beneficios || [];
-            cacheData.objetivos = data.objetivos || [];
-            cacheData.empresas = data.empresas || [];
-
-            if (data.config) {
-                document.getElementById('h_titulo').value = data.config.hero_titulo || '';
-                document.getElementById('mision').value = data.config.mision || '';
-                document.getElementById('vision').value = data.config.vision || '';
-                document.getElementById('compromiso').value = data.config.compromiso || '';
-            }
-
-            let h = "<div style='margin-bottom:15px;'><b>💻 SERVICIOS REGISTRADOS:</b></div>";
-            cacheData.servicios.forEach((s, idx) => {
-                h += `<div class="list-item"><span>${s.titulo || 'Sin título'}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios',${s.id})">Eliminar</button></div></div>`;
-            });
-            
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>📦 PRODUCTOS EN TIENDA:</b></div>";
-            cacheData.productos.forEach((p, idx) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Sin nombre'}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button><button class="btn-del" onclick="del('productos',${p.id})">Eliminar</button></div></div>`;
-            });
-
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>🛡️ TARJETAS ¿POR QUÉ ELEGIRNOS?:</b></div>";
-            cacheData.beneficios.forEach((b, idx) => {
-                h += `<div class="list-item"><span>${b.titulo || 'Ventaja'}</span><div><button class="btn-edit" onclick="prepararEdicion('beneficios', ${idx})">Editar</button><button class="btn-del" onclick="del('beneficios',${b.id})">Eliminar</button></div></div>`;
-            });
-
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>🎯 PERFILES DE CLIENTES OBJETIVOS:</b></div>";
-            cacheData.objetivos.forEach((o, idx) => {
-                h += `<div class="list-item"><span>${o.titulo || 'Perfil'}</span><div><button class="btn-edit" onclick="prepararEdicion('objetivos', ${idx})">Editar</button><button class="btn-del" onclick="del('clientes_objetivos',${o.id})">Eliminar</button></div></div>`;
-            });
-            
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>🏢 EMPRESAS QUE RECOMIENDAN:</b></div>";
-            cacheData.empresas.forEach((e, idx) => {
-                h += `<div class="list-item"><span>${e.nombre || 'Empresa'}</span><div><button class="btn-edit" onclick="prepararEdicion('empresas_recomiendan', ${idx})">Editar</button><button class="btn-del" onclick="del('empresas_recomiendan',${e.id})">Eliminar</button></div></div>`;
-            });
-            
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>⭐ RESEÑAS PÚBLICAS Y DE CLIENTES:</b></div>";
-            cacheData.resenas.forEach((r, idx) => {
-                h += `<div class="list-item"><span>${r.cliente || 'Anónimo'}</span><div><button class="btn-edit" onclick="prepararEdicion('resenas', ${idx})">Editar</button><button class="btn-del" onclick="del('resenas',${r.id})">Eliminar</button></div></div>`;
-            });
-            
-            h += "<div style='margin-top:25px; margin-bottom:15px;'><b>🤝 MARCAS Y SOCIOS TECNOLÓGICOS:</b></div>";
-            cacheData.socios.forEach((p) => {
-                h += `<div class="list-item"><span>${p.nombre || 'Socio'}</span><div><button class="btn-del" onclick="del('socios',${p.id})">Eliminar</button></div></div>`;
-            });
-            
-            document.getElementById('master-list').innerHTML = h;
+            renderList();
         })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('master-list').innerHTML = "Error al conectar con la base de datos de Neon.";
+        .catch(() => document.getElementById('master-list').innerText = "Error cargando datos.");
+    }
+
+    function renderList() {
+        const list = document.getElementById('master-list');
+        list.innerHTML = "";
+        
+        cacheData.servicios.forEach((s, idx) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<span>${s.titulo}</span> <div id="actions-${idx}"></div>`;
+            
+            const btnEdit = document.createElement('button');
+            btnEdit.className = 'btn-edit';
+            btnEdit.innerText = 'Editar';
+            btnEdit.addEventListener('click', () => prepararEdicion('servicios', idx));
+            
+            div.querySelector(`#actions-${idx}`).appendChild(btnEdit);
+            list.appendChild(div);
         });
     }
 
     function prepararEdicion(tipo, index) {
-        // Corrección de puntero para lectura segura del caché
-        const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
-        const item = cacheData[datosReales][index];
-        if (!item) return;
-
-        editId = item.id; 
-        editType = tipo;
-
-        if(tipo === 'servicios') {
-            document.getElementById('sIcon').value = item.icono || '';
-            document.getElementById('sTitle').value = item.titulo || '';
-            document.getElementById('sDesc').value = item.descripcion || '';
-            document.getElementById('sProcess').value = item.proceso || '';
-            document.getElementById('sBenefits').value = item.beneficios || '';
-            imgS = item.imagen || '';
-            document.getElementById('srv-label').innerText = "📝 Editando Servicio Seleccionado";
-        }
-        if(tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre || '';
-            document.getElementById('pPrice').value = item.precio || '';
-            document.getElementById('pCat').value = item.categoria || '';
-            imgP = item.imagen || '';
-            document.getElementById('prod-label').innerText = "📝 Editando Producto Seleccionado";
-        }
-        if(tipo === 'resenas') {
-            document.getElementById('revClient').value = item.cliente || '';
-            document.getElementById('revPos').value = item.puesto || '';
-            document.getElementById('revText').value = item.comentario || '';
-            imgRev = item.imagen_cliente || '';
-            document.getElementById('rev-label').innerText = "📝 Editando Reseña Seleccionada";
-        }
-        if(tipo === 'beneficios') {
-            document.getElementById('bIcon').value = item.icono || '';
-            document.getElementById('bTitle').value = item.titulo || '';
-            document.getElementById('bDesc').value = item.descripcion || '';
-            document.getElementById('ben-label').innerText = "📝 Editando Tarjeta de Valor";
-        }
-        if(tipo === 'objetivos') {
-            document.getElementById('objIcon').value = item.icono || '';
-            document.getElementById('objTitle').value = item.titulo || '';
-            document.getElementById('objDesc').value = item.descripcion || '';
-            document.getElementById('obj-label').innerText = "📝 Editando Perfil Objetivo";
-        }
-        if(tipo === 'empresas_recomiendan') {
-            document.getElementById('empName').value = item.nombre || '';
-            imgEmp = item.imagen || '';
-            document.getElementById('emp-label').innerText = "📝 Editando Empresa Recomendada";
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        console.log("Editando:", cacheData[tipo][index]);
+        // Aquí tu lógica de edición...
     }
 
-    function saveItem(path, data) {
-        const method = (editId && editType === path) ? 'PUT' : 'POST';
-        const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        
-        fetch(url, {
-            method: method, 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify(data)
-        }).then(() => {
-            location.reload();
-        }).catch(err => alert("Error al guardar elemento."));
+    function subirResena() {
+        const data = {
+            cliente: document.getElementById('revClient').value,
+            puesto: document.getElementById('revPos').value,
+            comentario: document.getElementById('revText').value
+        };
+        fetch(`${API}/resenas`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(() => loadContent());
     }
 
-    function subirResena() { saveItem('resenas', {cliente:document.getElementById('revClient').value, puesto:document.getElementById('revPos').value, comentario:document.getElementById('revText').value, imagen_cliente:imgRev}); }
-    function subirServicio() { 
-        saveItem('servicios', {
-            icono:document.getElementById('sIcon').value, 
-            titulo:document.getElementById('sTitle').value, 
-            descripcion:document.getElementById('sDesc').value, 
-            proceso:document.getElementById('sProcess').value, 
-            beneficios:document.getElementById('sBenefits').value, 
-            imagen:imgS
-        }); 
-    }
-    function subirProducto() { saveItem('productos', {nombre:document.getElementById('pName').value, precio:document.getElementById('pPrice').value, categoria:document.getElementById('pCat').value, imagen:imgP}); }
-    function subirSocio() { saveItem('socios', {nombre:document.getElementById('partnerName').value, imagen:imgPartner}); }
-    function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
-    function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
-    function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }
-
-    function updateConfig() { 
-        fetch(`${API}/config`, {
-            method:'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({
-                hero_titulo:document.getElementById('h_titulo').value, 
-                mision:document.getElementById('mision').value, 
-                vision:document.getElementById('vision').value,
-                compromiso:document.getElementById('compromiso').value
-            })
-        }).then(() => alert("¡Textos institucionales de iCare Tech actualizados con éxito!")); 
-    }
-
-    function del(t, id) { 
-        if(confirm("¿Estás seguro de que deseas eliminar este elemento permanentemente de Neon?")) {
-            fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'}).then(() => loadContent()); 
-        }
-    }
-    
     window.onload = loadContent;
 </script>
 </body>

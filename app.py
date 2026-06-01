@@ -11,7 +11,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def db_query(query, params=(), fetch=False):
-    conn = psycopg2.connect(DATABASE_URL)
+    # Conexión configurada con soporte SSL obligatorio para Neon
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
     c.execute(query, params)
     res = c.fetchall() if fetch else None
@@ -21,7 +22,8 @@ def db_query(query, params=(), fetch=False):
 
 def init_db():
     """Crea las tablas de forma segura si no existen e inyecta columnas faltantes."""
-    conn = psycopg2.connect(DATABASE_URL)
+    # Conexión configurada con soporte SSL obligatorio para Neon
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS productos (
         id SERIAL PRIMARY KEY, 

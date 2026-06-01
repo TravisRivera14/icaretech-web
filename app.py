@@ -10,6 +10,15 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Variable de conexión automática de Neon en Vercel
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
+if DATABASE_URL:
+    # 1. Asegurar el protocolo correcto para psycopg2
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    # 2. Remover automáticamente el pooler que inyecta la integración de Vercel
+    if "-pooler" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("-pooler", "")
+
 def db_query(query, params=(), fetch=False):
     # Conexión configurada con soporte SSL obligatorio para Neon
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')

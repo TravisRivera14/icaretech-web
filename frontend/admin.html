@@ -121,7 +121,6 @@
 </head>
 <body>
 
-<!-- PANTALLA DE LOGGING FLOTANTE MÁSTER -->
 <div id="login-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f7f6; z-index:99999; display:flex; align-items:center; justify-content:center;">
     <div style="background:#fff; padding:40px; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:400px; text-align:center; font-family: system-ui, -apple-system, sans-serif;">
         <h2 style="margin-bottom:5px; font-weight:800; color:#1b4332;">Control Maestro</h2>
@@ -216,7 +215,6 @@
             <button onclick="subirEmpresa()" style="background: #1e333d;">Guardar Logotipo Comercial</button>
         </div>
 
-        <!-- SECCIÓN EXCLUSIVA: GESTIÓN DE PERSONAL ACTIVO -->
         <div class="card" id="seccion-usuarios-admin" style="display:none; border: 1px solid #cbd5e1;">
             <h2 style="color: var(--brand);">👥 Gestión de Personal Técnico</h2>
             <form id="form-alta-trabajador" style="margin-bottom:20px;">
@@ -244,7 +242,6 @@
             <div id="lista-usuarios-tecnicos" style="max-height:200px; overflow-y:auto; background:#fafafa; border:1px solid #eee; border-radius:8px;"></div>
         </div>
 
-        <!-- SECCIÓN EXCLUSIVA: BITÁCORA DE AUDITORÍA -->
         <div class="card" id="seccion-logs-admin" style="display:none; border: 1px solid #475569; grid-column: 1/-1;">
             <h2 style="color: #475569;">📜 Registro de Cambios y Auditoría (Neon Logs)</h2>
             <div id="lista-logs-auditoria" style="max-height: 250px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; font-size:12px; padding:10px;">
@@ -287,12 +284,15 @@
     // ==========================================
     document.getElementById('form-login-master').addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation(); // Detiene cualquier refresco nativo del navegador antes de tiempo
+        
         const user = document.getElementById('login-user').value;
         const pass = document.getElementById('login-pass').value;
         
         fetch(`${API}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // Requerido para almacenar las cookies seguras de Vercel
             body: JSON.stringify({ usuario: user, password: pass })
         })
         .then(res => {
@@ -321,7 +321,7 @@
     });
 
     function cargarHistorialLogs() {
-        fetch(`${API}/admin/logs`)
+        fetch(`${API}/admin/logs`, { credentials: 'include' })
         .then(res => res.json())
         .then(logs => {
             const container = document.getElementById('lista-logs-auditoria');
@@ -335,7 +335,7 @@
     }
 
     function cargarListaTrabajadores() {
-        fetch(`${API}/admin/usuarios`)
+        fetch(`${API}/admin/usuarios`, { credentials: 'include' })
         .then(res => res.json())
         .then(usuarios => {
             const div = document.getElementById('lista-usuarios-tecnicos');
@@ -353,6 +353,7 @@
         fetch(`${API}/admin/crear-usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 nombre: document.getElementById('new-emp-name').value,
                 usuario: document.getElementById('new-emp-user').value,
@@ -388,6 +389,7 @@
         fetch(`${API}/admin/editar-usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 id: document.getElementById('edit-emp-id').value,
                 nombre: document.getElementById('edit-emp-name').value,
@@ -413,7 +415,7 @@
     function loadContent() {
         fetch(`${API}/todo`)
         .then(async r => {
-            if (r.status === 401 || r.status === 403) return; // Control preventivo de sesión
+            if (r.status === 401 || r.status === 403) return; 
             if (!r.ok) {
                 const errData = await r.json().catch(() => ({}));
                 throw new Error(errData.detalles || "Fallo en la API");
@@ -474,11 +476,10 @@
             
             document.getElementById('master-list').innerHTML = h;
             
-            // Actualización asíncrona en caliente del historial si la sección está activa
             if(document.getElementById('seccion-logs-admin').style.display === 'block') {
                 cargarHistorialLogs();
             }
-        } catch(e) {})
+        })
         .catch(err => {
             console.error(err);
             document.getElementById('master-list').innerHTML = `<div style="color:#ff3b30; padding:10px; font-weight:bold;">⚠️ Error de comunicación técnico: ${err.message}</div>`;
@@ -543,6 +544,7 @@
         fetch(url, {
             method: method, 
             headers:{'Content-Type':'application/json'}, 
+            credentials: 'include',
             body:JSON.stringify(data)
         })
         .then(async r => {
@@ -555,7 +557,6 @@
         .then(() => {
             alert("¡Cambio guardado con éxito!");
             loadContent();
-            // Reseteo de labels de edición
             document.getElementById('srv-label').innerText = "💻 Gestionar Servicio";
             document.getElementById('prod-label').innerText = "📦 Gestionar Producto";
             document.getElementById('rev-label').innerText = "⭐ Gestionar Clientes Satisfechos";
@@ -588,6 +589,7 @@
         fetch(`${API}/config`, {
             method:'POST', 
             headers:{'Content-Type':'application/json'}, 
+            credentials: 'include',
             body:JSON.stringify({
                 hero_titulo:document.getElementById('h_titulo').value, 
                 mision:document.getElementById('mision').value, 
@@ -605,7 +607,7 @@
 
     function del(t, id) { 
         if(confirm("¿Estás seguro de que deseas eliminar este elemento permanentemente de Neon?")) {
-            fetch(`${API}/eliminar/${t}/${id}`, {method:'DELETE'})
+            fetch(`${API}/eliminar/${t}/${id}`, { method:'DELETE', credentials: 'include' })
             .then(async r => {
                 if(!r.ok) throw new Error("No se pudo eliminar");
                 loadContent();

@@ -6,13 +6,20 @@ import psycopg2
 
 app = Flask(__name__)
 
-# Configuración de CORS con soporte para credenciales (Sesiones/Cookies)
+# Configuración de CORS con soporte estricto para credenciales y cookies en la nube
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
 # Llave secreta obligatoria para que Flask firme las sesiones/cookies de inicio de sesión de forma segura
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
+
+# 🛠️ CONFIGURACIÓN CRUCIAL PARA EVITAR EL BLOQUEO DE SESIONES EN VERCEL
+app.config.update(
+    SESSION_COOKIE_SECURE=True,      # Obliga al navegador a enviar la cookie solo por HTTPS
+    SESSION_COOKIE_SAMESITE='None',  # Permite que la cookie se comparta entre dominios cruzados (Frontend -> Backend Vercel)
+    SESSION_COOKIE_HTTPONLY=True     # Protege la cookie contra scripts maliciosos del lado del cliente
+)
 
 # Cambiamos la lectura a tu variable manual independiente libre de poolers
 DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON')
@@ -150,6 +157,9 @@ def login():
         session['rol'] = res[0][3]
         session['nombre'] = res[0][4]
         
+        # Guardamos explícitamente la sesión antes de retornar la respuesta para asegurar la persistencia en Vercel
+        session.modified = True
+        
         return jsonify({
             "success": True,
             "usuario": res[0][1],
@@ -258,7 +268,7 @@ def obtener_todo():
             ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
             ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
             ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
-            ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
+            ("Soluciones integrales en tecnología", "Soporte, instalaciones and asesoría global para tu infraestructura.", "fas fa-laptop-code"),
             ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
             ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
             ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),

@@ -80,6 +80,10 @@ def init_db():
         nombre TEXT,
         imagen TEXT
     )''')
+    
+    # ⚠️ MODIFICACIÓN AGREGADA: Vacía la tabla para forzar que se siembren los nuevos iconos representativos
+    c.execute('TRUNCATE TABLE beneficios CASCADE')
+    
     conn.commit()
     conn.close()
 
@@ -105,7 +109,7 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        # MODIFICACIÓN AGREGADA: Inyección inteligente de ventajas con iconos distintivos y representativos
+        # Inyección inteligente de ventajas con iconos distintivos y representativos
         beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
         if beneficios_existentes and beneficios_existentes[0][0] == 0:
             ventajas_defecto = [
@@ -210,3 +214,59 @@ def guardar_config():
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json or {}
+    db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente', '')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/resenas/<int:id>', methods=['PUT'])
+def editar_resena(id):
+    d = request.json or {}
+    db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente',''), id))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/socios', methods=['POST'])
+def guardar_socio():
+    d = request.json or {}
+    db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/servicios', methods=['POST'])
+def guardar_servicio():
+    d = request.json or {}
+    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/productos', methods=['POST'])
+def guardar_producto():
+    d = request.json or {}
+    precio = d.get('precio', 0)
+    try: precio = float(precio) if precio else 0
+    except: precio = 0
+    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (d.get('nombre', ''), precio, d.get('imagen', ''), d.get('categoria', 'Otros')))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/servicios/<int:id>', methods=['PUT'])
+def editar_servicio(id):
+    d = request.json or {}
+    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/productos/<int:id>', methods=['PUT'])
+def editar_producto(id):
+    d = request.json or {}
+    precio = d.get('precio', 0)
+    try: precio = float(precio) if precio else 0
+    except: precio = 0
+    db_query("UPDATE productos SET nombre=%s, precio=%s, imagen=%s, categoria=%s WHERE id=%s", (d.get('nombre', ''), precio, d.get('imagen',''), d.get('categoria', 'Otros'), id))
+    return jsonify({"mensaje": "✅"})
+
+@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
+def eliminar_item(tabla, id):
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
+    if tabla in tablas_permitidas:
+        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
+        return jsonify({"mensaje": "🗑️"})
+    return jsonify({"error": "No válida"}), 400
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True, port=5001)

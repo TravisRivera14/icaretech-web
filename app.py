@@ -437,6 +437,16 @@ def eliminar_item(tabla, id):
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
+@app.route('/api/setup-admin', methods=['GET'])
+def setup_admin():
+    # Encripta la contraseña usando el motor de seguridad real de tu backend
+    password_encriptada = generate_password_hash('AdminiCare2026')
+    
+    # Actualiza el usuario 'admin' en tu base de datos Neon con el hash verdadero
+    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
+    
+    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5001)

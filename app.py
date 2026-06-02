@@ -117,12 +117,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-@app.before_request
-def antes_de_la_peticion():
-    try:
-        init_db()
-    except Exception as e:
-        print(f"Error inicializando la base de datos: {e}")
+
 
 # ==========================================
 # 🔐 NUEVAS RUTAS DE AUTENTICACIÓN Y AUDITORÍA

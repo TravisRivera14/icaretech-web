@@ -105,20 +105,19 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        # COMPROBACIÓN INTEGRAL: Forzamos la actualización si hay discrepancias de texto para corregir el icono faltante
+        # MODIFICACIÓN DE ALINEACIÓN: Validamos si existe la cadena con el punto final para limpiar la tabla y forzar el re-sembrado correcto
+        tiene_registro_invalido = db_query("SELECT COUNT(*) FROM beneficios WHERE titulo = 'Atención personalizada.'", fetch=True)
         beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
         
-        # Hacemos una consulta rápida para ver si el registro tiene el punto viejo que rompe el icono
-        tiene_punto_viejo = db_query("SELECT COUNT(*) FROM beneficios WHERE titulo = 'Atención personalizada.'", fetch=True)
-        
-        if (beneficios_existentes and beneficios_existentes[0][0] < 12) or (tiene_punto_viejo and tiene_punto_viejo[0][0] > 0):
+        if (beneficios_existentes and beneficios_existentes[0][0] < 12) or (tiene_registro_invalido and tiene_registro_invalido[0][0] > 0):
+            # Eliminación dirigida para forzar la actualización limpia con el texto sanitizado
             db_query("DELETE FROM beneficios")
             
             ventajas_defecto = [
                 ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
                 ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
                 ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
-                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"), # <- Corregido sin punto final para que cargue el icono
+                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
                 ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
                 ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
                 ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
@@ -186,7 +185,7 @@ def editar_beneficio(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos', methods=['POST'])
-def guardar_objective():
+def guardar_objetivo():
     d = request.json or {}
     db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
     return jsonify({"mensaje": "✅"})

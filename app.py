@@ -80,10 +80,6 @@ def init_db():
         nombre TEXT,
         imagen TEXT
     )''')
-    
-    # ⚠️ MODIFICACIÓN AGREGADA: Vacía la tabla para forzar que se siembren los nuevos iconos representativos
-    c.execute('TRUNCATE TABLE beneficios CASCADE')
-    
     conn.commit()
     conn.close()
 
@@ -109,18 +105,21 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        # Inyección inteligente de ventajas con iconos distintivos y representativos
+        # MODIFICACIÓN SOLICITADA: Inyección limpia de tus 11 cuadros con la misma información e iconos distintivos
         beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
         if beneficios_existentes and beneficios_existentes[0][0] == 0:
             ventajas_defecto = [
-                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
-                ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
-                ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
-                ("Servicio confiable y profesional", "Ética operativa, puntualidad y cumplimiento de acuerdos de soporte.", "fas fa-award"),
-                ("Soporte técnico especializado", "Resolución experta de fallos complejos en hardware y servidores.", "fas fa-microchip"),
-                ("Experiencia en seguridad electrónica", "Instalación inteligente de sistemas de vigilancia y alarmas.", "fas fa-video"),
-                ("Compromiso con la calidad", "Garantizamos la máxima satisfacción y durabilidad en cada trabajo.", "fas fa-star"),
-                ("Cobertura a domicilio en Costa Rica", "Asistencia ágil directamente en tu hogar o establecimiento comercial.", "fas fa-map-marked-alt")
+                ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
+                ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
+                ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
+                ("Atención personalizada.", "Adaptan sus servicios a las necesidades específicas de cada cliente, no ofrecen soluciones genéricas.", "fas fa-user-heart"),
+                ("Soluciones integrales en tecnología:", "Abarcan múltiples necesidades tecnológicas (desde soporte hasta instalaciones) bajo un mismo proveedor.", "fas fa-laptop-code"),
+                ("Equipos y herramientas modernas", "Utilizan tecnología de vanguardia y dispositivos actualizados para garantizar resultados eficientes y duraderos.", "fas fa-tools"),
+                ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
+                ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),
+                ("Experiencia en seguridad electrónica", "Tienen conocimientos específicos en sistemas como cámaras de vigilancia, alarmas y controles de acceso.", "fas fa-video"),
+                ("Compromiso con la calidad", "Se enfocan en realizar trabajos bien hechos que aseguren la satisfacción del cliente a largo plazo.", "fas fa-star"),
+                ("Cobertura a domicilio en Costa Rica", "Brindan comodidad al desplazarse a tu casa o empresa en cualquier parte del país para realizar el servicio.", "fas fa-map-marked-alt")
             ]
             for titulo, desc, icono in ventajas_defecto:
                 db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))

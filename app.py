@@ -457,6 +457,40 @@ def setup_admin():
     db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
     return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
 
+@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
+def eliminar_item(tabla, id):
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
+    if tabla in tablas_permitidas:
+        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
+        return jsonify({"mensaje": "🗑️"})
+    return jsonify({"error": "No válida"}), 400
+
+# ==========================================
+# AQUÍ ES DONDE DEBES PEGAR EL BLOQUE NUEVO
+# ==========================================
+
+@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
+def eliminar_usuario(id):
+    if session.get('rol') != 'admin': return jsonify({"success": False, "message": "Acceso denegado"}), 403
+    if session.get('user_id') == id: return jsonify({"success": False, "message": "No puedes eliminar tu propia cuenta"}), 400
+    try:
+        db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Usuario", f"Se eliminó el acceso del usuario ID {id}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/setup-admin', methods=['GET'])
+def setup_admin():
+    password_encriptada = generate_password_hash('AdminiCare2026')
+    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
+    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
+
+# ==========================================
+# ESTA ES LA LÍNEA FINAL QUE YA TENÍAS
+# ==========================================
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5001)

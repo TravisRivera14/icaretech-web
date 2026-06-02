@@ -105,21 +105,25 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        # MODIFICACIÓN SOLICITADA: Inyección limpia de tus 11 cuadros con la misma información e iconos distintivos
+        # MODIFICACIÓN CORREGIDA: Se eliminó el TRUNCATE riesgoso. Ahora comprueba si faltan tus cuadros iniciales para sembrar los 11 completos
         beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
-        if beneficios_existentes and beneficios_existentes[0][0] == 0:
+        if beneficios_existentes and beneficios_existentes[0][0] < 11:
+            # Limpiamos remanentes solo una vez de forma segura para reordenar la lista completa de iCare
+            db_query("DELETE FROM beneficios")
+            
             ventajas_defecto = [
                 ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
                 ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
                 ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
-                ("Atención personalizada.", "Adaptan sus servicios a las necesidades específicas de cada cliente, no ofrecen soluciones genéricas.", "fas fa-user-heart"),
-                ("Soluciones integrales en tecnología:", "Abarcan múltiples necesidades tecnológicas (desde soporte hasta instalaciones) bajo un mismo proveedor.", "fas fa-laptop-code"),
-                ("Equipos y herramientas modernas", "Utilizan tecnología de vanguardia y dispositivos actualizados para garantizar resultados eficientes y duraderos.", "fas fa-tools"),
-                ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
-                ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),
-                ("Experiencia en seguridad electrónica", "Tienen conocimientos específicos en sistemas como cámaras de vigilancia, alarmas y controles de acceso.", "fas fa-video"),
-                ("Compromiso con la calidad", "Se enfocan en realizar trabajos bien hechos que aseguren la satisfacción del cliente a largo plazo.", "fas fa-star"),
-                ("Cobertura a domicilio en Costa Rica", "Brindan comodidad al desplazarse a tu casa o empresa en cualquier parte del país para realizar el servicio.", "fas fa-map-marked-alt")
+                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
+                ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
+                ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
+                ("Servicio confiable y profesional", "Ética operativa, puntualidad y cumplimiento de acuerdos de soporte.", "fas fa-award"),
+                ("Soporte técnico especializado", "Resolución experta de fallos complejos en hardware y servidores.", "fas fa-microchip"),
+                ("Experiencia en seguridad electrónica", "Instalación inteligente de sistemas de vigilancia y alarmas.", "fas fa-video"),
+                ("Compromiso con la calidad", "Garantizamos la máxima satisfacción y durabilidad en cada trabajo.", "fas fa-star"),
+                ("Cobertura a domicilio en Costa Rica", "Asistencia ágil directamente en tu hogar o establecimiento comercial.", "fas fa-map-marked-alt"),
+                ("Repuestos genéricos", "Ofrecemos piezas de alta compatibilidad y bajo costo, ideales para optimizar tu presupuesto sin perder funcionalidad.", "fas fa-exchange-alt")
             ]
             for titulo, desc, icono in ventajas_defecto:
                 db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))
@@ -139,6 +143,7 @@ def obtener_todo():
         reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
         reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
         
+        # Corrección del mapeo del campo b.icono que faltaba inyectar al frontend
         ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
         beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
 

@@ -438,7 +438,7 @@ def eliminar_item(tabla, id):
 
 # ==========================================
 # RUTAS DE ADMINISTRACIÓN DE USUARIOS
-# ==========================================
+
 
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
 def eliminar_usuario(id):

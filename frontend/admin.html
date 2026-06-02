@@ -120,6 +120,21 @@
     </style>
 </head>
 <body>
+
+<!-- PANTALLA DE LOGGING FLOTANTE MÁSTER -->
+<div id="login-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f7f6; z-index:99999; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:40px; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:400px; text-align:center; font-family: system-ui, -apple-system, sans-serif;">
+        <h2 style="margin-bottom:5px; font-weight:800; color:#1b4332;">Control Maestro</h2>
+        <p style="color:#666; font-size:14px; margin-bottom:24px;">iCare Tech CR</p>
+        <form id="form-login-master">
+            <input type="text" id="login-user" placeholder="Usuario" required style="width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #cbd5e1; outline:none; box-sizing: border-box;">
+            <input type="password" id="login-pass" placeholder="Contraseña" required style="width:100%; padding:14px; margin-bottom:20px; border-radius:8px; border:1px solid #cbd5e1; outline:none; box-sizing: border-box;">
+            <button type="submit" style="width:100%; background:#1b4332; color:#fff; padding:14px; border-radius:8px; font-weight:700; border:none; cursor:pointer;">Ingresar al Panel</button>
+        </form>
+        <div id="login-error" style="color:#ff3b30; margin-top:15px; font-weight:600; display:none;">⚠️ Credenciales incorrectas</div>
+    </div>
+</div>
+
 <div class="container">
     <div style="grid-column: 1/-1;">
         <h1>Control Maestro iCare Tech CR</h1>
@@ -201,6 +216,42 @@
             <button onclick="subirEmpresa()" style="background: #1e333d;">Guardar Logotipo Comercial</button>
         </div>
 
+        <!-- SECCIÓN EXCLUSIVA: GESTIÓN DE PERSONAL ACTIVO -->
+        <div class="card" id="seccion-usuarios-admin" style="display:none; border: 1px solid #cbd5e1;">
+            <h2 style="color: var(--brand);">👥 Gestión de Personal Técnico</h2>
+            <form id="form-alta-trabajador" style="margin-bottom:20px;">
+                <input type="text" id="new-emp-name" placeholder="Nombre Completo del Trabajador" required>
+                <input type="text" id="new-emp-user" placeholder="Usuario de Acceso" required>
+                <input type="password" id="new-emp-pass" placeholder="Contraseña Inicial" required>
+                <button type="submit" style="background: var(--brand);">+ Registrar Cuenta de Personal</button>
+            </form>
+
+            <div id="bloque-editar-usuario" style="display:none; margin-bottom:20px; padding:15px; background:#f8fafc; border: 1px dashed var(--edit); border-radius:8px;">
+                <h3 style="font-size:14px; margin-top:0; color:var(--edit);">✏️ Editar Credenciales</h3>
+                <form id="form-editar-trabajador">
+                    <input type="hidden" id="edit-emp-id">
+                    <input type="text" id="edit-emp-name" placeholder="Nombre Completo" required>
+                    <input type="text" id="edit-emp-user" placeholder="Nuevo Usuario" required>
+                    <input type="password" id="edit-emp-pass" placeholder="Nueva Contraseña (Vacío para mantener)">
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" style="background:var(--edit);">Guardar</button>
+                        <button type="button" onclick="cancelarEdicion()" style="background:#64748b;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <h3 style="font-size:14px; margin-bottom:10px; font-weight:700;">Usuarios en el Sistema</h3>
+            <div id="lista-usuarios-tecnicos" style="max-height:200px; overflow-y:auto; background:#fafafa; border:1px solid #eee; border-radius:8px;"></div>
+        </div>
+
+        <!-- SECCIÓN EXCLUSIVA: BITÁCORA DE AUDITORÍA -->
+        <div class="card" id="seccion-logs-admin" style="display:none; border: 1px solid #475569; grid-column: 1/-1;">
+            <h2 style="color: #475569;">📜 Registro de Cambios y Auditoría (Neon Logs)</h2>
+            <div id="lista-logs-auditoria" style="max-height: 250px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; font-size:12px; padding:10px;">
+                Cargando historial de cambios técnicos...
+            </div>
+        </div>
+
         <div class="card" style="grid-column: 1/-1;">
             <h2>📋 Gestión Actual de Contenidos</h2>
             <div id="master-list" style="max-height: 500px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
@@ -231,9 +282,138 @@
     handleFile('partnerImgFile', res => imgPartner = res);
     handleFile('empImgFile', res => imgEmp = res);
 
+    // ==========================================
+    // LÓGICA DE CONTROL DE ACCESOS Y LOGS
+    // ==========================================
+    document.getElementById('form-login-master').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const user = document.getElementById('login-user').value;
+        const pass = document.getElementById('login-pass').value;
+        
+        fetch(`${API}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario: user, password: pass })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Usuario o contraseña incorrectos");
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('login-overlay').style.display = 'none';
+                if (data.rol === 'admin') {
+                    document.getElementById('seccion-usuarios-admin').style.display = 'block';
+                    document.getElementById('seccion-logs-admin').style.display = 'block';
+                    cargarListaTrabajadores();
+                    cargarHistorialLogs();
+                } else {
+                    document.getElementById('seccion-usuarios-admin').remove();
+                    document.getElementById('seccion-logs-admin').remove();
+                }
+            }
+        })
+        .catch(err => {
+            const errDiv = document.getElementById('login-error');
+            errDiv.style.display = 'block';
+            errDiv.innerText = `⚠️ ${err.message}`;
+        });
+    });
+
+    function cargarHistorialLogs() {
+        fetch(`${API}/admin/logs`)
+        .then(res => res.json())
+        .then(logs => {
+            const container = document.getElementById('lista-logs-auditoria');
+            if(!logs.length) { container.innerHTML = "No hay registros guardados en la bitácora."; return; }
+            container.innerHTML = logs.map(l => `
+                <div style="padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                    <span>[${new Date(l.fecha).toLocaleString()}] <b>${l.usuario}</b> ejecutó: <mark>${l.accion}</mark> → <span style="color:#555">${l.detalle}</span></span>
+                </div>
+            `).join('');
+        }).catch(() => {});
+    }
+
+    function cargarListaTrabajadores() {
+        fetch(`${API}/admin/usuarios`)
+        .then(res => res.json())
+        .then(usuarios => {
+            const div = document.getElementById('lista-usuarios-tecnicos');
+            div.innerHTML = usuarios.map(u => `
+                <div class="list-item">
+                    <span>${u.nombre} (<code>${u.usuario}</code>) - <b style="color:${u.rol==='admin'?'#0071e3':'#16a34a'}">${u.rol.toUpperCase()}</b></span>
+                    ${u.rol !== 'admin' ? `<button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}')">Editar</button>` : ''}
+                </div>
+            `).join('');
+        }).catch(() => {});
+    }
+
+    document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/crear-usuario`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre: document.getElementById('new-emp-name').value,
+                usuario: document.getElementById('new-emp-user').value,
+                password: document.getElementById('new-emp-pass').value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                alert('¡Trabajador registrado exitosamente!');
+                document.getElementById('form-alta-trabajador').reset();
+                cargarListaTrabajadores();
+                cargarHistorialLogs();
+            } else { alert('Error: ' + data.message); }
+        });
+    });
+
+    function activarEdicionUsuario(id, nombre, usuario) {
+        document.getElementById('bloque-editar-usuario').style.display = 'block';
+        document.getElementById('edit-emp-id').value = id;
+        document.getElementById('edit-emp-name').value = nombre;
+        document.getElementById('edit-emp-user').value = usuario;
+        document.getElementById('edit-emp-pass').value = "";
+    }
+
+    function cancelarEdicion() {
+        document.getElementById('form-editar-trabajador').reset();
+        document.getElementById('bloque-editar-usuario').style.display = 'none';
+    }
+
+    document.getElementById('form-editar-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/editar-usuario`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: document.getElementById('edit-emp-id').value,
+                nombre: document.getElementById('edit-emp-name').value,
+                usuario: document.getElementById('edit-emp-user').value,
+                password: document.getElementById('edit-emp-pass').value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                alert('¡Credenciales actualizadas!');
+                cancelarEdicion();
+                cargarListaTrabajadores();
+                cargarHistorialLogs();
+            } else { alert('Error: ' + data.message); }
+        });
+    });
+
+
+    // ==========================================
+    // LÓGICA DE GESTIÓN DE CONTENIDOS ORIGINAL
+    // ==========================================
     function loadContent() {
         fetch(`${API}/todo`)
         .then(async r => {
+            if (r.status === 401 || r.status === 403) return; // Control preventivo de sesión
             if (!r.ok) {
                 const errData = await r.json().catch(() => ({}));
                 throw new Error(errData.detalles || "Fallo en la API");
@@ -241,6 +421,7 @@
             return r.json();
         })
         .then(data => {
+            if(!data) return;
             cacheData.servicios = data.servicios || [];
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
@@ -292,7 +473,12 @@
             });
             
             document.getElementById('master-list').innerHTML = h;
-        })
+            
+            // Actualización asíncrona en caliente del historial si la sección está activa
+            if(document.getElementById('seccion-logs-admin').style.display === 'block') {
+                cargarHistorialLogs();
+            }
+        } catch(e) {})
         .catch(err => {
             console.error(err);
             document.getElementById('master-list').innerHTML = `<div style="color:#ff3b30; padding:10px; font-weight:bold;">⚠️ Error de comunicación técnico: ${err.message}</div>`;
@@ -368,7 +554,15 @@
         })
         .then(() => {
             alert("¡Cambio guardado con éxito!");
-            location.reload();
+            loadContent();
+            // Reseteo de labels de edición
+            document.getElementById('srv-label').innerText = "💻 Gestionar Servicio";
+            document.getElementById('prod-label').innerText = "📦 Gestionar Producto";
+            document.getElementById('rev-label').innerText = "⭐ Gestionar Clientes Satisfechos";
+            document.getElementById('ben-label').innerText = "🛡️ ¿Por qué elegir iCare Tech CR?";
+            document.getElementById('obj-label').innerText = "🎯 Clientes Objetivos";
+            document.getElementById('emp-label').innerText = "🏢 Empresas que nos Recomiendan";
+            editId = null; editType = null;
         })
         .catch(err => alert("Error al guardar elemento: " + err.message));
     }

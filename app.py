@@ -1,11 +1,18 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
 
 app = Flask(__name__)
-CORS(app)
+
+# Configuración de CORS con soporte para credenciales (Sesiones/Cookies)
+CORS(app, supports_credentials=True)
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+
+# Llave secreta obligatoria para que Flask firme las sesiones/cookies de inicio de sesión de forma segura
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
 # Cambiamos la lectura a tu variable manual independiente libre de poolers
 DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON')
@@ -80,6 +87,26 @@ def init_db():
         nombre TEXT,
         imagen TEXT
     )''')
+    
+    # 🔐 INFRAESTRUCTURA NUEVA SEGURA PARA ACCESOS Y REGISTROS
+    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (
+        id SERIAL PRIMARY KEY,
+        usuario VARCHAR(50) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')),
+        nombre VARCHAR(100) NOT NULL,
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (
+        id SERIAL PRIMARY KEY,
+        usuario_id INT NULL,
+        usuario_nombre VARCHAR(50) NOT NULL,
+        accion VARCHAR(100) NOT NULL,
+        detalle TEXT NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
+    )''')
+    
     conn.commit()
     conn.close()
 
@@ -89,6 +116,125 @@ def antes_de_la_peticion():
         init_db()
     except Exception as e:
         print(f"Error inicializando la base de datos: {e}")
+
+# ==========================================
+# 🔐 NUEVAS RUTAS DE AUTENTICACIÓN Y AUDITORÍA
+# ==========================================
+
+def registrar_cambio(accion, detalle):
+    """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
+    usuario_id = session.get('user_id')
+    usuario_nombre = session.get('nombre', 'Sistema / Web')
+    try:
+        db_query(
+            "INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)",
+            (usuario_id, usuario_nombre, accion, detalle)
+        )
+    except Exception as e:
+        print(f"Error guardando log de auditoría: {e}")
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    d = request.json or {}
+    username = d.get('usuario')
+    password = d.get('password')
+    
+    if not username or not password:
+        return jsonify({"success": False, "message": "Campos vacíos"}), 400
+        
+    res = db_query("SELECT id, usuario, password_hash, rol, nombre FROM usuarios WHERE usuario = %s", (username,), fetch=True)
+    
+    if res and check_password_hash(res[0][2], password):
+        session['user_id'] = res[0][0]
+        session['username'] = res[0][1]
+        session['rol'] = res[0][3]
+        session['nombre'] = res[0][4]
+        
+        return jsonify({
+            "success": True,
+            "usuario": res[0][1],
+            "rol": res[0][3],
+            "nombre": res[0][4]
+        })
+        
+    return jsonify({"success": False, "message": "Usuario o contraseña incorrectos"}), 401
+
+@app.route('/api/admin/logs', methods=['GET'])
+def obtener_logs():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    logs_raw = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC", fetch=True) or []
+    resultado = [{"fecha": r[0].isoformat() if hasattr(r[0], 'isoformat') else str(r[0]), "usuario": r[1], "accion": r[2], "detalle": r[3]} for r in logs_raw]
+    return jsonify(resultado)
+
+@app.route('/api/admin/usuarios', methods=['GET'])
+def listar_usuarios():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
+    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
+    return jsonify(resultado)
+
+@app.route('/api/admin/crear-usuario', methods=['POST'])
+def crear_usuario():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    d = request.json or {}
+    nuevo_usuario = d.get('usuario')
+    password_plana = d.get('password')
+    nombre_completo = d.get('nombre')
+    
+    if not nuevo_usuario or not password_plana or not nombre_completo:
+        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+        
+    password_encriptada = generate_password_hash(password_plana)
+    
+    try:
+        db_query(
+            "INSERT INTO usuarios (usuario, password_hash, rol, nombre) VALUES (%s, %s, 'personal', %s)",
+            (nuevo_usuario, password_encriptada, nombre_completo)
+        )
+        registrar_cambio("Creó Usuario", f"Se registró al trabajador: {nombre_completo} ({nuevo_usuario})")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": "El usuario ya existe o es inválido"}), 400
+
+@app.route('/api/admin/editar-usuario', methods=['POST'])
+def editar_usuario():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    d = request.json or {}
+    usuario_id = d.get('id')
+    nuevo_usuario = d.get('usuario')
+    nueva_password = d.get('password')
+    nuevo_nombre = d.get('nombre')
+    
+    if not usuario_id or not nuevo_usuario or not nuevo_nombre:
+        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+
+    if nueva_password and nueva_password.strip() != "":
+        password_encriptada = generate_password_hash(nueva_password)
+        db_query(
+            "UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s WHERE id = %s",
+            (nuevo_usuario, password_encriptada, nuevo_nombre, usuario_id)
+        )
+    else:
+        db_query(
+            "UPDATE usuarios SET usuario = %s, nombre = %s WHERE id = %s",
+            (nuevo_usuario, nuevo_nombre, usuario_id)
+        )
+        
+    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id} ({nuevo_usuario})")
+    return jsonify({"success": True, "message": "Usuario modificado correctamente"})
+
+
+# ==========================================
+# 🛠️ RUTAS ORIGINALES AUDITADAS AUTOMÁTICAMENTE
+# ==========================================
 
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
@@ -105,7 +251,6 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        # 🛠️ MODIFICACIÓN RADICAL: Eliminamos cualquier validación 'if' para limpiar la tabla de raíz obligatoriamente en esta carga
         db_query("DELETE FROM beneficios")
         
         ventajas_defecto = [
@@ -140,7 +285,6 @@ def obtener_todo():
         reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
         reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
         
-        # Mapeo limpio que inyecta correctamente el campo b.icono al HTML
         ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
         beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
 
@@ -171,36 +315,42 @@ def obtener_servicio_individual(id):
 def guardar_beneficio():
     d = request.json or {}
     db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
+    registrar_cambio("Guardó Tarjeta de Valor", f"Se agregó el beneficio: {d.get('titulo', 'Sin Título')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/beneficios/<int:id>', methods=['PUT'])
 def editar_beneficio(id):
     d = request.json or {}
     db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    registrar_cambio("Editó Tarjeta de Valor", f"Se modificó el beneficio ID {id}: {d.get('titulo', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos', methods=['POST'])
 def guardar_objetivo():
     d = request.json or {}
     db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
+    registrar_cambio("Guardó Cliente Objetivo", f"Se registró el perfil: {d.get('titulo', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos/<int:id>', methods=['PUT'])
-def editar_objetivo(id):
+def editar_objective(id):
     d = request.json or {}
     db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
+    registrar_cambio("Editó Cliente Objetivo", f"Se actualizó el perfil ID {id}: {d.get('titulo', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan', methods=['POST'])
 def guardar_empresa():
     d = request.json or {}
     db_query("INSERT INTO empresas_recomiendan (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Empresa'), d.get('imagen', '')))
+    registrar_cambio("Guardó Empresa Coorporativa", f"Añadió la empresa: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan/<int:id>', methods=['PUT'])
 def editar_empresa(id):
     d = request.json or {}
     db_query("UPDATE empresas_recomiendan SET nombre=%s, imagen=%s WHERE id=%s", (d.get('nombre', 'Empresa'), d.get('imagen', ''), id))
+    registrar_cambio("Editó Empresa Coorporativa", f"Se modificó la empresa ID {id}: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/config', methods=['POST'])
@@ -210,30 +360,35 @@ def guardar_config():
     for k in claves_permitidas:
         if k in d:
             db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
+            registrar_cambio("Actualizó Texto Maestro", f"Modificó la clave principal de contenido: {k}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json or {}
     db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente', '')))
+    registrar_cambio("Recibió Resaña Pública", f"El cliente {d.get('cliente', 'Anónimo')} publicó un comentario.")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas/<int:id>', methods=['PUT'])
 def editar_resena(id):
     d = request.json or {}
     db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente',''), id))
+    registrar_cambio("Editó Reseña Interna", f"Se actualizó la reseña del ID {id}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/socios', methods=['POST'])
 def guardar_socio():
     d = request.json or {}
     db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
+    registrar_cambio("Añadió Socio Comercial", f"Se registró el socio: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios', methods=['POST'])
 def guardar_servicio():
     d = request.json or {}
     db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
+    registrar_cambio("Creó Módulo de Servicio", f"Se agregó el servicio técnico: {d.get('titulo', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos', methods=['POST'])
@@ -243,12 +398,14 @@ def guardar_producto():
     try: precio = float(precio) if precio else 0
     except: precio = 0
     db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (d.get('nombre', ''), precio, d.get('imagen', ''), d.get('categoria', 'Otros')))
+    registrar_cambio("Subió Pieza/Equipo", f"Se añadió al catálogo de la tienda: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 def editar_servicio(id):
     d = request.json or {}
     db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
+    registrar_cambio("Actualizó Desglose Técnico", f"Se modificó el servicio ID {id}: {d.get('titulo', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
@@ -258,6 +415,7 @@ def editar_producto(id):
     try: precio = float(precio) if precio else 0
     except: precio = 0
     db_query("UPDATE productos SET nombre=%s, precio=%s, imagen=%s, categoria=%s WHERE id=%s", (d.get('nombre', ''), precio, d.get('imagen',''), d.get('categoria', 'Otros'), id))
+    registrar_cambio("Modificó Precio/Pieza", f"Se actualizó el producto ID {id}: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
@@ -265,6 +423,7 @@ def eliminar_item(tabla, id):
     tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
     if tabla in tablas_permitidas:
         db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 

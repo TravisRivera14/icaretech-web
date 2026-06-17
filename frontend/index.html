@@ -1650,98 +1650,111 @@
         }
 
         // Carga de datos centralizada
-        fetch(`${API}/todo`)
-            .then(r => r.json())
-            .then(data => {
-                console.log("Datos recibidos:", data);
-                
-                // 1. Configuración Hero
-                if (data.config) {
-                    const heroTitle = document.getElementById('hero-title');
-                    if(heroTitle) heroTitle.innerText = data.config.hero_titulo || "Bienvenidos";
+fetch(`${API}/todo`)
+    .then(r => {
+        if (!r.ok) throw new Error("Error en la respuesta del servidor");
+        return r.json();
+    })
+    .then(data => {
+        console.log("Datos recibidos:", data);
+        
+        // 1. Configuración Hero (Con seguridad)
+        if (data.config) {
+            const heroTitle = document.getElementById('hero-title');
+            if(heroTitle) heroTitle.innerText = data.config.hero_titulo || "Bienvenidos a iCare Tech";
+            
+            const mt = document.getElementById('m-t'); if(mt) mt.innerText = data.config.mision || "";
+            const vt = document.getElementById('v-t'); if(vt) vt.innerText = data.config.vision || "";
+            const ct = document.getElementById('c-t'); if(ct) ct.innerText = data.config.compromiso || "";
+        }
+
+        // 2. Beneficios
+        const choGrid = document.getElementById('cho-grid');
+        if (choGrid && Array.isArray(data.beneficios)) {
+            choGrid.innerHTML = data.beneficios.map(b => `
+                <div class="value-card">
+                    <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
+                    <h3>${b.titulo || 'Sin título'}</h3>
+                    <p>${b.descripcion || ''}</p>
+                </div>`).join('');
+        }
+
+        // 3. Objetivos
+        const objGrid = document.getElementById('obj-grid');
+        if (objGrid && Array.isArray(data.objetivos)) {
+            objGrid.innerHTML = data.objetivos.map(o => `
+                <div class="target-card">
+                    <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
+                    <h3>${o.titulo || 'Objetivo'}</h3>
+                    <p>${o.descripcion || ''}</p>
+                </div>`).join('');
+        }
+
+        // 4. Empresas Recomiendan
+        const empGrid = document.getElementById('empresas-c');
+        if (empGrid && Array.isArray(data.empresas)) {
+            empGrid.innerHTML = data.empresas.map(e => `
+                <div class="partner-card">
+                    <img src="${e.imagen || ''}" alt="${e.nombre || 'Empresa'}" class="recomiendan-logo" title="${e.nombre || ''}">
+                </div>`).join('');
+        }
+
+        // 5. Servicios
+        const srvC = document.getElementById('srv-c');
+        if (srvC && Array.isArray(data.servicios)) {
+            cacheServicios = data.servicios; 
+            srvC.innerHTML = data.servicios.map(s => `
+                <div class="service-card anim-up">
+                    ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono || 'fas fa-tools'}</div>`}
+                    <h3>${s.titulo || 'Servicio'}</h3>
+                    <p>${s.descripcion || ''}</p>
+                    <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
+                </div>`).join('');
+
+            // Cargar detalle inicial si hay servicios
+            if(cacheServicios.length > 0) {
+                const prim = cacheServicios[0];
+                if(document.getElementById('det-titulo')) document.getElementById('det-titulo').innerText = prim.titulo || "";
+                if(document.getElementById('det-descripcion')) document.getElementById('det-descripcion').innerText = prim.proceso || "";
+                if(document.getElementById('det-imagen')) document.getElementById('det-imagen').src = prim.imagen || "";
+                const lista = document.getElementById('det-beneficios');
+                if(lista && prim.beneficios) {
+                    lista.innerHTML = prim.beneficios.split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
                 }
+            }
+        }
 
-                // 2. Beneficios
-                const choGrid = document.getElementById('cho-grid');
-                if (choGrid && data.beneficios) {
-                    choGrid.innerHTML = data.beneficios.map(b => `
-                        <div class="value-card">
-                            <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
-                            <h3>${b.titulo}</h3>
-                            <p>${b.descripcion}</p>
-                        </div>`).join('');
-                }
+        // 6. Productos
+        if (Array.isArray(data.productos)) { 
+            allProducts = data.productos; 
+            const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+            const filterContainer = document.getElementById('catFilters');
+            if (filterContainer) {
+                filterContainer.innerHTML = categories.map(cat => 
+                    `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+                ).join('');
+            }
+            filterAll(); 
+        }
 
-                // 3. Objetivos
-                const objGrid = document.getElementById('obj-grid');
-                if (objGrid && data.objetivos) {
-                    objGrid.innerHTML = data.objetivos.map(o => `
-                        <div class="target-card">
-                            <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
-                            <h3>${o.titulo}</h3>
-                            <p>${o.descripcion}</p>
-                        </div>`).join('');
-                }
+        // 7. SOCIOS
+        const partC = document.getElementById('partners-c');
+        if (partC && Array.isArray(data.socios)) { 
+            partC.innerHTML = data.socios.map(p => `
+                <a href="${p.url || '#'}" target="_blank" class="partner-card" title="${p.nombre || 'Socio'}">
+                    <img src="${p.imagen || ''}" alt="${p.nombre || 'Socio'}" class="partner-logo">
+                </a>`).join(''); 
+        }
 
-                // 4. Empresas Recomiendan
-                const empGrid = document.getElementById('empresas-c');
-                if (empGrid && data.empresas) {
-                    empGrid.innerHTML = data.empresas.map(e => `
-                        <div class="partner-card">
-                            <img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}">
-                        </div>`).join('');
-                }
+        applyAnimations();
+    })
+        .catch(err => {
+            console.error("Error crítico al cargar datos desde Neon:", err);
+            // Opcional: mostrar un mensaje al usuario en pantalla
+            const srvC = document.getElementById('srv-c');
+            if(srvC) srvC.innerHTML = "<p>Error al cargar el contenido, intenta recargar.</p>";
+        });
 
-                // 5. Servicios
-                const srvC = document.getElementById('srv-c');
-                if (srvC && data.servicios) {
-                    cacheServicios = data.servicios; 
-                    srvC.innerHTML = data.servicios.map(s => `
-                        <div class="service-card anim-up">
-                            ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
-                            <h3>${s.titulo}</h3>
-                            <p>${s.descripcion}</p>
-                            <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
-                        </div>`).join('');
-
-                    if(cacheServicios.length > 0) {
-                        const prim = cacheServicios[0];
-                        const detT = document.getElementById('det-titulo');
-                        if(detT) detT.innerText = prim.titulo;
-                        const detD = document.getElementById('det-descripcion');
-                        if(detD) detD.innerText = prim.proceso || "";
-                        const detI = document.getElementById('det-imagen');
-                        if(detI) detI.src = prim.imagen || "";
-                        const lista = document.getElementById('det-beneficios');
-                        if(lista) lista.innerHTML = (prim.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
-                    }
-                }
-
-                // 6. Productos
-                if (data.productos) { 
-                    allProducts = data.productos; 
-                    const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                    const filterContainer = document.getElementById('catFilters');
-                    if (filterContainer) {
-                        filterContainer.innerHTML = categories.map(cat => 
-                            `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
-                        ).join('');
-                    }
-                    filterAll(); 
-                }
-
-                // 7. SOCIOS
-                const partC = document.getElementById('partners-c');
-                if (partC && data.socios) { 
-                    partC.innerHTML = data.socios.map(p => `
-                        <a href="${p.url || '#'}" target="_blank" class="partner-card" title="${p.nombre}">
-                            <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
-                        </a>`).join(''); 
-                }
-
-                applyAnimations();
-            })
-            .catch(err => console.error("Error al cargar datos:", err));
     });
 
     // FUNCIONES GLOBALES (FUERA DEL DOMContentLoaded)

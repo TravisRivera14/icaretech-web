@@ -69,7 +69,7 @@
             border: 1px solid var(--border-smooth);
         }
 
-        /* COMPONENTE INTERACTIVO SIDEBAR (BARRA LATERAL) */
+        /* COMPONENTE INTERACTIVO SIDEBAR */
         .sidebar {
             width: 280px;
             background: #ffffff;
@@ -403,9 +403,9 @@
     <section id="tab-empresas" class="tab-section">
         <div class="grid-two-columns">
             <div class="card">
-                <h2><i class="fas fa-plus-circle" style="color: var(--brand-green);"></i> Dar de Alta Empresa</h2>
+                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--brand-green);"></i> Dar de Alta Empresa</h2>
                 <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
-                <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent">+ Vincular Cliente</button>
+                <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Vincular Cliente</button>
             </div>
             <div class="card">
                 <h2><i class="fas fa-list-ol"></i> Empresas Activas en Soporte</h2>
@@ -502,9 +502,15 @@
             <div class="card">
                 <h2><i class="fas fa-user-plus"></i> Registrar Cuenta de Personal</h2>
                 <form id="form-alta-trabajador">
-                    <input type="text" id="new-emp-name" placeholder="Nombre completo del ingeniero" required>
+                    <input type="text" id="new-emp-name" placeholder="Nombre completo del usuario" required>
                     <input type="text" id="new-emp-user" placeholder="Nombre de usuario exclusivo" required>
                     <input type="password" id="new-emp-pass" placeholder="Clave de seguridad inicial" required>
+                    <label for="new-emp-role">Nivel de Acceso:</label>
+                    <select id="new-emp-role" required>
+                        <option value="personal">Personal Técnico</option>
+                        <option value="admin">Administrador General</option>
+                        <option value="cliente">Cliente Empresarial</option>
+                    </select>
                     <button type="submit">Dar de Alta Acceso</button>
                 </form>
 
@@ -515,6 +521,12 @@
                         <input type="text" id="edit-emp-name" placeholder="Nombre" required>
                         <input type="text" id="edit-emp-user" placeholder="Usuario" required>
                         <input type="password" id="edit-emp-pass" placeholder="Nueva clave (vacío para mantener)">
+                        <label for="edit-emp-role">Modificar Nivel de Acceso:</label>
+                        <select id="edit-emp-role" required>
+                            <option value="personal">Personal Técnico</option>
+                            <option value="admin">Administrador General</option>
+                            <option value="cliente">Cliente Empresarial</option>
+                        </select>
                         <div style="display:flex; gap:10px; margin-top: 10px;">
                             <button type="submit" style="background:var(--edit);">Actualizar</button>
                             <button type="button" onclick="cancelarEdicion()" style="background:#64748b;">Descartar</button>
@@ -544,10 +556,10 @@
 <script>
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
+    let editSupportEmpId = null; // ID Auxiliar para el proceso de corrección de empresas
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
 
-    // FUNCIÓN INTERACTIVA PARA CAMBIAR DE SECCIÓN MINIMALISTA (ESTILO APPLE)
     function switchTab(tabId) {
         document.querySelectorAll('.tab-section').forEach(section => section.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
@@ -623,8 +635,8 @@
                 <div class="list-item">
                     <span>${u.nombre} (<code style="background:#f5f5f7; padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--brand-green);">${u.rol.toUpperCase()}</b></span>
                     <div>
-                        ${u.rol !== 'admin' ? `
-                            <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}')">Editar</button>
+                        ${u.rol !== 'admin' || true ? `
+                            <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}')">Editar</button>
                             <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
                         ` : ''}
                     </div>
@@ -634,7 +646,7 @@
     }
 
     function eliminarUsuario(id, nombre) {
-        if(confirm(`¿Eliminar de forma permanente al colaborador ${nombre}?`)) {
+        if(confirm(`¿Eliminar de forma permanente al usuario ${nombre}?`)) {
             fetch(`${API}/admin/eliminar-usuario/${id}`, { method: 'DELETE', credentials: 'include' })
             .then(res => res.json())
             .then(data => {
@@ -646,11 +658,12 @@
         }
     }
 
-    function activarEdicionUsuario(id, nombre, usuario) {
+    function activarEdicionUsuario(id, nombre, usuario, rol) {
         document.getElementById('bloque-editar-usuario').style.display = 'block';
         document.getElementById('edit-emp-id').value = id;
         document.getElementById('edit-emp-name').value = nombre;
         document.getElementById('edit-emp-user').value = usuario;
+        document.getElementById('edit-emp-role').value = rol;
     }
 
     function cancelarEdicion() {
@@ -667,12 +680,13 @@
                 id: document.getElementById('edit-emp-id').value,
                 nombre: document.getElementById('edit-emp-name').value,
                 usuario: document.getElementById('edit-emp-user').value,
-                password: document.getElementById('edit-emp-pass').value
+                password: document.getElementById('edit-emp-pass').value,
+                rol: document.getElementById('edit-emp-role').value
             })
         })
         .then(res => res.json())
         .then(data => {
-            if(data.success) { alert('Credenciales actualizadas!'); cancelarEdicion(); cargarListaTrabajadores(); }
+            if(data.success) { alert('Credenciales y nivel de acceso actualizados!'); cancelarEdicion(); cargarListaTrabajadores(); }
         });
     });
 
@@ -685,13 +699,14 @@
             body: JSON.stringify({
                 nombre: document.getElementById('new-emp-name').value,
                 usuario: document.getElementById('new-emp-user').value,
-                password: document.getElementById('new-emp-pass').value
+                password: document.getElementById('new-emp-pass').value,
+                rol: document.getElementById('new-emp-role').value
             })
         })
         .then(res => res.json())
         .then(data => {
             if(data.success) {
-                alert('Nuevo colaborador registrado con éxito.');
+                alert('Nuevo usuario registrado con éxito con el rol asignado.');
                 document.getElementById('form-alta-trabajador').reset();
                 cargarListaTrabajadores();
             } else { alert(data.message); }
@@ -732,6 +747,14 @@
         }).join('');
     }
 
+    function ajustarEdicionEmpresaSoporte(id, nombre) {
+        editSupportEmpId = id;
+        document.getElementById('newSupportEmpName').value = nombre;
+        document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--edit);"></i> Editar Empresa Soporte`;
+        document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Nombre Empresa";
+        document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--edit)";
+    }
+
     function filtrarTicketsPorEmpresa(empresaId) {
         if(empresaId === "Todos") {
             renderTablaTickets(cacheTickets);
@@ -758,18 +781,39 @@
     function agregarEmpresaSoporte() {
         const nombre = document.getElementById('newSupportEmpName').value;
         if(!nombre) return alert("Especifica el nombre corporativo.");
-        fetch(`${API}/admin/empresas-soporte`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ nombre: nombre })
-        })
-        .then(r => r.json())
-        .then(() => {
-            alert("Vínculo corporativo completado.");
-            document.getElementById('newSupportEmpName').value = "";
-            loadContent();
-        });
+        
+        // CORRECCIÓN 1: Si editSupportEmpId tiene datos, significa que estamos editando en lugar de registrar una nueva
+        if (editSupportEmpId) {
+            fetch(`${API}/recomiendan/${editSupportEmpId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ nombre: nombre, imagen: "" })
+            })
+            .then(r => r.json())
+            .then(() => {
+                alert("Nombre de la empresa corporativa actualizado con éxito.");
+                editSupportEmpId = null;
+                document.getElementById('newSupportEmpName').value = "";
+                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--brand-green);"></i> Dar de Alta Empresa`;
+                document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
+                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--brand-green)";
+                loadContent();
+            });
+        } else {
+            fetch(`${API}/admin/empresas-soporte`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ nombre: nombre })
+            })
+            .then(r => r.json())
+            .then(() => {
+                alert("Vínculo corporativo completado.");
+                document.getElementById('newSupportEmpName').value = "";
+                loadContent();
+            });
+        }
     }
 
     function eliminarEmpresaSoporte(id) {
@@ -795,7 +839,6 @@
             cacheData.objetivos = data.objetivos || [];
             cacheData.empresas = data.empresas || [];
             
-            // Inyectar inputs del config si existen
             if(data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || "";
                 document.getElementById('mision').value = data.config.mision || "";
@@ -813,10 +856,14 @@
             if(cacheData.empresas.length === 0) {
                 divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
             } else {
+                // CORRECCIÓN 1: Se añade el botón "Editar" a las empresas asociadas al soporte técnico
                 divBajas.innerHTML = cacheData.empresas.map(e => `
                     <div class="list-item">
                         <span>🏢 ${e.nombre}</span>
-                        <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                        <div>
+                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}')">Editar</button>
+                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                        </div>
                     </div>
                 `).join('');
             }
@@ -881,7 +928,6 @@
     
     window.onload = function() {
         loadContent();
-        // Cargar flujos en segundo plano por si la cookie de sesión sigue activa
         fetch(`${API}/admin/tickets`, { credentials: 'include' })
         .then(res => { if(res.ok) return res.json(); })
         .then(tickets => { 

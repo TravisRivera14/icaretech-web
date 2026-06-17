@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -22,6 +22,7 @@
             --text-muted: #c5a880;
             --radius-premium: 20px;
             --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --max-width-desktop: 1400px;
         }
 
         * {
@@ -39,17 +40,25 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* NAVBAR PREMIUM */
+        /* CONTENEDOR MAESTRO PARA EVITAR QUE SE DESESCUADRE EN PANTALLAS GIGANTES */
+        .container-wrapper {
+            max-width: var(--max-width-desktop);
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* NAVBAR PREMIUM - ADAPTADO PARA MÓVIL Y ESCRITORIO */
         header {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
             padding: 20px 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            background: rgba(11, 12, 16, 0.75);
+            background: rgba(11, 12, 16, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -91,25 +100,25 @@
             color: var(--turquoise-main);
         }
 
-        /* HERO SECTION */
+        /* HERO SECTION - BALANCEADO PARA COMPUTADORAS Y TELÉFONOS */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 0 8%;
-            background: radial-gradient(circle at 80% 20%, rgba(0, 180, 216, 0.15) 0%, transparent 50%), var(--dark-bg);
+            padding: 120px 8% 60px 8%;
+            background: radial-gradient(circle at 80% 35%, rgba(0, 180, 216, 0.18) 0%, transparent 55%), var(--dark-bg);
             position: relative;
         }
 
         .hero-content {
-            max-width: 650px;
+            max-width: 750px;
             z-index: 10;
         }
 
         .hero-content h1 {
-            font-size: 56px;
+            font-size: 38px;
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.2;
             margin-bottom: 25px;
         }
 
@@ -121,10 +130,21 @@
         }
 
         .hero-content p {
-            font-size: 18px;
+            font-size: 16px;
             line-height: 1.6;
             color: #8a99ad;
             margin-bottom: 35px;
+        }
+
+        /* MEDIA QUERY: OPTIMIZACIÓN HERO EN COMPUTADORA */
+        @media(min-width: 992px) {
+            .hero-content h1 {
+                font-size: 58px;
+                line-height: 1.1;
+            }
+            .hero-content p {
+                font-size: 19px;
+            }
         }
 
         .btn-premium {
@@ -147,9 +167,9 @@
             box-shadow: 0 15px 35px rgba(0, 180, 216, 0.5);
         }
 
-        /* SECCIONES COMPONENTES DINÁMICOS */
+        /* SECCIONES ADAPTABLES */
         .section-padding {
-            padding: 100px 8%;
+            padding: 80px 8%;
         }
 
         .section-title {
@@ -158,9 +178,14 @@
         }
 
         .section-title h2 {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 800;
             margin-bottom: 15px;
+        }
+
+        @media(min-width: 992px) {
+            .section-padding { padding: 120px 8%; }
+            .section-title h2 { font-size: 40px; }
         }
 
         .section-title p {
@@ -168,11 +193,18 @@
             font-size: 16px;
         }
 
-        /* TARJETAS DE SERVICIOS */
+        /* TARJETAS DE SERVICIOS ADAPTABLES */
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
+        }
+
+        @media(min-width: 768px) {
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media(min-width: 1024px) {
+            .services-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .service-card {
@@ -207,26 +239,39 @@
             line-height: 1.6;
         }
 
-        /* PRODUCTOS EN CARRUSEL */
+        /* PRODUCTOS EN CARRUSEL INTELIGENTE */
         .products-container {
             display: flex;
             gap: 30px;
             overflow-x: auto;
             padding: 20px 0;
-            scrollbar-width: none;
+            scrollbar-width: thin;
+            scrollbar-color: var(--turquoise-main) transparent;
         }
 
         .products-container::-webkit-scrollbar {
-            display: none;
+            height: 6px;
+        }
+        .products-container::-webkit-scrollbar-thumb {
+            background-color: var(--turquoise-main);
+            border-radius: 10px;
         }
 
         .product-card {
-            min-width: 300px;
+            min-width: 290px;
+            max-width: 320px;
+            flex: 0 0 auto;
             background: var(--card-bg);
             border-radius: var(--radius-premium);
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.03);
             transition: var(--transition-smooth);
+        }
+
+        @media(min-width: 1024px) {
+            .product-card {
+                min-width: 320px;
+            }
         }
 
         .product-img {
@@ -252,11 +297,18 @@
             font-weight: 800;
         }
 
-        /* REVIEWS / TESTIMONIOS */
+        /* REVIEWS / TESTIMONIOS ADAPTABLES */
         .reviews-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
+        }
+
+        @media(min-width: 768px) {
+            .reviews-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media(min-width: 1100px) {
+            .reviews-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .review-card {
@@ -319,23 +371,30 @@
             filter: none;
         }
 
-        /* FOOTER / FORMULARIO */
+        /* FOOTER / FORMULARIO BALANCEADO */
         footer {
             background: #060709;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 80px 8% 40px 8%;
+            padding: 60px 8% 40px 8%;
         }
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
+            grid-template-columns: 1fr;
+            gap: 50px;
             margin-bottom: 50px;
         }
 
-        @media(max-width: 768px) {
-            .footer-grid { grid-template-columns: 1fr; }
-            .hero-content h1 { font-size: 40px; }
+        @media(min-width: 992px) {
+            .footer-grid { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 80px;
+            }
+            footer { padding: 100px 8% 40px 8%; }
+        }
+
+        /* OCULTAR MENÚ EN MÓVILES EXTREMADAMENTE PEQUEÑOS SI ES NECESARIO */
+        @media(max-width: 767px) {
             nav ul { display: none; }
         }
 
@@ -377,90 +436,96 @@
 <body>
 
     <header>
-        <a href="#" class="logo">
-            <i class="fas fa-laptop-medical"></i> iCare Tech<span>CR</span>
-        </a>
-        <nav>
-            <ul>
-                <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#catalogo">Catálogo</a></li>
-                <li><a href="#testimonios">Reseñas</a></li>
-                <li><a href="/service" style="color:var(--turquoise-main);"><i class="fas fa-headset"></i> Portal Soporte</a></li>
-            </ul>
-        </nav>
+        <div style="max-width: var(--max-width-desktop); margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <a href="#" class="logo">
+                <i class="fas fa-laptop-medical"></i> iCare Tech<span>CR</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#servicios">Servicios</a></li>
+                    <li><a href="#catalogo">Catálogo</a></li>
+                    <li><a href="#testimonios">Reseñas</a></li>
+                    <li><a href="/service" style="color:var(--turquoise-main);"><i class="fas fa-headset"></i> Portal Soporte</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1 id="hero-title">Soluciones Tecnológicas <span>Especializadas</span></h1>
-            <p id="hero-subtitle">Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
-            <a href="#contacto" class="btn-premium">Solicitar Diagnóstico <i class="fas fa-arrow-right"></i></a>
-        </div>
-    </section>
+    <div class="container-wrapper">
 
-    <section id="servicios" class="section-padding">
-        <div class="section-title">
-            <h2>Ingeniería de Servicios TI</h2>
-            <p>Módulos avanzados de ejecución técnica y arquitectura de red corporativa</p>
-        </div>
-        <div class="services-grid" id="render-servicios">
+        <section class="hero">
+            <div class="hero-content">
+                <h1 id="hero-title">Soluciones Tecnológicas <span>Especializadas</span></h1>
+                <p id="hero-subtitle">Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
+                <a href="#contacto" class="btn-premium">Solicitar Diagnóstico <i class="fas fa-arrow-right"></i></a>
             </div>
-    </section>
+        </section>
 
-    <section id="catalogo" class="section-padding" style="background: #0d0f13;">
-        <div class="section-title">
-            <h2>Catálogo de Hardware Pro</h2>
-            <p>Piezas y componentes críticos certificados para alto rendimiento</p>
-        </div>
-        <div class="products-container" id="render-productos">
+        <section id="servicios" class="section-padding">
+            <div class="section-title">
+                <h2>Ingeniería de Servicios TI</h2>
+                <p>Módulos avanzados de ejecución técnica y arquitectura de red corporativa</p>
             </div>
-    </section>
+            <div class="services-grid" id="render-servicios">
+                </div>
+        </section>
 
-    <section class="section-padding">
-        <div class="partners-logo-wrap" id="render-socios">
+        <section id="catalogo" class="section-padding" style="background: #0d0f13; border-radius: var(--radius-premium);">
+            <div class="section-title">
+                <h2>Catálogo de Hardware Pro</h2>
+                <p>Piezas y componentes críticos certificados para alto rendimiento</p>
             </div>
-    </section>
+            <div class="products-container" id="render-productos">
+                </div>
+        </section>
 
-    <section id="testimonios" class="section-padding" style="background: #0d0f13;">
-        <div class="section-title">
-            <h2>Garantía de Satisfacción</h2>
-            <p>Clientes corporativos respaldados por nuestro acuerdo de nivel de servicio (SLA)</p>
-        </div>
-        <div class="reviews-grid" id="render-reseñas">
+        <section class="section-padding">
+            <div class="partners-logo-wrap" id="render-socios">
+                </div>
+        </section>
+
+        <section id="testimonios" class="section-padding" style="background: #0d0f13; border-radius: var(--radius-premium);">
+            <div class="section-title">
+                <h2>Garantía de Satisfacción</h2>
+                <p>Clientes corporativos respaldados por nuestro acuerdo de nivel de servicio (SLA)</p>
             </div>
-    </section>
+            <div class="reviews-grid" id="render-reseñas">
+                </div>
+        </section>
 
-    <section id="contacto"></section>
-    <footer>
-        <div class="footer-grid">
-            <div>
-                <h3 style="font-size:24px; margin-bottom:20px;">Hablemos de tu <span>Proyecto</span></h3>
-                <p style="color:#8a99ad; line-height:1.6; margin-bottom:30px;">Envíanos tus requerimientos de red o fallas de sistema. Un ingeniero especialista se pondrá en contacto para coordinar soporte inmediato.</p>
-                <div style="display:flex; flex-direction:column; gap:15px; color:#cfd8dc;">
-                    <div><i class="fas fa-envelope" style="color:var(--turquoise-main); margin-right:10px;"></i> soporte@icaretechcr.com</div>
-                    <div><i class="fas fa-phone-alt" style="color:var(--turquoise-main); margin-right:10px;"></i> +506 4000-0000</div>
+        <section id="contacto"></section>
+        <footer>
+            <div class="footer-grid">
+                <div>
+                    <h3 style="font-size:26px; margin-bottom:20px;">Hablemos de tu <span style="color: var(--turquoise-main);">Proyecto</span></h3>
+                    <p style="color:#8a99ad; line-height:1.6; margin-bottom:30px;">Envíanos tus requerimientos de red o fallas de sistema. Un ingeniero especialista se pondrá en contacto para coordinar soporte inmediato.</p>
+                    <div style="display:flex; flex-direction:column; gap:15px; color:#cfd8dc;">
+                        <div><i class="fas fa-envelope" style="color:var(--turquoise-main); margin-right:10px;"></i> soporte@icaretechcr.com</div>
+                        <div><i class="fas fa-phone-alt" style="color:var(--turquoise-main); margin-right:10px;"></i> +506 4000-0000</div>
+                    </div>
+                </div>
+                <div>
+                    <form class="contact-form" action="/api/registro" method="POST">
+                        <input type="text" name="nombre" placeholder="Nombre completo o Institución" required>
+                        <input type="email" name="correo" placeholder="Correo electrónico corporativo" required>
+                        <textarea name="mensaje" rows="4" placeholder="Detalle técnico de los requerimientos o falla de infraestructura..." required></textarea>
+                        <button type="submit">Enviar Solicitud Maestro</button>
+                    </form>
                 </div>
             </div>
-            <div>
-                <form class="contact-form" action="/api/registro" method="POST">
-                    <input type="text" name="nombre" placeholder="Nombre completo o Institución" required>
-                    <input type="email" name="correo" placeholder="Correo electrónico corporativo" required>
-                    <textarea name="mensaje" rows="4" placeholder="Detalle técnico de los requerimientos o falla de infraestructura..." required></textarea>
-                    <button type="submit">Enviar Solicitud Maestro</button>
-                </form>
+            <div style="text-align:center; padding-top:25px; border-top:1px solid rgba(255,255,255,0.05); color:#546e7a; font-size:13px;">
+                &copy; 2026 iCare Tech CR. Todos los derechos reservados. Control de Alta Disponibilidad Premium.
             </div>
-        </div>
-        <div style="text-align:center; padding-top:4px; border-top:1px solid rgba(255,255,255,0.05); color:#546e7a; font-size:13px;">
-            &copy; 2026 iCare Tech CR. Todos los derechos reservados. Control de Alta Disponibilidad Premium.
-        </div>
-    </footer>
+        </footer>
+
+    </div>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             fetch('/api/todo')
                 .then(res => res.json())
                 .then(data => {
-                    // 1. Inyección Segura de Textos del Servidor (Hero)
+                    // 1. Inyección de Textos del Servidor (Hero)
                     if (data && data.config) {
                         if (data.config.hero_titulo) {
                             document.getElementById('hero-title').innerHTML = data.config.hero_titulo;
@@ -470,7 +535,7 @@
                         }
                     }
 
-                    // 2. Renderizado Seguro de Módulos de Servicios
+                    // 2. Renderizado de Módulos de Servicios
                     const serviciosWrap = document.getElementById('render-servicios');
                     if (serviciosWrap && data.servicios && Array.isArray(data.servicios)) {
                         if (data.servicios.length === 0) {
@@ -486,7 +551,7 @@
                         }
                     }
 
-                    // 3. Renderizado Seguro de Catálogo de Productos
+                    // 3. Renderizado de Catálogo de Productos
                     const productosWrap = document.getElementById('render-productos');
                     if (productosWrap && data.productos && Array.isArray(data.productos)) {
                         if (data.productos.length === 0) {
@@ -505,7 +570,7 @@
                         }
                     }
 
-                    // 4. Renderizado Seguro de Logos / Socios Fabricantes
+                    // 4. Renderizado de Logos / Socios Fabricantes
                     const sociosWrap = document.getElementById('render-socios');
                     if (sociosWrap && data.socios && Array.isArray(data.socios)) {
                         sociosWrap.innerHTML = data.socios.map(partner => `
@@ -513,7 +578,7 @@
                         `).join('');
                     }
 
-                    // 5. Renderizado Seguro de Reseñas / Testimonios Corporativos
+                    // 5. Renderizado de Reseñas / Testimonios Corporativos
                     const resenasWrap = document.getElementById('render-reseñas');
                     if (resenasWrap && data.resenas && Array.isArray(data.resenas)) {
                         if (data.resenas.length === 0) {

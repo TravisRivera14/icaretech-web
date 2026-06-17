@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">}
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
     <style>
         /* VARIABLES DE DISEÑO PRINCIPALES */
@@ -35,122 +34,6 @@
             box-sizing: border-box; 
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
         }
-
-        /* ======================================================= */
-    /* 📱 OPTIMIZACIÓN RESPONSIVA PREMIUM PARA DISPOSITIVOS MÓVILES */
-    /* ======================================================= */
-    @media (max-width: 992px) {
-        /* Ajustes para Tablets y Pantallas Medianas */
-        .services-grid, .reviews-grid, .objectives-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 20px !important;
-        }
-    }
-
-    @media (max-width: 768px) {
-        /* Ajustes Estrictos para Teléfonos Celulares */
-        header {
-            padding: 10px 16px !important;
-        }
-
-        .nav-bar {
-            flex-direction: row !important;
-            justify-content: space-between !important;
-        }
-
-        .logo-img {
-            height: 42px !important; /* Escala el logo para pantallas pequeñas */
-        }
-
-        /* Oculta enlaces de navegación secundarios en móvil para evitar colapsos visuales, dejando solo el botón de Soporte */
-        .nav-links a:not(.btn-nav-ticket) {
-            display: none !important;
-        }
-
-        .btn-nav-ticket {
-            padding: 6px 14px !important;
-            font-size: 13px !important;
-        }
-
-        /* Reducción fluida del Hero para que el h1 nunca se corte ni se desborde */
-        .hero {
-            padding: 50px 16px 40px 16px !important;
-        }
-
-        .hero h1 {
-            font-size: 30px !important; 
-            line-height: 1.2 !important;
-            letter-spacing: -0.5px !important;
-        }
-
-        .hero p {
-            font-size: 15px !important;
-            line-height: 1.5 !important;
-        }
-
-        /* Forzado de columnas únicas en secciones de rejilla para lectura vertical limpia */
-        .services-grid, .reviews-grid, .objectives-grid, .benefits-grid {
-            grid-template-columns: 1fr !important;
-            gap: 16px !important;
-        }
-
-        .section-container {
-            padding: 40px 16px !important;
-        }
-
-        .section-title {
-            font-size: 24px !important;
-            margin-bottom: 24px !important;
-            letter-spacing: -0.5px !important;
-        }
-
-        /* Mantenimiento del carrusel táctil de arrastre horizontal (Swipe) en móvil */
-        .products-scroll, .partners-scroll {
-            display: flex !important;
-            gap: 16px !important;
-            overflow-x: auto !important;
-            scroll-snap-type: x mandatory !important;
-            padding-bottom: 15px !important;
-            -webkit-overflow-scrolling: touch !important; /* Desplazamiento inercial suave en iOS */
-        }
-
-        .product-card, .partner-card {
-            min-width: 260px !important;
-            max-width: 260px !important;
-            scroll-snap-align: start !important;
-        }
-
-        /* Reajuste del Footer e inputs para comodidad del pulgar al escribir */
-        .footer-grid {
-            grid-template-columns: 1fr !important;
-            gap: 32px !important;
-            text-align: center !important;
-        }
-
-        .register-form {
-            max-width: 100% !important;
-            padding: 0 !important;
-        }
-
-        input, textarea, select, .btn-register-submit {
-            font-size: 15px !important;
-            padding: 14px !important;
-        }
-    }
-
-    @media (max-width: 480px) {
-        /* Optimizaciones ultra-específicas para smartphones compactos (iPhone SE / pantallas de menos de 400px) */
-        .hero h1 {
-            font-size: 26px !important;
-        }
-        
-        .product-card {
-            min-width: 230px !important;
-            max-width: 230px !important;
-        }
-    }
-
-        
         
         body { 
             background-color: var(--bg-light); 
@@ -1302,6 +1185,126 @@
             .left-arrow { left: 0; }
             .right-arrow { right: 0; }
         }
+
+        @media (max-width: 768px) {
+            /* ========================================== */
+            /* 1. REPARACIÓN DEL HEADER / MENÚ            */
+            /* ========================================== */
+            
+            .nav-bar, header nav, .header-container {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+                padding: 8px 4px !important;
+            }
+
+            .nav-links, .menu-links, nav div {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0 !important;
+            }
+
+            /* Oculta los links de texto amontonados */
+            .nav-links a:not([href*="servicio"]):not([href*="service"]),
+            nav a:not([href*="servicio"]):not([href*="service"]),
+            .menu-links a:not([href*="servicio"]):not([href*="service"]) {
+                display: none !important;
+            }
+
+            .logo-img, .logo, header img, nav img {
+                height: 30px !important;
+                width: auto !important;
+                max-width: 120px !important;
+                object-fit: contain !important;
+            }
+
+            /* DISEÑO PREMIUM DEL BOTÓN DE SOPORTE CORPORATIVO EN MÓVILES */
+            .btn-nav-ticket, a[href*="servicio"], a[href*="service"] {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                padding: 6px 12px !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                background: #1b4332 !important; /* Tu verde/turquesa corporativo */
+                color: #ffffff !important;
+                border-radius: 14px !important;
+                white-space: nowrap !important;
+                text-decoration: none !important;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
+            }
+
+            /* ========================================== */
+            /* 2. REPARACIÓN DEL CARRUSEL DE "NUESTROS SOCIOS" */
+            /* ========================================== */
+
+            #partners-container, .partners-scroll, [id*="socio"], [class*="socio"] {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                justify-content: flex-start !important;
+                gap: 12px !important;
+                padding: 10px 4px 15px 4px !important;
+                -webkit-overflow-scrolling: touch !important; 
+                scroll-snap-type: x mandatory !important;
+            }
+
+            .partner-card, .socio-card, #partners-container > div, .partners-scroll > div {
+                min-width: 110px !important;
+                max-width: 110px !important;
+                height: 60px !important;
+                background: #ffffff !important;
+                border: 1px solid rgba(0,0,0,0.06) !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 6px !important;
+                flex-shrink: 0 !important; 
+                scroll-snap-align: start !important;
+            }
+
+            .partner-img, .socio-img, #partners-container img, .partners-scroll img {
+                width: auto !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: 40px !important;
+                object-fit: contain !important; 
+                display: block !important;
+                margin: 0 auto !important;
+            }
+
+            /* ========================================== */
+            /* 3. MEJORAS DE ADAPTACIÓN GENERAL          */
+            /* ========================================== */
+            .hero {
+                padding: 35px 16px 25px 16px !important;
+            }
+            .hero h1 {
+                font-size: 24px !important;
+                line-height: 1.2 !important;
+            }
+            .services-grid, .reviews-grid, .objectives-grid, .benefits-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            .section-container {
+                padding: 30px 16px !important;
+            }
+            .section-title {
+                font-size: 20px !important;
+                margin-bottom: 16px !important;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr !important;
+                text-align: center !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1618,7 +1621,8 @@
             document.getElementById('det-imagen').src = servicio.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
             
             const lista = document.getElementById('det-beneficios');
-            text = "";
+            lista.innerHTML = ""; // Limpieza correcta del contenedor antes de inyectar
+            
             const lineas = servicio.beneficios ? servicio.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico transparente de hardware", "Técnicos certificados"];
             lineas.forEach(linea => {
                 if(linea.trim()) {
@@ -1736,112 +1740,4 @@
         });
     </script>
 </body>
-
-<style>
-    @media (max-width: 768px) {
-        /* 1. Forzar que el menú superior (Header) no se desborde */
-        header, .header, nav, [class*="nav"], [class*="menu"] {
-            padding: 8px 12px !important;
-            height: auto !important;
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-
-        /* Reducir el logotipo de tu empresa para dar espacio holgado */
-        .logo-img, [class*="logo"] img {
-            height: 32px !important;
-            width: auto !important;
-            max-width: 125px !important;
-            display: block !important;
-        }
-
-        /* Ocultar enlaces de texto que colapsan la barra en celulares */
-        .nav-links a:not([href*="servicio"]):not([href*="service"]),
-        nav a:not([href*="servicio"]):not([href*="service"]),
-        ul li a:not([href*="servicio"]):not([href*="service"]),
-        .menu a:not([href*="servicio"]):not([href*="service"]) {
-            display: none !important;
-        }
-
-        /* Asegurar que el contenedor del botón no tenga márgenes raros */
-        .nav-links, nav div, ul, .menu {
-            display: flex !important;
-            align-items: center !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            gap: 0 !important;
-        }
-
-        /* FORZAR VISIBILIDAD DEL BOTÓN DE SOPORTE CORPORATIVO EN TELÉFONOS */
-        a[href*="servicio"], a[href*="service"], [class*="ticket"], .btn-nav-ticket {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            padding: 7px 14px !important;
-            font-size: 11.5px !important;
-            font-weight: 700 !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.5px !important;
-            border-radius: 14px !important;
-            background: #1b4332 !important; /* El color verde corporativo de iCare */
-            color: #ffffff !important;
-            text-decoration: none !important;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
-            white-space: nowrap !important;
-        }
-
-        /* 2. CORRECCIÓN DE "NUESTROS SOCIOS" (Convertir a carrusel horizontal pequeño) */
-        [id*="socios"], [class*="socios"], [id*="partners"], [class*="partner"], .partners-scroll {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            gap: 12px !important;
-            padding: 10px 4px !important;
-            justify-content: flex-start !important;
-            -webkit-overflow-scrolling: touch !important; /* Desplazamiento inercial suave en iPhone */
-            scroll-snap-type: x mandatory !important;
-        }
-
-        /* Reducción a las tarjetas contenedoras de los logotipos de socios */
-        [class*="partner-card"], [class*="socio-card"], [id*="socios"] > div, [class*="partners-scroll"] > div {
-            min-width: 95px !important;
-            max-width: 95px !important;
-            background: #ffffff !important;
-            border-radius: 8px !important;
-            padding: 6px !important;
-            scroll-snap-align: start !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
-            border: 1px solid rgba(0,0,0,0.05) !important;
-            flex-shrink: 0 !important;
-        }
-
-        /* Forzar que las imágenes de los fabricantes sean pequeñas y estilizadas */
-        [id*="socios"] img, [class*="socios"] img, [class*="partner"] img, [class*="socio-card"] img {
-            width: 100% !important;
-            max-width: 85px !important;
-            height: 38px !important;
-            object-fit: contain !important;
-            display: block !important;
-            margin: 0 auto !important;
-        }
-
-        /* 3. Ajustes globales de lectura en pantallas móviles */
-        .hero { padding: 35px 16px 30px 16px !important; }
-        .hero h1 { font-size: 25px !important; line-height: 1.2 !important; }
-        .hero p { font-size: 14px !important; }
-        .services-grid, .reviews-grid, .objectives-grid, .benefits-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-        .section-container { padding: 30px 16px !important; }
-        .section-title { font-size: 20px !important; margin-bottom: 18px !important; }
-        [class*="products-scroll"] { display: flex !important; gap: 14px !important; overflow-x: auto !important; padding-bottom: 10px !important; }
-        [class*="product-card"] { min-width: 220px !important; max-width: 220px !important; flex-shrink: 0 !important; }
-        .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; text-align: center !important; }
-    }
-</style>
-
 </html>
-

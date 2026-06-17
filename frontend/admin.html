@@ -660,7 +660,7 @@
     let editSupportEmpId = null; 
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
-    let currentOpenTicket = null; // Almacena el objeto del ticket activo en pantalla grande
+    let currentOpenTicket = null; 
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-section').forEach(section => section.classList.remove('active'));
@@ -847,7 +847,6 @@
         }).join('');
     }
 
-    // 📺 LOGICA PARA ENTRAR AL TICKET EN GRANDE
     function abrirModalTicketGrande(ticketId) {
         const ticket = cacheTickets.find(t => t.id === ticketId);
         if(!ticket) return;
@@ -873,7 +872,6 @@
             btnResolver.style.display = "none";
         }
 
-        // Limpiar consultas de IA previas
         document.getElementById('boxSolucionIA').style.display = "none";
         document.getElementById('textSolucionIA').innerHTML = "";
 
@@ -885,7 +883,6 @@
         currentOpenTicket = null;
     }
 
-    // 🤖 FUNCIÓN DE INTELIGENCIA ARTIFICIAL GENERATIVA PARA EL DIAGNÓSTICO
     function generarSolucionIA() {
         if(!currentOpenTicket) return;
         
@@ -898,12 +895,7 @@
                 <i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...
             </div>`;
 
-        // Prompt de contexto técnico para simular el análisis estructurado
-        const promptContext = `Analiza la falla del cliente corporativo. Asunto: ${currentOpenTicket.asunto}. Detalle del error: ${currentOpenTicket.descripcion}. Prioridad: ${currentOpenTicket.prioridad}.`;
-
-        // Consumimos de manera asíncrona y robusta un motor de resolución heurística adaptativa
         setTimeout(() => {
-            // Estructuración de viñeta predictiva inteligente basada en palabras clave comunes de soporte corporativo
             const lowerAsunto = currentOpenTicket.asunto.toLowerCase();
             const lowerDesc = currentOpenTicket.descripcion.toLowerCase();
             let solucionSugerida = "";
@@ -1055,10 +1047,32 @@
             }
             
             let h = "<b style='color:var(--edit); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
-            cacheData.servicios.forEach((s, idx) => h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios',${s.id})">Eliminar</button></div></div>`);
+            
+            // CORREGIDO: Uso exclusivo de comillas invertidas (backticks) para la inyección limpia de variables de servidor
+            cacheData.servicios.forEach((s, idx) => {
+                h += `
+                    <div class="list-item">
+                        <span>${s.titulo}</span>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button>
+                            <button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
             
             h += "<br><b style='color:var(--edit); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
-            cacheData.productos.forEach((p, idx) => h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button><button class="btn-del" onclick="del('productos',${p.id})">Eliminar</button></div></div>`);
+            
+            // CORREGIDO: Uso exclusivo de comillas invertidas (backticks) para la inyección limpia de variables de servidor
+            cacheData.productos.forEach((p, idx) => {
+                h += `
+                    <div class="list-item">
+                        <span>${p.nombre}</span>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button>
+                            <button class="btn-del" onclick="del('productos', ${p.id})">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
             
             document.getElementById('master-list').innerHTML = h;
         });

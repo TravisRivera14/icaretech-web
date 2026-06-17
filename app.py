@@ -3,6 +3,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
+import psycopg2.extras
 
 app = Flask(__name__)
 
@@ -40,36 +41,21 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    
-    # MODIFICACIÓN TÉCNICA: Se comprueba y crea la tabla para las empresas corporativas que reciben soporte técnico
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
-    
-    # MODIFICACIÓN TÉCNICA: Tabla maestra para la gestión de tickets segmentada por empresa cliente
-    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (
-                    id SERIAL PRIMARY KEY, 
-                    empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, 
-                    contacto VARCHAR(100) NOT NULL, 
-                    asunto VARCHAR(200) NOT NULL, 
-                    descripcion TEXT NOT NULL, 
-                    prioridad VARCHAR(20) NOT NULL, 
-                    estado VARCHAR(20) DEFAULT 'Abierto', 
-                    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    # Tabla socios con columna URL añadida
+    c.execute('''CREATE TABLE IF NOT EXISTS socios (id SERIAL PRIMARY KEY, nombre TEXT DEFAULT 'Socio', imagen TEXT DEFAULT '', url TEXT DEFAULT '#')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     c.close()
     conn.close()
 
 def registrar_cambio(accion, detalle):
-    """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
     usuario_id = session.get('user_id')
     usuario_nombre = session.get('nombre', 'Sistema / Web')
     try:
-        db_query(
-            "INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)",
-            (usuario_id, usuario_nombre, accion, detalle)
-        )
+        db_query("INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)", (usuario_id, usuario_nombre, accion, detalle))
     except Exception as e:
-        print(f"Error guardando log de auditoría: {e}")
-
+        print(f"Error log auditoría: {e}")
 # ==========================================
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
 # ==========================================
@@ -258,67 +244,27 @@ def dar_baja_empresa_soporte(id):
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
     try:
-        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
-        config = {r[0]: r[1] for r in config_raw}
-        
-        if 'hero_titulo' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
-        if 'mision' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
-        if 'vision' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-        if 'compromiso' not in config:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
-
-        # Modificación para evitar vaciar constantemente si ya existen datos cargados dinámicamente
-        beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
-        if beneficios_existentes and beneficios_existentes[0][0] == 0:
-            ventajas_defecto = [
-                ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
-                ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
-                ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
-                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
-                ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
-                ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
-                ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
-                ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),
-                ("Experiencia en seguridad electrónica", "Tienen conocimientos específicos en sistemas como cámaras de vigilancia, alarmas y controles de acceso.", "fas fa-video"),
-                ("Compromiso con la calidad", "Se enfocan en realizar trabajos bien hechos que aseguren la satisfacción del cliente a largo plazo.", "fas fa-star"),
-                ("Cobertura a domicilio en Costa Rica", "Brindan comodidad al desplazarse a tu casa o empresa en cualquier parte del país para realizar el servicio.", "fas fa-map-marked-alt"),
-                ("Repuestos genéricos", "Ofrecemos piezas de alta compatibilidad y bajo costo, ideales para optimizar tu presupuesto sin perder funcionalidad.", "fas fa-exchange-alt")
-            ]
-            for titulo, desc, icono in ventajas_defecto:
-                db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))
-
-        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
-        config = {r[0]: r[1] for r in config_raw}
-
+        # Recuperación de datos con la columna URL corregida
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
-        servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
-        
         prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
-        prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]) if r[2] else 0.0, "imagen": r[3], "categoria": r[4]} for r in prods_raw]
+        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or [] # AQUI ESTA LA MEJORA
         
-        parts_raw = db_query("SELECT id, nombre, imagen FROM socios", fetch=True) or []
-        parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in parts_raw]
+        servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
+        prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]), "imagen": r[3], "categoria": r[4]} for r in prods_raw]
+        parts = [{"id": r[0], "nombre": r[1], "imagen": r[2], "url": r[3]} for r in parts_raw]
         
-        reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
-        reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
-        
-        ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
-        beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
-
-        obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
-        objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
-
-        emp_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan ORDER BY id ASC", fetch=True) or []
-        empresas = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in emp_raw]
-
-        return jsonify({
-            "config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews, "beneficios": beneficios, "objetivos": objetivos, "empresas": empresas
-        })
+        return jsonify({"servicios": servs, "productos": prods, "socios": parts})
     except Exception as e:
-        return jsonify({"error": "Error interno", "detalles": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/socios', methods=['POST'])
+def guardar_socio():
+    d = request.json or {}
+    # Ahora guardamos el campo URL también
+    db_query("INSERT INTO socios (nombre, imagen, url) VALUES (%s, %s, %s)", 
+             (d.get('nombre', 'Socio'), d.get('imagen', ''), d.get('url', '#')))
+    registrar_cambio("Añadió Socio Comercial", f"Se registró: {d.get('nombre', '')}")
+    return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['GET'])
 def obtener_servicio_individual(id):
@@ -395,13 +341,6 @@ def editar_resena(id):
     d = request.json or {}
     db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente',''), id))
     registrar_cambio("Editó Reseña Interna", f"Se actualizó la reseña del ID {id}")
-    return jsonify({"mensaje": "✅"})
-
-@app.route('/api/socios', methods=['POST'])
-def guardar_socio():
-    d = request.json or {}
-    db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
-    registrar_cambio("Añadió Socio Comercial", f"Se registró el socio: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios', methods=['POST'])

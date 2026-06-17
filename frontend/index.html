@@ -877,18 +877,19 @@
         
         /* Estilo para las burbujas cuadradas semi-transparentes */
         .partner-card {
-            background: rgba(255, 255, 255, 0.03) !important; /* Semi-transparencia oscura */
-            backdrop-filter: blur(10px);                    /* Efecto vidrio esmerilado */
+            background: rgba(255, 255, 255, 0.03) !important;
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 20px !important;                 /* Esquinas redondeadas (tipo burbuja) */
-            padding: 20px !important;
+            border-radius: 16px !important;
+            padding: 15px !important;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 140px;
-            width: 140px;                                   /* Cuadrado fijo */
+            height: 120px; /* Altura fija para alinear todos */
+            width: 120px;  /* Ancho fijo para alinearlos */
             transition: var(--transition-smooth);
-        } 
+            text-decoration: none; /* Porque ahora será un link */
+        }
 
         .partner-card:hover {
             background: rgba(0, 180, 216, 0.1) !important;  /* Brillo azul al pasar el mouse */
@@ -897,13 +898,14 @@
         }
 
         /* Para quitar el fondo blanco de los logos, aplicamos filtro */
+        /* Logos a color */
         .partner-logo {
-            max-width: 80%;
-            max-height: 80%;
-            object-fit: contain;
-            filter: brightness(0) invert(1);                /* Esto vuelve los logos blancos para que resalten en el fondo oscuro */
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Esto hace que el logo no se deforme */
+            filter: none !important; /* Asegura que se vea a color */
+            opacity: 1 !important;
+            transform: scale(1.1);
         }
 
         .partner-card:hover .partner-logo {
@@ -1847,16 +1849,16 @@
                 }
 
                 const partC = document.getElementById('partners-c');
-                if (partC && data.socios) { data.socios.forEach(p => { partC.innerHTML += `<div class="partner-card"><img src="${p.imagen}" alt="${p.nombre}" class="partner-logo"></div>`; }); }
-                
-                const revC = document.getElementById('rev-c');
-                if (revC && data.resenas) {
-                    data.resenas.forEach(r => { revC.innerHTML += `<div class="review-card"><p class="review-text">"${r.comentario}"</p><div class="reviewer-info"><img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img"><div class="reviewer-meta"><div class="reviewer-name">${r.cliente}</div><div class="reviewer-pos">${r.puesto}</div></div></div></div>`; });
+                if (partC && data.socios) { 
+                    partC.innerHTML = ""; // Limpiamos el contenedor
+                    data.socios.forEach(p => { 
+                        // Cambiamos el div por un enlace <a>
+                        partC.innerHTML += `
+                            <a href="${p.url}" target="_blank" class="partner-card" title="${p.nombre}">
+                                <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
+                            </a>`; 
+                    }); 
                 }
-                applyAnimations();
-            }).catch(error => {
-                console.error("Error al cargar los datos:", error);
-                document.getElementById('hero-title').innerText = "Bienvenidos a iCare Tech";
             });
         });
     </script>

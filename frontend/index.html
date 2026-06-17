@@ -13,18 +13,40 @@
 
     <style>
         /* VARIABLES DE DISEÑO PRINCIPALES */
-        :root { 
-            --nav-bg: rgba(53, 92, 107, 0.6); 
-            --neon-green: #7cf5a6; 
-            --neon-green-hover: #65d98e;
-            --icon-blue: #4ea5ce;
-            --bg-light: #f4f7f6;
-            --text-dark: #111111;
-            --text-grey: #666666;
-            --white: #ffffff;
-            --footer-dark: #1a1a1a;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        :root {
+
+             --dark-bg:#0b0c10;
+             --card-bg:#11141a;
+             --card-bg-hover:#1a1f29;
+
+             --turquoise-main:#00b4d8;
+             --turquoise-light:#90e0ef;
+             --turquoise-dark:#0077b6;
+
+             --text-light:#f5f7fa;
+             --text-secondary:#9aa6b2;
+
+             --border-smooth:rgba(255,255,255,.08);
+
+             --nav-bg:#11141a;
+
+             --icon-blue:#00b4d8;
+
+             --bg-light:#0b0c10;
+
+             --text-dark:#f5f7fa;
+
+             --text-grey:#9aa6b2;
+
+             --white:#11141a;
+
+             --footer-dark:#0b0c10;
+
+             --card-shadow:
+                0 10px 30px rgba(0,0,0,.35);
+
+             --transition-smooth:
+                all .35s cubic-bezier(.16,1,.3,1);
         }
         
         /* RESETEO GENERAL DE ESTRUCTURA WEB */
@@ -36,8 +58,8 @@
         }
         
         body { 
-            background-color: var(--bg-light); 
-            color: var(--text-dark); 
+            background-color: #0b0c10; 
+            color: #f5f7fa; 
             -webkit-font-smoothing: antialiased; 
             -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden; 
@@ -45,7 +67,9 @@
 
         /* NAVEGACIÓN Y ENCABEZADO PREMIUM */
         header { 
-            background: var(--nav-bg); 
+            background: #11141a; 
+            border-bottom:1px solid rgba(255,255,255,.08);
+            backdrop-filter:blur(16px)
             padding: 5px 40px; 
             position: sticky; 
             top: 0; 
@@ -255,8 +279,9 @@
         }
         
         .service-card { 
-            background: var(--white); 
+            background: #11141a;; 
             padding: 45px 30px; 
+            border:1px solid rgba(255,255,255,.08);
             border-radius: 14px; 
             text-align: center; 
             box-shadow: var(--card-shadow); 
@@ -264,6 +289,7 @@
             transition: var(--transition-smooth); 
             position: relative;
             overflow: hidden;
+            color:#f5f7fa;
         }
         
         .service-card:hover { 

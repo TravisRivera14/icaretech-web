@@ -3,203 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCare Tech CR | Soporte Técnico y Tecnología Premium</title>
-    <link rel="icon" href="Logo_v2.png">
+    <title>iCare Tech CR | Soporte Técnico y TI Premium</title>
+    <link rel="icon" href="Logo_Admin_v2.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --turquoise-main: #00b4d8;
-            --turquoise-dark: #0077b6;
-            --turquoise-light: #90e0ef;
-            --dark-bg: #0b0c10;
-            --card-bg: #1f2833;
-            --text-light: #f5f5f7;
-            --text-muted: #c5a880;
-            --radius-premium: 20px;
-            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            --max-width-desktop: 1400px;
+        :root { 
+            --brand-dark: #111111;
+            --brand-green: #1b4332;
+            --apple-bg: #f5f5f7; 
+            --apple-card: #ffffff;
+            --text-main: #1d1d1f;
+            --text-secondary: #86868b;
+            --apple-blue: #0071e3;
+            --apple-blue-hover: #0077ed;
+            --border-smooth: rgba(0, 0, 0, 0.08);
+            --radius-premium: 18px;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-premium: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --max-width-desktop: 1200px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            letter-spacing: -0.3px;
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            letter-spacing: -0.2px;
         }
-
-        body {
-            background-color: var(--dark-bg);
-            color: var(--text-light);
+        
+        body { 
+            background: var(--apple-bg); 
+            color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; 
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* CONTENEDOR MAESTRO PARA EVITAR QUE SE DESESCUADRE EN PANTALLAS GIGANTES */
+        /* ENVOLTORIO MAESTRO DE RESPONSIVIDAD PARA ESCRITORIO */
         .container-wrapper {
             max-width: var(--max-width-desktop);
             margin: 0 auto;
             width: 100%;
+            padding: 0 24px;
         }
 
-        /* NAVBAR PREMIUM - ADAPTADO PARA MÓVIL Y ESCRITORIO */
+        /* HEADER / NAVBAR ESTILO APPLE GLASS */
         header {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100%;
-            padding: 20px 8%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             z-index: 1000;
-            background: rgba(11, 12, 16, 0.85);
+            background: rgba(245, 245, 247, 0.8); 
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border-smooth);
             transition: var(--transition-smooth);
         }
 
+        .header-container {
+            max-width: var(--max-width-desktop);
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .logo {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
-            color: #ffffff;
+            color: var(--brand-dark);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
         }
 
         .logo span {
-            color: var(--turquoise-main);
+            color: var(--apple-blue);
         }
 
         nav ul {
             display: flex;
             list-style: none;
-            gap: 35px;
+            gap: 30px;
             align-items: center;
         }
 
         nav ul li a {
-            color: #ffffff;
+            color: var(--text-main);
             text-decoration: none;
-            font-size: 14.5px;
-            font-weight: 600;
-            opacity: 0.8;
+            font-size: 14px;
+            font-weight: 500;
             transition: var(--transition-smooth);
         }
 
         nav ul li a:hover {
-            opacity: 1;
-            color: var(--turquoise-main);
+            color: var(--apple-blue);
         }
 
-        /* HERO SECTION - BALANCEADO PARA COMPUTADORAS Y TELÉFONOS */
+        .btn-portal {
+            background: var(--apple-blue);
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .btn-portal:hover {
+            background: var(--apple-blue-hover);
+        }
+
+        @media(max-width: 768px) {
+            nav { display: none; } /* En móvil se simplifica la experiencia de navegación clásica de Apple */
+        }
+
+        /* HERO SECTION MINIMALISTA */
         .hero {
-            min-height: 100vh;
+            min-height: 85vh;
             display: flex;
             align-items: center;
-            padding: 120px 8% 60px 8%;
-            background: radial-gradient(circle at 80% 35%, rgba(0, 180, 216, 0.18) 0%, transparent 55%), var(--dark-bg);
-            position: relative;
+            justify-content: center;
+            text-align: center;
+            padding-top: 120px;
+            background: radial-gradient(circle at 50% 30%, rgba(0, 113, 227, 0.04) 0%, transparent 60%);
         }
 
         .hero-content {
-            max-width: 750px;
-            z-index: 10;
+            max-width: 800px;
+            animation: appleFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes appleFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero-content h1 {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 25px;
+            line-height: 1.15;
+            color: var(--text-main);
+            letter-spacing: -1.2px;
+            margin-bottom: 20px;
+        }
+
+        @media(min-width: 992px) {
+            .hero-content h1 { font-size: 56px; }
         }
 
         .hero-content h1 span {
-            color: var(--turquoise-main);
-            background: linear-gradient(135deg, #00b4d8, #90e0ef);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--apple-blue);
         }
 
         .hero-content p {
             font-size: 16px;
-            line-height: 1.6;
-            color: #8a99ad;
+            line-height: 1.5;
+            color: var(--text-secondary);
             margin-bottom: 35px;
+            font-weight: 400;
         }
 
-        /* MEDIA QUERY: OPTIMIZACIÓN HERO EN COMPUTADORA */
         @media(min-width: 992px) {
-            .hero-content h1 {
-                font-size: 58px;
-                line-height: 1.1;
-            }
-            .hero-content p {
-                font-size: 19px;
-            }
+            .hero-content p { font-size: 20px; max-width: 680px; margin-left: auto; margin-right: auto; }
         }
 
         .btn-premium {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: var(--turquoise-main);
-            color: #000000;
-            padding: 15px 35px;
-            border-radius: 30px;
-            font-weight: 700;
+            gap: 8px;
+            background: var(--text-main);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 15px;
             text-decoration: none;
             transition: var(--transition-smooth);
-            box-shadow: 0 10px 30px rgba(0, 180, 216, 0.3);
         }
 
         .btn-premium:hover {
-            background: var(--turquoise-light);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 180, 216, 0.5);
+            background: #000000;
+            transform: translateY(-1px);
         }
 
-        /* SECCIONES ADAPTABLES */
+        /* SECCIONES ADAPTABLES (GRID DINÁMICO COMPUTADORA / MÓVIL) */
         .section-padding {
-            padding: 80px 8%;
+            padding: 60px 0;
+        }
+        @media(min-width: 992px) {
+            .section-padding { padding: 90px 0; }
         }
 
         .section-title {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 45px;
         }
 
         .section-title h2 {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 800;
-            margin-bottom: 15px;
+            letter-spacing: -0.6px;
+            color: var(--text-main);
+            margin-bottom: 10px;
         }
 
         @media(min-width: 992px) {
-            .section-padding { padding: 120px 8%; }
-            .section-title h2 { font-size: 40px; }
+            .section-title h2 { font-size: 34px; }
         }
 
         .section-title p {
-            color: #8a99ad;
-            font-size: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        /* TARJETAS DE SERVICIOS ADAPTABLES */
+        /* GRID DE SERVICIOS APPLE CARDS */
         .services-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 30px;
+            gap: 24px;
         }
-
         @media(min-width: 768px) {
             .services-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -208,244 +235,235 @@
         }
 
         .service-card {
-            background: var(--card-bg);
+            background: var(--apple-card);
             border-radius: var(--radius-premium);
-            padding: 40px 30px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 35px 30px;
+            border: 1px solid var(--border-smooth);
+            box-shadow: var(--shadow-premium);
             transition: var(--transition-smooth);
         }
 
         .service-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(0, 180, 216, 0.3);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 113, 227, 0.2);
         }
 
         .service-icon {
-            font-size: 35px;
-            color: var(--turquoise-main);
-            margin-bottom: 25px;
+            font-size: 28px;
+            color: var(--apple-blue);
+            margin-bottom: 20px;
         }
 
         .service-card h3 {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            color: var(--text-main);
         }
 
         .service-card p {
-            color: #8a99ad;
-            font-size: 15px;
-            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        /* PRODUCTOS EN CARRUSEL INTELIGENTE */
+        /* PANORÁMICA DE PRODUCTOS HORIZONTAL Y CONTROLADA */
         .products-container {
             display: flex;
-            gap: 30px;
+            gap: 24px;
             overflow-x: auto;
-            padding: 20px 0;
+            padding: 15px 0;
             scrollbar-width: thin;
-            scrollbar-color: var(--turquoise-main) transparent;
-        }
-
-        .products-container::-webkit-scrollbar {
-            height: 6px;
-        }
-        .products-container::-webkit-scrollbar-thumb {
-            background-color: var(--turquoise-main);
-            border-radius: 10px;
+            scrollbar-color: var(--text-secondary) transparent;
         }
 
         .product-card {
-            min-width: 290px;
-            max-width: 320px;
+            min-width: 280px;
+            max-width: 300px;
             flex: 0 0 auto;
-            background: var(--card-bg);
+            background: var(--apple-card);
             border-radius: var(--radius-premium);
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-smooth);
+            box-shadow: var(--shadow-premium);
             transition: var(--transition-smooth);
         }
 
-        @media(min-width: 1024px) {
-            .product-card {
-                min-width: 320px;
-            }
+        @media(min-width: 992px) {
+            .product-card { min-width: 300px; }
         }
 
         .product-img {
             width: 100%;
-            height: 220px;
+            height: 200px;
             object-fit: cover;
-            background: #111;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border-smooth);
         }
 
         .product-info {
-            padding: 25px;
+            padding: 20px;
         }
 
         .product-info h3 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            margin-bottom: 10px;
+            color: var(--text-main);
+            margin-top: 4px;
+            margin-bottom: 8px;
         }
 
         .product-price {
-            color: var(--turquoise-main);
-            font-size: 20px;
-            font-weight: 800;
+            color: var(--text-main);
+            font-size: 18px;
+            font-weight: 700;
         }
 
-        /* REVIEWS / TESTIMONIOS ADAPTABLES */
+        /* RESEÑAS / TESTIMONIOS MAC-CARDS */
         .reviews-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 30px;
+            gap: 24px;
         }
-
         @media(min-width: 768px) {
             .reviews-grid { grid-template-columns: repeat(2, 1fr); }
         }
-        @media(min-width: 1100px) {
+        @media(min-width: 1024px) {
             .reviews-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .review-card {
-            background: var(--card-bg);
-            padding: 35px;
+            background: var(--apple-card);
+            padding: 30px;
             border-radius: var(--radius-premium);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-smooth);
+            box-shadow: var(--shadow-premium);
         }
 
         .review-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: #cfd8dc;
-            font-style: italic;
-            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-main);
+            font-weight: 400;
+            margin-bottom: 20px;
         }
 
         .review-author {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .author-img {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
         }
 
         .author-info h4 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
+            color: var(--text-main);
         }
 
         .author-info p {
-            font-size: 13px;
-            color: #8a99ad;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        /* SPONSORS / FABRICANTES */
+        /* FABRICANTES / MARCAS */
         .partners-logo-wrap {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 60px;
+            gap: 50px;
             flex-wrap: wrap;
-            opacity: 0.6;
+            padding: 20px 0;
         }
 
         .partner-img {
-            height: 45px;
-            filter: grayscale(1) brightness(2);
+            height: 35px;
+            opacity: 0.4;
+            filter: grayscale(1);
             object-fit: contain;
             transition: var(--transition-smooth);
         }
 
         .partner-img:hover {
-            opacity: 1;
+            opacity: 0.8;
             filter: none;
         }
 
-        /* FOOTER / FORMULARIO BALANCEADO */
+        /* FOOTER PREMIUM IMPLANTADO CON FORMULARIO LIMPIO */
         footer {
-            background: #060709;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 60px 8% 40px 8%;
+            background: var(--apple-card);
+            border-top: 1px solid var(--border-smooth);
+            padding: 60px 0 30px 0;
+            margin-top: 40px;
         }
 
         .footer-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 50px;
-            margin-bottom: 50px;
+            gap: 40px;
+            margin-bottom: 40px;
         }
 
         @media(min-width: 992px) {
-            .footer-grid { 
-                grid-template-columns: 1fr 1fr; 
-                gap: 80px;
-            }
-            footer { padding: 100px 8% 40px 8%; }
-        }
-
-        /* OCULTAR MENÚ EN MÓVILES EXTREMADAMENTE PEQUEÑOS SI ES NECESARIO */
-        @media(max-width: 767px) {
-            nav ul { display: none; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 80px; }
         }
 
         .contact-form input, .contact-form textarea {
             width: 100%;
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            background: var(--apple-bg);
+            border: 1px solid transparent;
+            padding: 14px;
             border-radius: 10px;
-            color: white;
-            margin-bottom: 15px;
+            color: var(--text-main);
+            margin-bottom: 12px;
             outline: none;
-            font-size: 14.5px;
+            font-size: 14px;
             transition: var(--transition-smooth);
         }
 
         .contact-form input:focus, .contact-form textarea:focus {
-            border-color: var(--turquoise-main);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
+            background: #ffffff;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
         }
 
         .contact-form button {
-            background: var(--turquoise-main);
-            color: #000;
+            background: var(--text-main);
+            color: white;
             border: none;
-            padding: 15px 35px;
-            border-radius: 25px;
-            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 20px;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition-smooth);
         }
 
         .contact-form button:hover {
-            background: var(--turquoise-light);
-            transform: translateY(-2px);
+            background: #000000;
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="max-width: var(--max-width-desktop); margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <div class="header-container">
             <a href="#" class="logo">
-                <i class="fas fa-laptop-medical"></i> iCare Tech<span>CR</span>
+                <i class="fas fa-shield-halved" style="color: var(--apple-blue);"></i> iCare Tech<span>CR</span>
             </a>
             <nav>
                 <ul>
                     <li><a href="#servicios">Servicios</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
                     <li><a href="#testimonios">Reseñas</a></li>
-                    <li><a href="/service" style="color:var(--turquoise-main);"><i class="fas fa-headset"></i> Portal Soporte</a></li>
+                    <li><a href="/service" class="btn-portal"><i class="fas fa-headset"></i> Portal Soporte</a></li>
                 </ul>
             </nav>
         </div>
@@ -455,39 +473,39 @@
 
         <section class="hero">
             <div class="hero-content">
-                <h1 id="hero-title">Soluciones Tecnológicas <span>Especializadas</span></h1>
-                <p id="hero-subtitle">Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
-                <a href="#contacto" class="btn-premium">Solicitar Diagnóstico <i class="fas fa-arrow-right"></i></a>
+                <h1 id="hero-title">Soluciones Tecnológicas <span>Premium</span></h1>
+                <p id="hero-subtitle">Alta disponibilidad, soporte de TI corporativo y arquitectura de redes de nivel avanzado para empresas en Costa Rica.</p>
+                <a href="#contacto" class="btn-premium">Solicitar Diagnóstico Técnico</a>
             </div>
         </section>
 
         <section id="servicios" class="section-padding">
             <div class="section-title">
                 <h2>Ingeniería de Servicios TI</h2>
-                <p>Módulos avanzados de ejecución técnica y arquitectura de red corporativa</p>
+                <p>Módulos de alta disponibilidad y gestión técnica de infraestructura.</p>
             </div>
             <div class="services-grid" id="render-servicios">
                 </div>
         </section>
 
-        <section id="catalogo" class="section-padding" style="background: #0d0f13; border-radius: var(--radius-premium);">
+        <section id="catalogo" class="section-padding">
             <div class="section-title">
                 <h2>Catálogo de Hardware Pro</h2>
-                <p>Piezas y componentes críticos certificados para alto rendimiento</p>
+                <p>Componentes críticos y equipos de red certificados de alto rendimiento.</p>
             </div>
             <div class="products-container" id="render-productos">
                 </div>
         </section>
 
-        <section class="section-padding">
+        <section class="section-padding" style="border-top: 1px solid var(--border-smooth); border-bottom: 1px solid var(--border-smooth);">
             <div class="partners-logo-wrap" id="render-socios">
                 </div>
         </section>
 
-        <section id="testimonios" class="section-padding" style="background: #0d0f13; border-radius: var(--radius-premium);">
+        <section id="testimonios" class="section-padding">
             <div class="section-title">
                 <h2>Garantía de Satisfacción</h2>
-                <p>Clientes corporativos respaldados por nuestro acuerdo de nivel de servicio (SLA)</p>
+                <p>Clientes corporativos y operaciones críticas respaldadas bajo acuerdo SLA.</p>
             </div>
             <div class="reviews-grid" id="render-reseñas">
                 </div>
@@ -497,23 +515,23 @@
         <footer>
             <div class="footer-grid">
                 <div>
-                    <h3 style="font-size:26px; margin-bottom:20px;">Hablemos de tu <span style="color: var(--turquoise-main);">Proyecto</span></h3>
-                    <p style="color:#8a99ad; line-height:1.6; margin-bottom:30px;">Envíanos tus requerimientos de red o fallas de sistema. Un ingeniero especialista se pondrá en contacto para coordinar soporte inmediato.</p>
-                    <div style="display:flex; flex-direction:column; gap:15px; color:#cfd8dc;">
-                        <div><i class="fas fa-envelope" style="color:var(--turquoise-main); margin-right:10px;"></i> soporte@icaretechcr.com</div>
-                        <div><i class="fas fa-phone-alt" style="color:var(--turquoise-main); margin-right:10px;"></i> +506 4000-0000</div>
+                    <h3 style="font-size:24px; font-weight:800; margin-bottom:15px; letter-spacing:-0.5px;">Hablemos de tu <span style="color:var(--apple-blue);">Proyecto</span></h3>
+                    <p style="color:var(--text-secondary); line-height:1.5; margin-bottom:25px; font-size:15px;">Envíanos los requerimientos de TI o fallas de red de tu compañía. Un ingeniero especialista coordinará soporte inmediato.</p>
+                    <div style="display:flex; flex-direction:column; gap:12px; font-size:14px; color:var(--text-main); font-weight:600;">
+                        <div><i class="fas fa-envelope" style="color:var(--apple-blue); margin-right:8px;"></i> soporte@icaretechcr.com</div>
+                        <div><i class="fas fa-phone-alt" style="color:var(--apple-blue); margin-right:8px;"></i> +506 4000-0000</div>
                     </div>
                 </div>
                 <div>
                     <form class="contact-form" action="/api/registro" method="POST">
-                        <input type="text" name="nombre" placeholder="Nombre completo o Institución" required>
-                        <input type="email" name="correo" placeholder="Correo electrónico corporativo" required>
-                        <textarea name="mensaje" rows="4" placeholder="Detalle técnico de los requerimientos o falla de infraestructura..." required></textarea>
-                        <button type="submit">Enviar Solicitud Maestro</button>
+                        <input type="text" name="nombre" placeholder="Nombre completo o Compañía" required>
+                        <input type="email" name="correo" placeholder="Correo electrónico de contacto" required>
+                        <textarea name="mensaje" rows="4" placeholder="Describa brevemente la falla o el requerimiento tecnológico..." required></textarea>
+                        <button type="submit">Enviar Solicitud</button>
                     </form>
                 </div>
             </div>
-            <div style="text-align:center; padding-top:25px; border-top:1px solid rgba(255,255,255,0.05); color:#546e7a; font-size:13px;">
+            <div style="text-align:center; padding-top:20px; border-top:1px solid var(--border-smooth); color:var(--text-secondary); font-size:12px; font-weight:500;">
                 &copy; 2026 iCare Tech CR. Todos los derechos reservados. Control de Alta Disponibilidad Premium.
             </div>
         </footer>
@@ -525,7 +543,7 @@
             fetch('/api/todo')
                 .then(res => res.json())
                 .then(data => {
-                    // 1. Inyección de Textos del Servidor (Hero)
+                    // 1. Textos del Servidor (Hero)
                     if (data && data.config) {
                         if (data.config.hero_titulo) {
                             document.getElementById('hero-title').innerHTML = data.config.hero_titulo;
@@ -535,11 +553,11 @@
                         }
                     }
 
-                    // 2. Renderizado de Módulos de Servicios
+                    // 2. Módulos de Servicios
                     const serviciosWrap = document.getElementById('render-servicios');
                     if (serviciosWrap && data.servicios && Array.isArray(data.servicios)) {
                         if (data.servicios.length === 0) {
-                            serviciosWrap.innerHTML = `<p style="color:#8a99ad; text-align:center; grid-column:1/-1;">Próximamente módulos de servicio.</p>`;
+                            serviciosWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1; padding:20px;">No hay módulos de servicio configurados.</p>`;
                         } else {
                             serviciosWrap.innerHTML = data.servicios.map(s => `
                                 <div class="service-card">
@@ -551,18 +569,18 @@
                         }
                     }
 
-                    // 3. Renderizado de Catálogo de Productos
+                    // 3. Catálogo de Productos
                     const productosWrap = document.getElementById('render-productos');
                     if (productosWrap && data.productos && Array.isArray(data.productos)) {
                         if (data.productos.length === 0) {
-                            productosWrap.innerHTML = `<p style="color:#8a99ad; padding:20px;">Próximamente componentes en catálogo.</p>`;
+                            productosWrap.innerHTML = `<p style="color:var(--text-secondary); padding:20px;">No hay componentes en el catálogo.</p>`;
                         } else {
                             productosWrap.innerHTML = data.productos.map(p => `
                                 <div class="product-card">
                                     <img class="product-img" src="${p.imagen || 'placeholder.png'}" alt="${p.nombre}">
                                     <div class="product-info">
-                                        <span style="font-size:12px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
-                                        <h3 style="margin-top:5px;">${p.nombre}</h3>
+                                        <span style="font-size:11px; text-transform:uppercase; color:var(--apple-blue); font-weight:700;">${p.categoria || 'Hardware'}</span>
+                                        <h3>${p.nombre}</h3>
                                         <div class="product-price">₡${Number(p.precio).toLocaleString('es-CR')}</div>
                                     </div>
                                 </div>
@@ -570,7 +588,7 @@
                         }
                     }
 
-                    // 4. Renderizado de Logos / Socios Fabricantes
+                    // 4. Logos / Socios Fabricantes
                     const sociosWrap = document.getElementById('render-socios');
                     if (sociosWrap && data.socios && Array.isArray(data.socios)) {
                         sociosWrap.innerHTML = data.socios.map(partner => `
@@ -578,11 +596,11 @@
                         `).join('');
                     }
 
-                    // 5. Renderizado de Reseñas / Testimonios Corporativos
+                    // 5. Reseñas / Testimonios Corporativos
                     const resenasWrap = document.getElementById('render-reseñas');
                     if (resenasWrap && data.resenas && Array.isArray(data.resenas)) {
                         if (data.resenas.length === 0) {
-                            resenasWrap.innerHTML = `<p style="color:#8a99ad; text-align:center; grid-column:1/-1;">Respaldados por altos estándares de SLA.</p>`;
+                            resenasWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1; padding:20px;">Respaldados por altos estándares de servicio.</p>`;
                         } else {
                             resenasWrap.innerHTML = data.resenas.map(r => `
                                 <div class="review-card">
@@ -600,7 +618,7 @@
                     }
                 })
                 .catch(err => {
-                    console.error("Error cargando los flujos de la API:", err);
+                    console.error("Error cargando los flujos adaptativos:", err);
                 });
         });
     </script>

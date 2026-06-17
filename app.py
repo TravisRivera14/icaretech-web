@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -7,12 +7,13 @@ import psycopg2.extras
 
 app = Flask(__name__)
 
-# Configuración de CORS con soporte estricto para credenciales
+# Configuración de CORS estricta
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
+# Configuración de sesión para entornos HTTPS (Vercel)
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_SAMESITE='None',
@@ -36,13 +37,13 @@ def db_query(query, params=(), fetch=False):
 def init_db():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
+    # Inicialización de tablas incluyendo la estructura corregida de 'socios'
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
-    # Tabla socios con columna URL añadida
     c.execute('''CREATE TABLE IF NOT EXISTS socios (id SERIAL PRIMARY KEY, nombre TEXT DEFAULT 'Socio', imagen TEXT DEFAULT '', url TEXT DEFAULT '#')''')
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
@@ -244,26 +245,26 @@ def dar_baja_empresa_soporte(id):
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
     try:
-        # Recuperación de datos con la columna URL corregida
+        # Recuperación unificada
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
         prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
-        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or [] # AQUI ESTA LA MEJORA
+        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or [] # URL incluida
+        empresas_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan", fetch=True) or []
         
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
         prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]), "imagen": r[3], "categoria": r[4]} for r in prods_raw]
         parts = [{"id": r[0], "nombre": r[1], "imagen": r[2], "url": r[3]} for r in parts_raw]
+        empresas = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in empresas_raw]
         
-        return jsonify({"servicios": servs, "productos": prods, "socios": parts})
+        return jsonify({"servicios": servs, "productos": prods, "socios": parts, "empresas": empresas})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/socios', methods=['POST'])
 def guardar_socio():
     d = request.json or {}
-    # Ahora guardamos el campo URL también
     db_query("INSERT INTO socios (nombre, imagen, url) VALUES (%s, %s, %s)", 
              (d.get('nombre', 'Socio'), d.get('imagen', ''), d.get('url', '#')))
-    registrar_cambio("Añadió Socio Comercial", f"Se registró: {d.get('nombre', '')}")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['GET'])

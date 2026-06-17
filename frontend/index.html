@@ -1630,237 +1630,172 @@
     <a href="#" class="wa-float" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp"></i></a>
 
     <script>
-        const API = '/api';
-        let allProducts = [];
-        let cacheServicios = []; 
-        let currentCat = 'Todos';
-        let publicReviewImg = ""; 
+    const API = '/api';
+    let allProducts = [];
+    let cacheServicios = []; 
+    let currentCat = 'Todos';
+    let publicReviewImg = ""; 
 
-        // Función global para WhatsApp
-        function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
+    // Función global para WhatsApp
+    function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // A. ESCUDO DE SEGURIDAD PARA EL MENÚ
-            const menuToggle = document.getElementById('menu-toggle');
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (menuToggle && mobileMenu) {
-                menuToggle.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('active');
-                });
-            }
-
-            // B. CARGA DE DATOS (AQUÍ ESTÁ TU LÓGICA DE API)
-            fetch(`${API}/todo`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.config) {
-                        document.getElementById('hero-title').innerText = data.config.hero_titulo || "Bienvenidos";
-                    }
-                    // AQUÍ DEBES PONER EL RESTO DE TUS RENDERIZADOS (srvC, objGrid, etc.)
-                    // IMPORTANTE: Si los pones fuera de este .then(), fallarán porque 'data' no existirá
-                })
-                .catch(err => console.error("Error al conectar con la API:", err));
-        });
-
-        // Funciones auxiliares globales
-        function applyAnimations() { /* ... tu lógica ... */ }
-
-        const animObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => { 
-                if (entry.isIntersecting) { 
-                    entry.target.classList.add('visible'); 
-                    observer.unobserve(entry.target); 
-                } 
+    document.addEventListener("DOMContentLoaded", () => {
+        // A. ESCUDO DE SEGURIDAD PARA EL MENÚ
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (menuToggle && mobileMenu) {
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
             });
-        }, { threshold: 0.1 });
-
-        function applyAnimations() { 
-            document.querySelectorAll('.anim-up, .value-card').forEach(el => { animObserver.observe(el); }); 
         }
 
-        document.getElementById('revPublicFile').onchange = (e) => {
-            const r = new FileReader(); r.onload = () => publicReviewImg = r.result;
-            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
-        };
-
-        window.enviarResenaPublica = function() {
-            const data = { cliente: document.getElementById('revPublicClient').value, puesto: document.getElementById('revPublicPos').value, comentario: document.getElementById('revPublicText').value, imagen_cliente: publicReviewImg };
-            if(!data.cliente || !data.comentario) return alert("Completa los datos obligatorios.");
-            fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(() => location.reload());
-        };
-
-        window.scrollCatalog = function(direction) {
-            const container = document.getElementById('prod-c');
-            const scrollAmount = 335; 
-            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-        };
-
-        window.setCategory = function(cat) { 
-            currentCat = cat; 
-            const sel = document.getElementById('mobileCatSelector');
-            if(sel) sel.value = cat;
-            
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                if(btn.innerText === cat) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-            filterAll(); 
-        };
-
-        window.filterAll = function() {
-            const term = document.getElementById('catSearch').value.toLowerCase();
-            const prodC = document.getElementById('prod-c'); 
-            if (!prodC) return; 
-            prodC.innerHTML = "";
-            const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
-
-            allProducts.filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre && p.nombre.toLowerCase().includes(term))).forEach((p) => { 
-                prodC.innerHTML += `
-                    <div class="service-card visible catalog-card" style="padding: 30px;">
-                        <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
-                        <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center;">${p.nombre}</h3>
-                        <p style="color:var(--icon-blue); font-weight:bold; font-size:19px; margin-bottom: 25px;">${formatter.format(p.precio)}</p>
-                        <button class="btn-ver-mas" onclick="openWA('Interés en el producto: ${p.nombre}')">Cotizar</button>
-                    </div>`; 
-            });
-            
-            prodC.scrollLeft = 0;
-        };
-
-        window.mostrarDetalleServicio = function(id) {
-            const servicio = cacheServicios.find(s => s.id === id);
-            if(!servicio) return;
-
-            document.getElementById('det-titulo').innerText = servicio.titulo;
-            document.getElementById('det-descripcion').innerText = servicio.proceso || "Contamos con ingenieros listos para resolver tu requerimiento de forma ágil y transparente.";
-            document.getElementById('det-imagen').src = servicio.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
-            
-            const lista = document.getElementById('det-beneficios');
-            lista.innerHTML = ""; 
-            
-            const lineas = servicio.beneficios ? servicio.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico transparente de hardware", "Técnicos certificados"];
-            lineas.forEach(linea => {
-                if(linea.trim()) {
-                    lista.innerHTML += `<li><i class="fas fa-check-circle"></i> <span>${linea}</span></li>`;
+        // B. CARGA DE DATOS CENTRALIZADA
+        fetch(`${API}/todo`)
+            .then(r => r.json())
+            .then(data => {
+                // 1. Configuración Hero
+                if (data.config) {
+                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Bienvenidos";
+                    document.getElementById('m-t').innerText = data.config.mision || "";
+                    document.getElementById('v-t').innerText = data.config.vision || "";
+                    document.getElementById('c-t').innerText = data.config.compromiso || "";
                 }
-            });
 
-            document.getElementById('detalle-servicio-bloque').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // Escudo de seguridad para el menú
-            const menuToggle = document.getElementById('menu-toggle');
-            const mobileMenu = document.getElementById('mobile-menu');
-    
-            if (menuToggle && mobileMenu) {
-                menuToggle.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('active');
-                });
-            }
-
-            // El resto de tu lógica de carga de datos original debe ir AQUÍ DENTRO
-            // para asegurar que nada falle si el DOM no está listo.
-            fetch(`${API}/todo`).then(r => r.json()).then(data => {
+                // 2. Beneficios
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios) {
-                    choGrid.innerHTML = "";
-                    data.beneficios.forEach((b) => {
-                        choGrid.innerHTML += `
-                            <div class="value-card">
-                                <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
-                                <h3>${b.titulo}</h3>
-                                <p>${b.descripcion}</p>
-                            </div>`;
-                    });
+                    choGrid.innerHTML = data.beneficios.map(b => `
+                        <div class="value-card">
+                            <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
+                            <h3>${b.titulo}</h3>
+                            <p>${b.descripcion}</p>
+                        </div>`).join('');
                 }
-                
+
+                // 3. Objetivos
                 const objGrid = document.getElementById('obj-grid');
                 if (objGrid && data.objetivos) {
-                    objGrid.innerHTML = "";
-                    data.objetivos.forEach(o => {
-                        objGrid.innerHTML += `
-                            <div class="target-card">
-                                <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
-                                <h3>${o.titulo}</h3>
-                                <p style="color:var(--text-grey); font-size:14.5px; line-height:1.6;">${o.descripcion}</p>
-                            </div>`;
-                    });
+                    objGrid.innerHTML = data.objetivos.map(o => `
+                        <div class="target-card">
+                            <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
+                            <h3>${o.titulo}</h3>
+                            <p>${o.descripcion}</p>
+                        </div>`).join('');
                 }
-                
+
+                // 4. Empresas Recomiendan
                 const empGrid = document.getElementById('empresas-c');
                 if (empGrid && data.empresas) {
-                    data.empresas.forEach(e => { empGrid.innerHTML += `<div class="partner-card"><img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}"></div>`; });
+                    empGrid.innerHTML = data.empresas.map(e => `
+                        <div class="partner-card">
+                            <img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}">
+                        </div>`).join('');
                 }
-                
+
+                // 5. Servicios (y detalle inicial)
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios) {
                     cacheServicios = data.servicios; 
-                    data.servicios.forEach(s => { 
-                        srvC.innerHTML += `
-                            <div class="service-card anim-up">
-                                ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
-                                <h3>${s.titulo}</h3>
-                                <p>${s.descripcion}</p>
-                                <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
-                            </div>`; 
-                    });
+                    srvC.innerHTML = data.servicios.map(s => `
+                        <div class="service-card anim-up">
+                            ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
+                            <h3>${s.titulo}</h3>
+                            <p>${s.descripcion}</p>
+                            <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
+                        </div>`).join('');
 
                     if(cacheServicios.length > 0) {
                         const prim = cacheServicios[0];
                         document.getElementById('det-titulo').innerText = prim.titulo;
-                        document.getElementById('det-descripcion').innerText = prim.proceso || "Contamos con ingenieros listos para resolver tu requerimiento de forma ágil.";
-                        document.getElementById('det-imagen').src = prim.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
+                        document.getElementById('det-descripcion').innerText = prim.proceso || "";
+                        document.getElementById('det-imagen').src = prim.imagen || "";
                         const lista = document.getElementById('det-beneficios');
-                        lista.innerHTML = "";
-                        const lineas = prim.beneficios ? prim.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico de hardware"];
-                        lineas.forEach(l => { if(l.trim()) lista.innerHTML += `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>`; });
+                        lista.innerHTML = (prim.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
                     }
                 }
-                
+
+                // 6. Productos y Catálogo
                 if (data.productos) { 
                     allProducts = data.productos; 
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                    
                     const filterContainer = document.getElementById('catFilters');
                     if (filterContainer) {
                         filterContainer.innerHTML = categories.map(cat => 
                             `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
                         ).join('');
                     }
-
-                    if(window.innerWidth <= 900) {
-                        const mobileSelector = document.getElementById('mobileCatSelector');
-                        if(mobileSelector) {
-                            document.querySelector('.mobile-selector-container').style.display = "block";
-                            mobileSelector.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-                        }
-                    }
-
-                    const dropdownContainer = document.getElementById('nav-dropdown-cats');
-                    if (dropdownContainer) {
-                        const realCats = categories.filter(c => c !== "Todos");
-                        dropdownContainer.innerHTML = realCats.map(cat => 
-                            `<a href="tienda.html?cat=${encodeURIComponent(cat)}"><span>${cat}</span> <i class="fas fa-chevron-right" style="font-size:10px; color:#ccc;"></i></a>`
-                        ).join('');
-                    }
-                    
                     filterAll(); 
                 }
 
+                // 7. SOCIOS (Mejora solicitada: enlaces y colores)
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios) { 
-                    partC.innerHTML = ""; // Limpiamos el contenedor
-                    data.socios.forEach(p => { 
-                        // Cambiamos el div por un enlace <a>
-                        partC.innerHTML += `
-                            <a href="${p.url}" target="_blank" class="partner-card" title="${p.nombre}">
-                                <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
-                            </a>`; 
-                    }); 
+                    partC.innerHTML = data.socios.map(p => `
+                        <a href="${p.url || '#'}" target="_blank" class="partner-card" title="${p.nombre}">
+                            <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
+                        </a>`).join(''); 
                 }
-            });
-        });
-    </script>
+
+                applyAnimations();
+            })
+            .catch(err => console.error("Error al cargar datos:", err));
+    });
+
+    // FUNCIONES GLOBALES
+    function applyAnimations() { 
+        const animObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.anim-up, .value-card').forEach(el => animObserver.observe(el)); 
+    }
+
+    window.enviarResenaPublica = function() {
+        const data = { 
+            cliente: document.getElementById('revPublicClient').value, 
+            puesto: document.getElementById('revPublicPos').value, 
+            comentario: document.getElementById('revPublicText').value, 
+            imagen_cliente: publicReviewImg 
+        };
+        fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+            .then(() => location.reload());
+    };
+
+    window.scrollCatalog = function(dir) {
+        document.getElementById('prod-c').scrollBy({ left: dir * 335, behavior: 'smooth' });
+    };
+
+    window.setCategory = function(cat) { 
+        currentCat = cat; 
+        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === cat));
+        filterAll(); 
+    };
+
+    window.filterAll = function() {
+        const term = document.getElementById('catSearch').value.toLowerCase();
+        const prodC = document.getElementById('prod-c');
+        if (!prodC) return;
+        const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
+        prodC.innerHTML = allProducts
+            .filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre || "").toLowerCase().includes(term))
+            .map(p => `
+                <div class="service-card visible catalog-card" style="padding: 30px;">
+                    <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
+                    <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 15px;">${p.nombre}</h3>
+                    <p style="color:var(--icon-blue); font-weight:bold; font-size:19px;">${formatter.format(p.precio)}</p>
+                    <button class="btn-ver-mas" onclick="openWA('Interés: ${p.nombre}')">Cotizar</button>
+                </div>`).join('');
+    };
+
+    window.mostrarDetalleServicio = function(id) {
+        const s = cacheServicios.find(x => x.id === id);
+        if(!s) return;
+        document.getElementById('det-titulo').innerText = s.titulo;
+        document.getElementById('det-descripcion').innerText = s.proceso || "";
+        document.getElementById('det-imagen').src = s.imagen || "";
+        const lista = document.getElementById('det-beneficios');
+        lista.innerHTML = (s.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
+        document.getElementById('detalle-servicio-bloque').scrollIntoView({ behavior: 'smooth' });
+    };
+</script>
 </body>
 </html>

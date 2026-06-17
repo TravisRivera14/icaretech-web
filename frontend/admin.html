@@ -517,8 +517,11 @@
                 <div class="card">
                     <h2 id="partner-label"><i class="fas fa-handshake" style="color: var(--turquoise-main);"></i> Marcas Asociadas (Socios)</h2>
                     <input type="text" id="partnerName" placeholder="Nombre comercial del fabricante">
+                    <input type="text" id="partnerUrl" placeholder="URL del sitio web del socio (https://...)">
                     <input type="file" id="partnerImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirSocio()">Vincular Fabricante</button>
+                </div>
+            </div>  
                 </div>
             </div>
 
@@ -1121,7 +1124,7 @@
     function subirServicio() { saveItem('servicios', {titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS}); }
     function subirProducto() { saveItem('productos', {nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP}); }
     function subirResena() { saveItem('resenas', {cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev}); }
-    function subirSocio() { saveItem('socios', {nombre: document.getElementById('partnerName').value, imagen: imgPartner}); }
+    function subirSocio() { saveItem('socios', {nombre: document.getElementById('partnerName').value, url: document.getElementById('partnerUrl').value, imagen: imgPartner}); }
     function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
     function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
     function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }

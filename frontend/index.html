@@ -1622,15 +1622,35 @@
         let cacheServicios = []; 
         let currentCat = 'Todos';
         let publicReviewImg = ""; 
-        
+
+        // Función global para WhatsApp
         function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-        document.querySelector('.dropdown-trigger').addEventListener('click', function(e) {
-            if(window.innerWidth <= 900) {
-                e.preventDefault();
-                document.querySelector('.dropdown-content').classList.toggle('show');
+        document.addEventListener("DOMContentLoaded", () => {
+            // A. ESCUDO DE SEGURIDAD PARA EL MENÚ
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (menuToggle && mobileMenu) {
+                menuToggle.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('active');
+                });
             }
+
+            // B. CARGA DE DATOS (AQUÍ ESTÁ TU LÓGICA DE API)
+            fetch(`${API}/todo`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.config) {
+                        document.getElementById('hero-title').innerText = data.config.hero_titulo || "Bienvenidos";
+                    }
+                    // AQUÍ DEBES PONER EL RESTO DE TUS RENDERIZADOS (srvC, objGrid, etc.)
+                    // IMPORTANTE: Si los pones fuera de este .then(), fallarán porque 'data' no existirá
+                })
+                .catch(err => console.error("Error al conectar con la API:", err));
         });
+
+        // Funciones auxiliares globales
+        function applyAnimations() { /* ... tu lógica ... */ }
 
         const animObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => { 
@@ -1716,13 +1736,19 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Escudo de seguridad para el menú
             const menuToggle = document.getElementById('menu-toggle');
-            if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
-                document.getElementById('mobile-menu').classList.toggle('active');
-            });
-        }
-                
+            const mobileMenu = document.getElementById('mobile-menu');
+    
+            if (menuToggle && mobileMenu) {
+                menuToggle.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('active');
+                });
+            }
+
+            // El resto de tu lógica de carga de datos original debe ir AQUÍ DENTRO
+            // para asegurar que nada falle si el DOM no está listo.
+            fetch(`${API}/todo`).then(r => r.json()).then(data => {
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios) {
                     choGrid.innerHTML = "";
@@ -1817,7 +1843,11 @@
                     data.resenas.forEach(r => { revC.innerHTML += `<div class="review-card"><p class="review-text">"${r.comentario}"</p><div class="reviewer-info"><img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img"><div class="reviewer-meta"><div class="reviewer-name">${r.cliente}</div><div class="reviewer-pos">${r.puesto}</div></div></div></div>`; });
                 }
                 applyAnimations();
+            }).catch(error => {
+                console.error("Error al cargar los datos:", error);
+                document.getElementById('hero-title').innerText = "Bienvenidos a iCare Tech";
             });
+        });
     </script>
 </body>
 </html>

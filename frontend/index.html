@@ -1642,25 +1642,22 @@
     // 1. Envuelve todo dentro del evento 'DOMContentLoaded'
     document.addEventListener("DOMContentLoaded", () => {
         
-        // A. ESCUDO DE SEGURIDAD PARA EL MENÚ
+        // A. Lógica del menú (ahora es segura)
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
-        
-        // Verifica que existan antes de añadir el listener para evitar el error 'null'
         if (menuToggle && mobileMenu) {
             menuToggle.addEventListener('click', () => {
                 mobileMenu.classList.toggle('active');
             });
         }
 
-        // B. CARGA DE DATOS DESPUÉS DE ASEGURAR QUE EL HTML ESTÁ LISTO
-        const API = '/api';
         fetch(`${API}/todo`)
             .then(r => r.json())
             .then(data => {
-                // Aquí va toda tu lógica de renderizado:
-                // document.getElementById('hero-title').innerText = ...
-                // console.log("Datos recibidos:", data);
+                console.log("Datos recibidos de Neon:", data);
+                // Aquí dentro pones tus funciones de renderizado:
+                // renderServicios(data.servicios);
+                // renderSocios(data.socios);
             })
 
                 // 2. Beneficios

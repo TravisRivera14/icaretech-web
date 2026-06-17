@@ -5,159 +5,1156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin iCare | Control Maestro Premium</title>
     <link rel="icon" href="Logo_Admin_v2.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        :root { --dark-bg: #0b0c10; --card-bg: #1f2833; --turquoise-main: #00b4d8; --turquoise-dark: #0077b6; --del: #ff3b30; --text-light: #f5f5f7; --text-secondary: #8a99ad; --border-smooth: rgba(255, 255, 255, 0.05); --radius-premium: 16px; --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px; }
-        body { background: var(--dark-bg); color: var(--text-light); min-height: 100vh; display: flex; }
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.95); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
-        .login-card { background: var(--card-bg); padding: 45px; border-radius: 24px; box-shadow: var(--shadow-premium); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-smooth); }
-        .sidebar { width: 280px; background: #11141a; border-right: 1px solid var(--border-smooth); padding: 30px 20px; position: fixed; height: 100vh; }
-        .sidebar-item { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: var(--transition-smooth); margin-bottom: 6px; }
-        .sidebar-item:hover, .sidebar-item.active { background: var(--card-bg); color: #ffffff; }
-        .main-content { margin-left: 280px; flex: 1; padding: 40px 50px; }
-        .tab-section { display: none; } .tab-section.active { display: block; }
-        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); margin-bottom: 25px; border: 1px solid var(--border-smooth); }
-        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border-smooth); background: var(--dark-bg); color: white; outline: none; }
-        button { background: var(--turquoise-main); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .list-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-smooth); }
+        :root { 
+            --dark-bg: #0b0c10;
+            --card-bg: #1f2833;
+            --turquoise-main: #00b4d8;
+            --turquoise-dark: #0077b6;
+            --turquoise-light: #90e0ef;
+            --del: #ff3b30; 
+            --text-light: #f5f5f7;
+            --text-secondary: #8a99ad;
+            --border-smooth: rgba(255, 255, 255, 0.05);
+            --radius-premium: 16px;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            letter-spacing: -0.2px;
+        }
+        
+        body { 
+            background: var(--dark-bg); 
+            color: var(--text-light); 
+            -webkit-font-smoothing: antialiased; 
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* OVERLAY DE LOGIN ESTILO GLASS NEÓN OSCURO */
+        #login-overlay {
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(11, 12, 16, 0.9); 
+            z-index: 99999; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .login-card {
+            background: var(--card-bg); 
+            padding: 45px 35px; 
+            border-radius: 24px; 
+            box-shadow: var(--shadow-premium); 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+            border: 1px solid var(--border-smooth);
+        }
+
+        /* COMPONENTE INTERACTIVO SIDEBAR OSCURO */
+        .sidebar {
+            width: 280px;
+            background: #11141a;
+            border-right: 1px solid var(--border-smooth);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0; top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 35px;
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-brand span {
+            color: var(--turquoise-main);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition-smooth);
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--card-bg);
+            color: #ffffff;
+        }
+        
+        .sidebar-item.active i {
+            color: var(--turquoise-main);
+        }
+
+        /* CONTENEDOR PRINCIPAL DE CONTENIDO */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px 50px;
+            max-width: 1200px;
+        }
+
+        .header-area {
+            margin-bottom: 35px;
+        }
+
+        .header-area h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.8px;
+        }
+
+        .header-area p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* SECCIONES DINÁMICAS (TAB CONTENT) */
+        .tab-section {
+            display: none;
+            animation: techFadeIn 0.5s ease forwards;
+        }
+
+        .tab-section.active {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @keyframes techFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-two-columns {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+        @media (min-width: 901px) {
+            .grid-two-columns { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* TARJETAS ESTILO CYBERPUNK CARD */
+        .card { 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: var(--radius-premium); 
+            box-shadow: var(--shadow-premium); 
+            border: 1px solid var(--border-smooth); 
+            box-sizing: border-box; 
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* COMPONENTES DE FORMULARIO LIMPIOS Y OSCUROS */
+        input, textarea, button, select { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 6px 0 16px 0; 
+            border-radius: 10px; 
+            border: 1px solid transparent; 
+            background: var(--dark-bg);
+            color: var(--text-light);
+            box-sizing: border-box; 
+            font-size: 14.5px;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            background: #11141a;
+            border-color: var(--turquoise-main);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
+        }
+        
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 4px;
+        }
+        
+        /* BOTONES INTERACTIVOS TURQUESAS */
+        button { 
+            background: var(--turquoise-main); 
+            color: #000000; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 700; 
+            margin-bottom: 0;
+            border-radius: 22px;
+            padding: 12px 24px;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15);
+        }
+        
+        button:hover { 
+            background: var(--turquoise-light);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
+        }
+
+        .btn-brand-accent {
+            background: var(--turquoise-dark);
+            color: white;
+        }
+        .btn-brand-accent:hover {
+            background: var(--turquoise-main);
+            color: black;
+        }
+
+        /* TABLAS Y LISTADOS MINIMALISTAS OSCUROS */
+        .list-container {
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #11141a; 
+            border: 1px solid var(--border-smooth); 
+            border-radius: 12px; 
+            padding: 8px;
+        }
+
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 14px 16px; 
+            border-bottom: 1px solid var(--border-smooth); 
+            font-size: 13.5px; 
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .list-item span {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .btn-edit { 
+            background: rgba(0, 180, 216, 0.15); 
+            color: var(--turquoise-main);
+            width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
+            box-shadow: none;
+        }
+        .btn-edit:hover { background: var(--turquoise-main); color: #000; }
+
+        .btn-del { 
+            background: rgba(255, 59, 48, 0.15); 
+            color: var(--del);
+            width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
+            box-shadow: none;
+        }
+        .btn-del:hover { background: var(--del); color: #fff; }
+        
+        /* TABLA DE TICKETS INTERACTIVA */
+        .ticket-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border-smooth);
+            border-radius: 12px;
+            background: #11141a;
+        }
+
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+        
+        .ticket-table th, .ticket-table td {
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-smooth);
+        }
+        
+        .ticket-table th {
+            background: #161a22;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .ticket-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-block;
+        }
+        .badge-alta { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
+        .badge-media { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+
+        /* 🤖 MODAL DE DETALLE MAESTRO INTELIGENTE */
+        .apple-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 50000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .apple-modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-smooth);
+            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-smooth);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-close-btn {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition-smooth);
+        }
+        .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
+
+        .ai-bulletin-box {
+            background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02));
+            border: 1px dashed var(--turquoise-main);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; padding: 20px; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="login-overlay">
     <div class="login-card">
-        <h2>Control Maestro</h2>
+        <h2 style="margin-bottom:6px; font-weight:800; color:var(--turquoise-main); font-size: 24px;">Control Maestro</h2>
+        <p style="color:var(--text-secondary); font-size:14px; margin-bottom:28px;">iCare Tech CR</p>
         <form id="form-login-master">
-            <input type="text" id="login-user" placeholder="Usuario" required>
-            <input type="password" id="login-pass" placeholder="Contraseña" required>
-            <button type="submit">Ingresar</button>
+            <input type="text" id="login-user" placeholder="Usuario de red" required>
+            <input type="password" id="login-pass" placeholder="Contraseña cifrada" required>
+            <button type="submit" style="width:100%;">Ingresar al Panel</button>
         </form>
+        <div id="login-error" style="color:var(--del); margin-top:16px; font-weight:600; display:none; font-size: 13.5px;">⚠️ Credenciales de red incorrectas</div>
     </div>
 </div>
 
 <aside class="sidebar">
-    <div class="sidebar-item active" onclick="switchTab('tab-tickets')"><i class="fas fa-headset"></i> Tickets</div>
-    <div class="sidebar-item" onclick="switchTab('tab-empresas')"><i class="fas fa-building"></i> Empresas</div>
-    <div class="sidebar-item" onclick="switchTab('tab-contenidos')"><i class="fas fa-sliders"></i> Contenidos</div>
+    <div class="sidebar-brand">
+        <i class="fas fa-shield-halved" style="color: var(--turquoise-main);"></i> iCare Admin <span>•</span>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="sidebar-item active" onclick="switchTab('tab-tickets')"><i class="fas fa-headset"></i> Tickets de Soporte</li>
+        <li class="sidebar-item" onclick="switchTab('tab-empresas')"><i class="fas fa-building"></i> Clientes Corporativos</li>
+        <li class="sidebar-item" onclick="switchTab('tab-contenidos')"><i class="fas fa-sliders"></i> Landing & Contenidos</li>
+        <li class="sidebar-item" onclick="switchTab('tab-personal')"><i class="fas fa-users-gear"></i> Personal Técnico</li>
+        <li class="sidebar-item" onclick="switchTab('tab-auditoria')"><i class="fas fa-clock-rotate-left"></i> Auditoría (Logs)</li>
+    </ul>
 </aside>
 
 <main class="main-content">
+    
+    <div class="header-area">
+        <h1 id="main-panel-title">Módulo Maestro de Gestión</h1>
+        <p>Centro unificado de operaciones y alta disponibilidad para iCare Tech CR.</p>
+    </div>
+
     <section id="tab-tickets" class="tab-section active">
         <div class="card">
-            <h2>Tickets de Soporte</h2>
-            <table class="ticket-table" style="width:100%">
-                <tbody id="tabla-tickets-soporte"></tbody>
-            </table>
+            <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
+            <label>Filtrar y dividir vista por Empresa:</label>
+            <select id="filtroEmpresaTickets" onchange="filtrarTicketsPorEmpresa(this.value)">
+                <option value="Todos">-- Mostrar Todas las Empresas --</option>
+            </select>
+            
+            <div class="ticket-table-wrapper">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Empresa</th>
+                            <th>Contacto</th>
+                            <th>Asunto</th>
+                            <th>Descripción</th>
+                            <th>Urgencia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-tickets-soporte">
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Cargando flujos de datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
     <section id="tab-empresas" class="tab-section">
-        <div class="card">
-            <h2>Vincular Cliente</h2>
-            <input type="text" id="newSupportEmpName" placeholder="Nombre empresa">
-            <button onclick="agregarEmpresaSoporte()">+ Vincular</button>
-        </div>
-        <div class="card">
-            <div id="lista-empresas-soporte-bajas"></div>
+        <div class="grid-two-columns">
+            <div class="card">
+                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa</h2>
+                <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
+                <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Vincular Cliente</button>
+            </div>
+            <div class="card">
+                <h2><i class="fas fa-list-ol" style="color: var(--turquoise-main);"></i> Empresas Activas en Soporte</h2>
+                <div id="lista-empresas-soporte-bajas" class="list-container">Cargando datos...</div>
+            </div>
         </div>
     </section>
 
     <section id="tab-contenidos" class="tab-section">
-        <div class="card">
-            <h2>Gestión de Servicios</h2>
-            <input type="text" id="sTitle" placeholder="Título Servicio">
-            <textarea id="sDesc" placeholder="Descripción"></textarea>
-            <button onclick="subirServicio()">Guardar Servicio</button>
+        <div class="grid-two-columns">
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 id="srv-label"><i class="fas fa-laptop-code" style="color: var(--turquoise-main);"></i> Gestionar Módulos de Servicio</h2>
+                    <input type="text" id="sIcon" placeholder="Emoji o Icono descriptivo">
+                    <input type="text" id="sTitle" placeholder="Nombre del servicio técnico">
+                    <textarea id="sDesc" rows="2" placeholder="Resumen corto de cara al cliente"></textarea>
+                    <textarea id="sProcess" rows="3" placeholder="Flujo o proceso de ejecución técnica"></textarea>
+                    <textarea id="sBenefits" rows="3" placeholder="Beneficios integrados (Uno por línea)"></textarea>
+                    <label>Imagen opcional:</label>
+                    <input type="file" id="sImgFile" accept="image/*" style="padding: 10px;">
+                    <button onclick="subirServicio()">Guardar en Servidor</button>
+                </div>
+                
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 id="prod-label"><i class="fas fa-box-open" style="color: var(--turquoise-main);"></i> Catálogo e Inyección de Productos</h2>
+                    <input type="text" id="pName" placeholder="Nombre de la pieza o componente">
+                    <input type="text" id="pPrice" placeholder="Valor comercial bruto (₡)">
+                    <input type="text" id="pCat" placeholder="Categoría para filtros rápidos">
+                    <label>Captura o fotografía técnica:</label>
+                    <input type="file" id="pImgFile" accept="image/*" style="padding: 10px;">
+                    <button onclick="subirProducto()">Inyectar al Catálogo</button>
+                </div>
+
+                <div class="card">
+                    <h2 id="partner-label"><i class="fas fa-handshake" style="color: var(--turquoise-main);"></i> Marcas Asociadas (Socios)</h2>
+                    <input type="text" id="partnerName" placeholder="Nombre comercial del fabricante">
+                    <input type="text" id="partnerUrl" placeholder="URL del sitio web del socio (https://...)">
+                    <input type="file" id="partnerImgFile" accept="image/*" style="padding: 10px;">
+                    <button onclick="subirSocio()">Vincular Fabricante</button>
+                </div>
+            </div>  
+                </div>
+            </div>
+
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2><i class="fas fa-sliders" style="color: var(--turquoise-main);"></i> Textos Maestros de Identidad</h2>
+                    <input type="text" id="h_titulo" placeholder="Encabezado Hero Principal">
+                    <textarea id="mision" rows="2" placeholder="Nuestra Misión"></textarea>
+                    <textarea id="vision" rows="2" placeholder="Nuestra Visión"></textarea>
+                    <textarea id="compromiso" rows="2" placeholder="Compromiso Organizacional Corporativo"></textarea>
+                    <button onclick="updateConfig()">Sincronizar Textos</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 id="ben-label"><i class="fas fa-award" style="color: var(--turquoise-main);"></i> Tarjetas de Valor Adicional</h2>
+                    <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
+                    <input type="text" id="bTitle" placeholder="Título de la ventaja">
+                    <textarea id="bDesc" rows="2" placeholder="Explicación concisa..."></textarea>
+                    <button onclick="subirBeneficio()">Publicar Tarjeta</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 id="obj-label"><i class="fas fa-crosshairs" style="color: var(--turquoise-main);"></i> Segmentación Clientes Objetivos</h2>
+                    <input type="text" id="objIcon" placeholder="Icono FontAwesome">
+                    <input type="text" id="objTitle" placeholder="Perfil comercial objetivo">
+                    <textarea id="objDesc" rows="2" placeholder="Solución a medida provista..."></textarea>
+                    <button onclick="subirObjetivo()">Fijar Perfil</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 id="emp-label"><i class="fas fa-square-poll-horizontal" style="color: var(--turquoise-main);"></i> Marcas que nos Recomiendan</h2>
+                    <input type="text" id="empName" placeholder="Nombre de la institución o local">
+                    <input type="file" id="empImgFile" accept="image/*" style="padding: 10px;">
+                    <button onclick="subirEmpresa()">Fijar Insignia Logotipo</button>
+                </div>
+
+                <div class="card">
+                    <h2 id="rev-label"><i class="fas fa-star" style="color: var(--turquoise-main);"></i> Reseñas & Clientes Satisfechos</h2>
+                    <input type="text" id="revClient" placeholder="Nombre completo">
+                    <input type="text" id="revPos" placeholder="Compañía o puesto laboral">
+                    <textarea id="revText" rows="3" placeholder="Testimonio textual..."></textarea>
+                    <input type="file" id="revImgFile" accept="image/*" style="padding: 10px;">
+                    <button onclick="subirResena()">Publicar Testimonio</button>
+                </div>
+            </div>
+            
+            <div class="card" style="grid-column: 1/-1;">
+                <h2><i class="fas fa-database" style="color: var(--turquoise-main);"></i> Árbol Actual de Contenidos Disponibles</h2>
+                <div id="master-list" class="list-container" style="max-height: 500px;">Conectando a Vercel serverless...</div>
+            </div>
         </div>
-        <div class="card">
-            <h2>Productos/Piezas</h2>
-            <input type="text" id="pName" placeholder="Nombre producto">
-            <input type="number" id="pPrice" placeholder="Precio">
-            <button onclick="subirProducto()">Guardar Producto</button>
+    </section>
+
+    <section id="tab-personal" class="tab-section">
+        <div id="seccion-usuarios-admin" class="grid-two-columns">
+            <div class="card">
+                <h2><i class="fas fa-user-plus" style="color: var(--turquoise-main);"></i> Registrar Cuenta de Personal</h2>
+                <form id="form-alta-trabajador">
+                    <input type="text" id="new-emp-name" placeholder="Nombre completo del usuario" required>
+                    <input type="text" id="new-emp-user" placeholder="Nombre de usuario exclusivo" required>
+                    <input type="password" id="new-emp-pass" placeholder="Clave de seguridad inicial" required>
+                    <label for="new-emp-role">Nivel de Acceso:</label>
+                    <select id="new-emp-role" required>
+                        <option value="personal">Personal Técnico</option>
+                        <option value="admin">Administrador General</option>
+                        <option value="cliente">Cliente Empresarial</option>
+                    </select>
+                    <button type="submit">Dar de Alta Acceso</button>
+                </form>
+
+                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:var(--dark-bg); border-radius:12px; border: 1px solid var(--border-smooth);">
+                    <h3 style="font-size:14px; margin-bottom:12px; color:var(--turquoise-main);">✏️ Actualizar Credenciales de Red</h3>
+                    <form id="form-editar-trabajador">
+                        <input type="hidden" id="edit-emp-id">
+                        <input type="text" id="edit-emp-name" placeholder="Nombre" required>
+                        <input type="text" id="edit-emp-user" placeholder="Usuario" required>
+                        <input type="password" id="edit-emp-pass" placeholder="Nueva clave (vacío para mantener)">
+                        <label for="edit-emp-role">Modificar Nivel de Acceso:</label>
+                        <select id="edit-emp-role" required>
+                            <option value="personal">Personal Técnico</option>
+                            <option value="admin">Administrador General</option>
+                            <option value="cliente">Cliente Empresarial</option>
+                        </select>
+                        <div style="display:flex; gap:10px; margin-top: 10px;">
+                            <button type="submit">Actualizar</button>
+                            <button type="button" onclick="cancelarEdicion()" style="background:#4b5563; color:white;">Descartar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-users-viewfinder" style="color: var(--turquoise-main);"></i> Cuentas Activas con Privilegios</h2>
+                <div id="lista-usuarios-tecnicos" class="list-container" style="max-height: 350px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tab-auditoria" class="tab-section">
+        <div class="card" id="seccion-logs-admin">
+            <h2><i class="fas fa-history" style="color: var(--turquoise-main);"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
+            <div id="lista-logs-auditoria" class="list-container" style="max-height: 550px; font-family: monospace; font-size: 13px; line-height: 1.6;">
+                Sincronizando logs en tiempo real...
+            </div>
         </div>
     </section>
 </main>
 
+<div id="modalTicketGrande" class="apple-modal">
+    <div class="apple-modal-content">
+        <div class="modal-header">
+            <h2 style="margin:0;"><i class="fas fa-expand" style="color:var(--turquoise-main);"></i> Detalle de Incidencia Externa</h2>
+            <div class="modal-close-btn" onclick="cerrarModalTicket()"><i class="fas fa-times"></i></div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-size:14px; margin-bottom:20px;">
+            <div><span style="color:var(--text-secondary);">Empresa:</span> <br><b id="modalEmpresa" style="color:var(--turquoise-main);"></b></div>
+            <div><span style="color:var(--text-secondary);">Reportado Por:</span> <br><b id="modalContacto" style="color: white;"></b></div>
+            <div><span style="color:var(--text-secondary);">Fecha Ingreso:</span> <br><span id="modalFecha"></span></div>
+            <div><span style="color:var(--text-secondary);">Urgencia Asignada:</span> <br><div id="modalPrioridad" style="margin-top:4px;"></div></div>
+        </div>
+
+        <div style="margin-bottom:20px; background:var(--dark-bg); padding:16px; border-radius:10px; border: 1px solid var(--border-smooth);">
+            <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Asunto:</span>
+            <h3 id="modalAsunto" style="margin: 4px 0 12px 0; font-size:16px; color: white;"></h3>
+            
+            <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Descripción Completa de la Falla:</span>
+            <p id="modalDescripcion" style="margin-top:4px; font-size:14px; line-height:1.5; color:#cfd8dc; white-space:pre-wrap;"></p>
+        </div>
+
+        <div style="display:flex; gap:12px;">
+            <button id="btnModalResolver" style="flex:1; background: var(--turquoise-dark); color: white;"><i class="fas fa-check-circle"></i> Marcar como Resuelto</button>
+            <button onclick="generarSolucionIA()" style="background:#ffffff; color:#000000; flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-robot" style="color:var(--turquoise-dark);"></i> Generar Solución con IA
+            </button>
+        </div>
+
+        <div id="boxSolucionIA" class="ai-bulletin-box">
+            <h3 style="font-size:14px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; color:var(--turquoise-main);">
+                <i class="fas fa-wand-magic-sparkles"></i> Diagnóstico Predictivo & Viñeta de Solución iCare IA:
+            </h3>
+            <div id="textSolucionIA" style="font-size:13.5px; line-height:1.6; color:#cfd8dc;"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     const API = '/api';
-    let cacheData = { servicios: [], productos: [], socios: [], empresas: [], beneficios: [], objetivos: [], resenas: [] };
+    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
+    let editSupportEmpId = null; 
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
+    let cacheTickets = [];
+    let currentOpenTicket = null; 
 
-    function switchTab(id) {
-        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-section').forEach(section => section.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        const titles = {
+            'tab-tickets': 'Monitoreo de Tickets de Soporte',
+            'tab-empresas': 'Vínculos Comerciales Corporativos',
+            'tab-contenidos': 'Estructura Dinámica de la Landing',
+            'tab-personal': 'Ecosistema de Colaboradores e Ingenieros',
+            'tab-auditoria': 'Registro Maestro de Cambios Técnicos'
+        };
+        document.getElementById('main-panel-title').innerText = titles[tabId];
+    }
+
+    const handleFile = (id, cb) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.onchange = (e) => {
+            const r = new FileReader(); 
+            r.onload = () => cb(r.result);
+            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
+        };
+    };
+    handleFile('sImgFile', res => imgS = res);
+    handleFile('pImgFile', res => imgP = res);
+    handleFile('revImgFile', res => imgRev = res);
+    handleFile('partnerImgFile', res => imgPartner = res);
+    handleFile('empImgFile', res => imgEmp = res);
+
+    document.getElementById('form-login-master').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const user = document.getElementById('login-user').value;
+        const pass = document.getElementById('login-pass').value;
+        fetch(`${API}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ usuario: user, password: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('seccion-usuarios-admin').style.display = 'grid';
+                document.getElementById('seccion-logs-admin').style.display = 'block';
+                cargarListaTrabajadores();
+                cargarHistorialLogs();
+                cargarTicketsAdmin();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        });
+    });
+
+    function cargarHistorialLogs() {
+        fetch(`${API}/admin/logs`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(logs => {
+            const container = document.getElementById('lista-logs-auditoria');
+            container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid var(--border-smooth);">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--turquoise-main);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
+        });
+    }
+
+    function cargarListaTrabajadores() {
+        fetch(`${API}/admin/usuarios`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(usuarios => {
+            const div = document.getElementById('lista-usuarios-tecnicos');
+            div.innerHTML = usuarios.map(u => `
+                <div class="list-item">
+                    <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
+                    <div>
+                        <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}')">Editar</button>
+                        <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function eliminarUsuario(id, nombre) {
+        if(confirm(`¿Eliminar de forma permanente al usuario ${nombre}?`)) {
+            fetch(`${API}/admin/eliminar-usuario/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Usuario removido del servidor maestro.');
+                    cargarListaTrabajadores();
+                } else { alert(data.message); }
+            });
+        }
+    }
+
+    function activarEdicionUsuario(id, nombre, usuario, rol) {
+        document.getElementById('bloque-editar-usuario').style.display = 'block';
+        document.getElementById('edit-emp-id').value = id;
+        document.getElementById('edit-emp-name').value = nombre;
+        document.getElementById('edit-emp-user').value = usuario;
+        document.getElementById('edit-emp-role').value = rol;
+    }
+
+    function cancelarEdicion() {
+        document.getElementById('bloque-editar-usuario').style.display = 'none';
+    }
+
+    document.getElementById('form-editar-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/editar-usuario`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                id: document.getElementById('edit-emp-id').value,
+                nombre: document.getElementById('edit-emp-name').value,
+                usuario: document.getElementById('edit-emp-user').value,
+                password: document.getElementById('edit-emp-pass').value,
+                rol: document.getElementById('edit-emp-role').value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) { alert('Credenciales y nivel de acceso actualizados!'); cancelarEdicion(); cargarListaTrabajadores(); }
+        });
+    });
+
+    document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/crear-usuario`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                nombre: document.getElementById('new-emp-name').value,
+                usuario: document.getElementById('new-emp-user').value,
+                password: document.getElementById('new-emp-pass').value,
+                rol: document.getElementById('new-emp-role').value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                alert('Nuevo usuario registrado con éxito con el rol asignado.');
+                document.getElementById('form-alta-trabajador').reset();
+                cargarListaTrabajadores();
+            } else { alert(data.message); }
+        });
+    });
+
+    function cargarTicketsAdmin() {
+        fetch(`${API}/admin/tickets`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(tickets => {
+            cacheTickets = tickets;
+            renderTablaTickets(tickets);
+        });
+    }
+
+    function renderTablaTickets(lista) {
+        const tbody = document.getElementById('tabla-tickets-soporte');
+        if(lista.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding: 30px;">No hay reportes levantados en esta partición.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = lista.map(t => {
+            const fechaStr = new Date(t.fecha).toLocaleDateString('es-CR', {hour: '2-digit', minute:'2-digit'});
+            return `
+                <tr style="cursor:pointer;" onclick="abrirModalTicketGrande(${t.id})">
+                    <td style="color:var(--text-secondary); font-weight:500;">${fechaStr}</td>
+                    <td><b style="color:var(--turquoise-main);"><i class="fas fa-building"></i> ${t.empresa_nombre}</b></td>
+                    <td><b>${t.contacto}</b></td>
+                    <td style="font-weight:600; color:var(--turquoise-light);">${t.asunto}</td>
+                    <td style="color:#cfd8dc; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.descripcion}</td>
+                    <td><span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span></td>
+                    <td><b style="color:${t.estado === 'Abierto' ? '#ff3b30' : '#10b981'};">${t.estado}</b></td>
+                    <td onclick="event.stopPropagation();">
+                        <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function abrirModalTicketGrande(ticketId) {
+        const ticket = cacheTickets.find(t => t.id === ticketId);
+        if(!ticket) return;
+        currentOpenTicket = ticket;
+
+        document.getElementById('modalEmpresa').innerText = ticket.empresa_nombre;
+        document.getElementById('modalContacto').innerText = ticket.contacto;
+        document.getElementById('modalFecha').innerText = new Date(ticket.fecha).toLocaleString('es-CR');
+        document.getElementById('modalAsunto').innerText = ticket.asunto;
+        document.getElementById('modalDescripcion').innerText = ticket.descripcion;
+        
+        const prioBox = document.getElementById('modalPrioridad');
+        prioBox.innerHTML = `<span class="badge badge-${ticket.prioridad.toLowerCase()}">${ticket.prioridad}</span>`;
+        
+        const btnResolver = document.getElementById('btnModalResolver');
+        if(ticket.estado === 'Abierto') {
+            btnResolver.style.display = "inline-block";
+            btnResolver.onclick = () => {
+                cambiarEstadoTicket(ticket.id, 'Resuelto');
+                cerrarModalTicket();
+            };
+        } else {
+            btnResolver.style.display = "none";
+        }
+
+        document.getElementById('boxSolucionIA').style.display = "none";
+        document.getElementById('textSolucionIA').innerHTML = "";
+
+        document.getElementById('modalTicketGrande').style.display = "flex";
+    }
+
+    function cerrarModalTicket() {
+        document.getElementById('modalTicketGrande').style.display = "none";
+        currentOpenTicket = null;
+    }
+
+    function generarSolucionIA() {
+        if(!currentOpenTicket) return;
+        
+        const textContainer = document.getElementById('textSolucionIA');
+        const boxContainer = document.getElementById('boxSolucionIA');
+        
+        boxContainer.style.display = "block";
+        textContainer.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);">
+                <i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...
+            </div>`;
+
+        setTimeout(() => {
+            const lowerAsunto = currentOpenTicket.asunto.toLowerCase();
+            const lowerDesc = currentOpenTicket.descripcion.toLowerCase();
+            let solucionSugerida = "";
+
+            if(lowerAsunto.includes('servidor') || lowerDesc.includes('servidor') || lowerDesc.includes('server')) {
+                solucionSugerida = `
+                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
+                        <li><b>[Paso 1 - Aislamiento]</b> Verificar redundancia de energía en el rack y realizar ping ICMP constante al host de la base de datos Neon.</li>
+                        <li><b>[Paso 2 - Diagnóstico]</b> Acceder mediante terminal segura SSH y ejecutar <code>top</code> o <code>htop</code> para auditar picos anómalos de CPU/RAM.</li>
+                        <li><b>[Paso 3 - Mitigación]</b> Reiniciar los daemons de servicio web y limpiar logs temporales que saturen la partición raíz (/) del volumen de almacenamiento masivo.</li>
+                    </ul>`;
+            } else if(lowerAsunto.includes('red') || lowerDesc.includes('internet') || lowerAsunto.includes('caída')) {
+                solucionSugerida = `
+                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
+                        <li><b>[Paso 1 - Capa Física]</b> Verificar el estado del enlace troncal en el Switch administrador y descartar alertas de bucles mediante Spanning Tree (STP).</li>
+                        <li><b>[Paso 2 - Enrutamiento]</b> Validar la tabla de asignaciones DHCP y comprobar que el Gateway corporativo resuelva trazas DNS hacia servidores raíz.</li>
+                        <li><b>[Paso 3 - Contingencia]</b> Si el fallo persiste, forzar la conmutación automática (Failover) hacia el proveedor de fibra óptica secundario de iCare.</li>
+                    </ul>`;
+            } else {
+                solucionSugerida = `
+                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
+                        <li><b>[Paso 1 - Depuración]</b> Revisar logs de la aplicación o sistema operativo afectado para detectar excepciones de punteros o fallas de dependencias de software.</li>
+                        <li><b>[Paso 2 - Permisos]</b> Verificar el árbol de privilegios del usuario solicitante en el Active Directory o base de datos local.</li>
+                        <li><b>[Paso 3 - Despliegue]</b> Limpiar almacenamiento en caché local, reiniciar la estación de trabajo y verificar conectividad directa con los endpoints de la API de iCare Tech.</li>
+                    </ul>`;
+            }
+
+            textContainer.innerHTML = solucionSugerida;
+        }, 1200);
+    }
+
+    function ajustarEdicionEmpresaSoporte(id, nombre) {
+        editSupportEmpId = id;
+        document.getElementById('newSupportEmpName').value = nombre;
+        document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
+        document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Nombre Empresa";
+        document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
+        document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
+    }
+
+    function filtrarTicketsPorEmpresa(empresaId) {
+        if(empresaId === "Todos") {
+            renderTablaTickets(cacheTickets);
+        } else {
+            const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId);
+            renderTablaTickets(filtrados);
+        }
+    }
+
+    function cambiarEstadoTicket(id, nuevoEstado) {
+        fetch(`${API}/admin/tickets/${id}/estado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ estado: nuevoEstado })
+        })
+        .then(r => r.json())
+        .then(() => {
+            alert("Incidencia cerrada en servidor de alta disponibilidad.");
+            cargarTicketsAdmin();
+        });
+    }
+
+    function agregarEmpresaSoporte() {
+        const nombre = document.getElementById('newSupportEmpName').value;
+        if(!nombre) return alert("Especifica el nombre corporativo.");
+        
+        if (editSupportEmpId) {
+            fetch(`${API}/recomiendan/${editSupportEmpId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ nombre: nombre, imagen: "" })
+            })
+            .then(r => r.json())
+            .then(() => {
+                alert("Nombre de la empresa corporativa actualizado con éxito.");
+                editSupportEmpId = null;
+                document.getElementById('newSupportEmpName').value = "";
+                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
+                document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
+                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
+                document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
+                loadContent();
+            });
+        } else {
+            fetch(`${API}/admin/empresas-soporte`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ nombre: nombre })
+            })
+            .then(r => r.json())
+            .then(() => {
+                alert("Vínculo corporativo completado.");
+                document.getElementById('newSupportEmpName').value = "";
+                loadContent();
+            });
+        }
+    }
+
+    function eliminarEmpresaSoporte(id) {
+        if(confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
+            fetch(`${API}/admin/empresas-soporte/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(r => r.json())
+            .then(() => {
+                alert("Empresa removida del sistema.");
+                loadContent();
+            });
+        }
     }
 
     function loadContent() {
         fetch(`${API}/todo`)
         .then(r => r.json())
         .then(data => {
-            cacheData = data;
-            renderTickets();
-            renderEmpresas();
+            cacheData.servicios = data.servicios || [];
+            cacheData.productos = data.productos || [];
+            cacheData.resenas = data.resenas || [];
+            cacheData.socios = data.socios || [];
+            cacheData.beneficios = data.beneficios || [];
+            cacheData.objetivos = data.objetivos || [];
+            cacheData.empresas = data.empresas || [];
+            
+            if(data.config) {
+                document.getElementById('h_titulo').value = data.config.hero_titulo || "";
+                document.getElementById('mision').value = data.config.mision || "";
+                document.getElementById('vision').value = data.config.vision || "";
+                document.getElementById('compromiso').value = data.config.compromiso || "";
+            }
+
+            const selectFiltro = document.getElementById('filtroEmpresaTickets');
+            selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
+            cacheData.empresas.forEach(e => {
+                selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            });
+
+            const divBajas = document.getElementById('lista-empresas-soporte-bajas');
+            if(cacheData.empresas.length === 0) {
+                divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
+            } else {
+                divBajas.innerHTML = cacheData.empresas.map(e => `
+                    <div class="list-item">
+                        <span>🏢 ${e.nombre}</span>
+                        <div>
+                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}')">Editar</button>
+                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
+            
+            cacheData.servicios.forEach((s, idx) => {
+                h += `
+                    <div class="list-item">
+                        <span>${s.titulo}</span>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button>
+                            <button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
+            
+            h += "<br><b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
+            
+            cacheData.productos.forEach((p, idx) => {
+                h += `
+                    <div class="list-item">
+                        <span>${p.nombre}</span>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button>
+                            <button class="btn-del" onclick="del('productos', ${p.id})">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
+            
+            document.getElementById('master-list').innerHTML = h;
         });
     }
 
-    function renderTickets() {
-        fetch(`${API}/admin/tickets`)
-        .then(r => r.json())
-        .then(data => {
-            const tbody = document.getElementById('tabla-tickets-soporte');
-            tbody.innerHTML = data.map(t => `<tr><td>${t.empresa_nombre}</td><td>${t.asunto}</td><td>${t.estado}</td></tr>`).join('');
+    function prepararEdicion(tipo, index) {
+        const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
+        const item = cacheData[datosReales][index];
+        editId = item.id; editType = tipo;
+        
+        if(tipo === 'servicios') {
+            document.getElementById('sTitle').value = item.titulo;
+            document.getElementById('sDesc').value = item.descripcion;
+            document.getElementById('sIcon').value = item.icono;
+            document.getElementById('sProcess').value = item.proceso;
+            document.getElementById('sBenefits').value = item.beneficios;
+        } else if(tipo === 'productos') {
+            document.getElementById('pName').value = item.nombre;
+            document.getElementById('pPrice').value = item.precio;
+            document.getElementById('pCat').value = item.categoria;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function saveItem(path, data) {
+        const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
+        fetch(url, { method: (editId && editType === path) ? 'PUT' : 'POST', headers:{'Content-Type':'application/json'}, credentials: 'include', body:JSON.stringify(data) })
+        .then(() => { 
+            alert("Operación completada con éxito."); 
+            loadContent(); 
+            editId = null; editType = null;
         });
     }
 
-    function renderEmpresas() {
-        const div = document.getElementById('lista-empresas-soporte-bajas');
-        div.innerHTML = cacheData.empresas.map(e => `
-            <div class="list-item">
-                <span>${e.nombre}</span>
-                <button onclick="del('empresas_recomiendan', ${e.id})">Eliminar</button>
-            </div>`).join('');
+    function subirServicio() { saveItem('servicios', {titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS}); }
+    function subirProducto() { saveItem('productos', {nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP}); }
+    function subirResena() { saveItem('resenas', {cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev}); }
+    function subirSocio() { saveItem('socios', {nombre: document.getElementById('partnerName').value, url: document.getElementById('partnerUrl').value, imagen: imgPartner}); }
+    function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
+    function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
+    function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }
+
+    function updateConfig() { 
+        fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials: 'include', body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value, compromiso:document.getElementById('compromiso').value}) })
+        .then(() => alert("Estructura de contenidos actualizada con éxito en producción."));
     }
 
-    function agregarEmpresaSoporte() {
-        const nombre = document.getElementById('newSupportEmpName').value;
-        fetch(`${API}/admin/empresas-soporte`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({nombre})
-        }).then(() => loadContent());
+    function del(t, id) { 
+        if(confirm("¿Seguro que deseas eliminar este registro de la base de datos de Neon?")) {
+            fetch(`${API}/eliminar/${t}/${id}`, { method:'DELETE', credentials: 'include' }).then(() => loadContent());
+        }
     }
-
-    function subirServicio() {
-        const data = {
-            titulo: document.getElementById('sTitle').value,
-            descripcion: document.getElementById('sDesc').value
-        };
-        fetch(`${API}/servicios`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(() => loadContent());
-    }
-
-    function subirProducto() {
-        const data = {
-            nombre: document.getElementById('pName').value,
-            precio: document.getElementById('pPrice').value
-        };
-        fetch(`${API}/productos`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(() => loadContent());
-    }
-
-    function del(t, id) {
-        fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE' }).then(() => loadContent());
-    }
-
-    document.getElementById('form-login-master').onsubmit = (e) => {
-        e.preventDefault();
-        document.getElementById('login-overlay').style.display = 'none';
+    
+    window.onload = function() {
         loadContent();
+        fetch(`${API}/admin/tickets`, { credentials: 'include' })
+        .then(res => { if(res.ok) return res.json(); })
+        .then(tickets => { 
+            if(tickets) { 
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('seccion-usuarios-admin').style.display = 'grid';
+                document.getElementById('seccion-logs-admin').style.display = 'block';
+                cacheTickets = tickets; 
+                renderTablaTickets(tickets); 
+                cargarListaTrabajadores();
+                cargarHistorialLogs();
+            } 
+        });
     };
 </script>
 </body>

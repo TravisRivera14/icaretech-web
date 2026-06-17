@@ -1639,10 +1639,23 @@
         console.log("Iniciando carga de datos...");
 
         fetch(`${API}/todo`)
-            .then(r => {
-                if (!r.ok) throw new Error("Error en el servidor: " + r.status);
-                return r.json();
+            .then(r => r.json())
+            .then(data => {
+                console.log("Datos recibidos:", data);
+
+                // Renderizado seguro
+                if (data.servicios && data.servicios.length > 0) {
+                    const srvC = document.getElementById('srv-c');
+                    if(srvC) {
+                        srvC.innerHTML = data.servicios.map(s => `
+                            <div class="service-card">
+                            <h3>${s.titulo}</h3>
+                            <p>${s.descripcion}</p>
+                        </div>`).join('');
+                    }
+                } 
             })
+                
             .then(data => {
                 console.log("Datos recibidos correctamente:", data);
 

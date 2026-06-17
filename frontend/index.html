@@ -1631,34 +1631,26 @@
 
     <script>
     const API = '/api';
-    let allProducts = [];
-    let cacheServicios = []; 
-    let currentCat = 'Todos';
-    let publicReviewImg = ""; 
-
+    
     // Función global para WhatsApp
-    function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
+    window.openWA = function(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); };
 
-    // 1. Envuelve todo dentro del evento 'DOMContentLoaded'
     document.addEventListener("DOMContentLoaded", () => {
-        
-        // A. Lógica del menú (ahora es segura)
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (menuToggle && mobileMenu) {
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active');
-            });
-        }
+        console.log("Iniciando carga de datos...");
 
         fetch(`${API}/todo`)
-            .then(r => r.json())
-            .then(data => {
-                console.log("Datos recibidos:", data)
-                // Aquí dentro pones tus funciones de renderizado:
-                // renderServicios(data.servicios);
-                // renderSocios(data.socios);
+            .then(r => {
+                if (!r.ok) throw new Error("Error en el servidor: " + r.status);
+                return r.json();
             })
+            .then(data => {
+                console.log("Datos recibidos correctamente:", data);
+
+                // 1. Configuración Hero
+                if (data.config) {
+                    const heroTitle = document.getElementById('hero-title');
+                    if(heroTitle) heroTitle.innerText = data.config.hero_titulo || "Bienvenidos";
+                }
 
                 // 2. Beneficios
                 const choGrid = document.getElementById('cho-grid');
@@ -1671,7 +1663,7 @@
                         </div>`).join('');
                 }
 
-                // 3. Objetivos
+                // 3. Objetivos (Asegúrate de que el ID en HTML sea obj-grid)
                 const objGrid = document.getElementById('obj-grid');
                 if (objGrid && data.objetivos) {
                     objGrid.innerHTML = data.objetivos.map(o => `
@@ -1682,19 +1674,9 @@
                         </div>`).join('');
                 }
 
-                // 4. Empresas Recomiendan
-                const empGrid = document.getElementById('empresas-c');
-                if (empGrid && data.empresas) {
-                    empGrid.innerHTML = data.empresas.map(e => `
-                        <div class="partner-card">
-                            <img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}">
-                        </div>`).join('');
-                }
-
-                // 5. Servicios (y detalle inicial)
+                // 4. Servicios
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios) {
-                    cacheServicios = data.servicios; 
                     srvC.innerHTML = data.servicios.map(s => `
                         <div class="service-card anim-up">
                             ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
@@ -1702,98 +1684,22 @@
                             <p>${s.descripcion}</p>
                             <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
                         </div>`).join('');
-
-                    if(cacheServicios.length > 0) {
-                        const prim = cacheServicios[0];
-                        document.getElementById('det-titulo').innerText = prim.titulo;
-                        document.getElementById('det-descripcion').innerText = prim.proceso || "";
-                        document.getElementById('det-imagen').src = prim.imagen || "";
-                        const lista = document.getElementById('det-beneficios');
-                        lista.innerHTML = (prim.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
-                    }
                 }
 
-                // 6. Productos y Catálogo
-                if (data.productos) { 
-                    allProducts = data.productos; 
-                    const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
-                    const filterContainer = document.getElementById('catFilters');
-                    if (filterContainer) {
-                        filterContainer.innerHTML = categories.map(cat => 
-                            `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
-                        ).join('');
-                    }
-                    filterAll(); 
-                }
-
-                // 7. SOCIOS (Mejora solicitada: enlaces y colores)
+                // 5. Socios
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios) { 
                     partC.innerHTML = data.socios.map(p => `
-                        <a href="${p.url || '#'}" target="_blank" class="partner-card" title="${p.nombre}">
+                        <a href="${p.url || '#'}" target="_blank" class="partner-card">
                             <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
                         </a>`).join(''); 
                 }
 
-                applyAnimations();
             })
-            .catch(err => console.error("Error al conectar:", err));
-
-    // FUNCIONES GLOBALES
-    function applyAnimations() { 
-        const animObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.anim-up, .value-card').forEach(el => animObserver.observe(el)); 
-    }
-
-    window.enviarResenaPublica = function() {
-        const data = { 
-            cliente: document.getElementById('revPublicClient').value, 
-            puesto: document.getElementById('revPublicPos').value, 
-            comentario: document.getElementById('revPublicText').value, 
-            imagen_cliente: publicReviewImg 
-        };
-        fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-            .then(() => location.reload());
-    };
-
-    window.scrollCatalog = function(dir) {
-        document.getElementById('prod-c').scrollBy({ left: dir * 335, behavior: 'smooth' });
-    };
-
-    window.setCategory = function(cat) { 
-        currentCat = cat; 
-        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === cat));
-        filterAll(); 
-    };
-
-    window.filterAll = function() {
-        const term = document.getElementById('catSearch').value.toLowerCase();
-        const prodC = document.getElementById('prod-c');
-        if (!prodC) return;
-        const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
-        prodC.innerHTML = allProducts
-            .filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre || "").toLowerCase().includes(term))
-            .map(p => `
-                <div class="service-card visible catalog-card" style="padding: 30px;">
-                    <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
-                    <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 15px;">${p.nombre}</h3>
-                    <p style="color:var(--icon-blue); font-weight:bold; font-size:19px;">${formatter.format(p.precio)}</p>
-                    <button class="btn-ver-mas" onclick="openWA('Interés: ${p.nombre}')">Cotizar</button>
-                </div>`).join('');
-    };
-
-    window.mostrarDetalleServicio = function(id) {
-        const s = cacheServicios.find(x => x.id === id);
-        if(!s) return;
-        document.getElementById('det-titulo').innerText = s.titulo;
-        document.getElementById('det-descripcion').innerText = s.proceso || "";
-        document.getElementById('det-imagen').src = s.imagen || "";
-        const lista = document.getElementById('det-beneficios');
-        lista.innerHTML = (s.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
-        document.getElementById('detalle-servicio-bloque').scrollIntoView({ behavior: 'smooth' });
-    };
+            .catch(err => {
+                console.error("Error al cargar la información:", err);
+            });
+    });
 </script>
 </body>
 </html>

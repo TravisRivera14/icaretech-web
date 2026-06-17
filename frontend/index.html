@@ -875,28 +875,39 @@
             align-items: center; 
         }
         
-        .partner-card { 
-            background: transparent !important; /* Eliminamos fondo */
-            box-shadow: none !important;        /* Eliminamos sombra */
-            border: none !important;            /* Eliminamos borde */
-            padding: 10px;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 120px; 
-            transition: var(--transition-smooth); 
+        /* Estilo para las burbujas cuadradas semi-transparentes */
+        .partner-card {
+            background: rgba(255, 255, 255, 0.03) !important; /* Semi-transparencia oscura */
+            backdrop-filter: blur(10px);                    /* Efecto vidrio esmerilado */
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;                 /* Esquinas redondeadas (tipo burbuja) */
+            padding: 20px !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 140px;
+            width: 140px;                                   /* Cuadrado fijo */
+            transition: var(--transition-smooth);
+        } 
+
+        .partner-card:hover {
+            background: rgba(0, 180, 216, 0.1) !important;  /* Brillo azul al pasar el mouse */
+            border-color: var(--icon-blue) !important;
+            transform: translateY(-5px);
         }
-        
-        .partner-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 20px 40px rgba(0, 180, 216, 0.08); 
-            border-color: var(--icon-blue);
+
+        /* Para quitar el fondo blanco de los logos, aplicamos filtro */
+        .partner-logo {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);                /* Esto vuelve los logos blancos para que resalten en el fondo oscuro */
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
         }
-        
-        .partner-logo { 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain; 
+
+        .partner-card:hover .partner-logo {
+            opacity: 1;
         }
         
         .recomiendan-logo { 

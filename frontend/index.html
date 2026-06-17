@@ -106,19 +106,6 @@
             color: var(--turquoise-main);
         }
 
-        .btn-portal-link {
-            color: var(--turquoise-main) !important;
-            border: 1px solid rgba(0, 180, 216, 0.3);
-            padding: 8px 18px;
-            border-radius: 20px;
-            background: rgba(0, 180, 216, 0.05);
-        }
-        .btn-portal-link:hover {
-            background: var(--turquoise-main) !important;
-            color: #000000 !important;
-            box-shadow: 0 0 15px rgba(0, 180, 216, 0.3);
-        }
-
         @media(max-width: 768px) {
             nav { display: none; }
         }
@@ -365,28 +352,6 @@
             color: var(--text-secondary);
         }
 
-        /* SPONSORS */
-        .partners-logo-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 50px;
-            flex-wrap: wrap;
-            opacity: 0.5;
-        }
-
-        .partner-img {
-            height: 38px;
-            filter: grayscale(1) brightness(2);
-            object-fit: contain;
-            transition: var(--transition-smooth);
-        }
-
-        .partner-img:hover {
-            opacity: 1;
-            filter: none;
-        }
-
         /* FOOTER */
         footer {
             background: #060709;
@@ -452,7 +417,7 @@
                     <li><a href="#servicios">Servicios</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
                     <li><a href="#testimonios">Reseñas</a></li>
-                    <li><a href="/service" class="btn-portal-link"><i class="fas fa-headset"></i> Portal Soporte</a></li>
+                    <li><a href="/service" style="color: var(--turquoise-main);"><i class="fas fa-headset"></i> Portal Soporte</a></li>
                 </ul>
             </nav>
         </div>
@@ -462,8 +427,8 @@
 
         <section class="hero">
             <div class="hero-content">
-                <h1 id="hero-title">Soluciones Tecnológicas <span>Especializadas</span></h1>
-                <p id="hero-subtitle">Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
+                <h1>Soluciones Tecnológicas <span>Especializadas</span></h1>
+                <p>Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
                 <a href="#contacto" class="btn-premium">Solicitar Diagnóstico Técnico <i class="fas fa-arrow-right"></i></a>
             </div>
         </section>
@@ -473,8 +438,28 @@
                 <h2>Ingeniería de Servicios TI</h2>
                 <p>Módulos avanzados de ejecución técnica y arquitectura de red corporativa</p>
             </div>
-            <div class="services-grid" id="render-servicios">
+            
+            <div class="services-grid">
+                
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-laptop-medical"></i></div>
+                    <h3>Soporte Técnico Estándar</h3>
+                    <p>Diagnóstico avanzado y reparación a nivel de componentes para hardware corporativo y dispositivos premium. Asistencia especializada con una tarifa base de $60 por hora para resolver fallas críticas.</p>
                 </div>
+                
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-server"></i></div>
+                    <h3>Plan Corporativo de Retención</h3>
+                    <p>Administración continua de infraestructura tecnológica y alta disponibilidad para empresas. Mantenimiento preventivo y soporte ininterrumpido mediante un retainer de $1,000 mensuales.</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-network-wired"></i></div>
+                    <h3>Infraestructura de Redes</h3>
+                    <p>Diseño, despliegue e ingeniería de conectividad inteligente para optimizar la cobertura y ciberseguridad en áreas de alta concurrencia.</p>
+                </div>
+
+            </div>
         </section>
 
         <section id="catalogo" class="section-padding">
@@ -482,13 +467,19 @@
                 <h2>Catálogo de Hardware Pro</h2>
                 <p>Piezas y componentes críticos certificados para alto rendimiento</p>
             </div>
-            <div class="products-container" id="render-productos">
-                </div>
-        </section>
 
-        <section class="section-padding" style="border-top: 1px solid var(--border-smooth); border-bottom: 1px solid var(--border-smooth); margin-bottom: 20px;">
-            <div class="partners-logo-wrap" id="render-socios">
+            <div class="products-container">
+                
+                <div class="product-card">
+                    <img class="product-img" src="https://images.unsplash.com/photo-1601524909162-be87252be698?w=400" alt="Router">
+                    <div class="product-info">
+                        <span style="font-size:11px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">Conectividad</span>
+                        <h3>Módulo Router WiFi Mesh Corporativo</h3>
+                        <div class="product-price">₡85,000</div>
+                    </div>
                 </div>
+
+            </div>
         </section>
 
         <section id="testimonios" class="section-padding">
@@ -496,8 +487,20 @@
                 <h2>Garantía de Satisfacción</h2>
                 <p>Clientes corporativos respaldados por nuestro acuerdo de nivel de servicio (SLA)</p>
             </div>
-            <div class="reviews-grid" id="render-reseñas">
+            
+            <div class="reviews-grid">
+                
+                <div class="review-card">
+                    <p class="review-text">"Excelente ejecución técnica en la modernización de nuestros sistemas inalámbricos y seguridad perimetral de red."</p>
+                    <div class="review-author">
+                        <div class="author-info">
+                            <h4>Taller Pedagógico Montebello</h4>
+                            <p>Socio Corporativo</p>
+                        </div>
+                    </div>
                 </div>
+
+            </div>
         </section>
 
         <section id="contacto"></section>
@@ -527,141 +530,5 @@
 
     </div>
 
-    <script>
-        // Tus líneas de información originales listas para mostrarse de inmediato
-        const fallbackData = {
-            servicios: [
-                {
-                    titulo: "Soporte Técnico y Hardware",
-                    descripcion: "Diagnóstico avanzado y reparación a nivel de componentes para smartphones premium, laptops corporativas y sistemas táctiles.",
-                    icono: "fas fa-laptop-medical"
-                },
-                {
-                    titulo: "Infraestructura de Redes & WiFi Mesh",
-                    descripcion: "Diseño, despliegue e ingeniería de conectividad inteligente para optimizar la cobertura y ciberseguridad en áreas de alta concurrencia.",
-                    icono: "fas fa-network-wired"
-                },
-                {
-                    titulo: "Alta Disponibilidad TI Corporativa",
-                    descripcion: "Planes administrados de soporte técnico continuo y retención mensual estructurada para mantener sistemas críticos operando con cero caídas.",
-                    icono: "fas fa-server"
-                }
-            ],
-            productos: [
-                {
-                    nombre: "Módulo Router WiFi Mesh Corporativo",
-                    precio: 85000,
-                    categoria: "Conectividad",
-                    imagen: "https://images.unsplash.com/photo-1601524909162-be87252be698?w=400"
-                },
-                {
-                    nombre: "Componentes Certificados Premium (Laptops/iPhones)",
-                    precio: 45000,
-                    categoria: "Hardware",
-                    imagen: "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=400"
-                },
-                {
-                    nombre: "Kit de Pantalla y Repuestos Avanzados Tab P11",
-                    precio: 65000,
-                    categoria: "Repuestos",
-                    imagen: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400"
-                }
-            ],
-            socios: [
-                { imagen: "https://upload.wikimedia.org/wikipedia/commons/2/fa/Apple_logo_black.svg" },
-                { imagen: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Lenovo_logo_2015.svg" },
-                { imagen: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Intel_logo_%282020%29.svg" }
-            ],
-            resenas: [
-                {
-                    comentario: "Excelente ejecución técnica en la modernización de nuestros sistemas inalámbricos y seguridad perimetral de red.",
-                    cliente: "Taller Pedagógico Montebello",
-                    puesto: "Socio Corporativo",
-                    imagen_cliente: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100"
-                },
-                {
-                    comentario: "La implementación del plan de retención mensual con ingenieros especializados solucionó por completo nuestras fallas de hardware.",
-                    cliente: "Ing. Distribuciones Locales",
-                    puesto: "Director de TI",
-                    imagen_cliente: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100"
-                }
-            ]
-        };
-
-        function aplicarRender(data) {
-            // 1. Textos del Hero
-            if (data.config && data.config.hero_titulo) {
-                document.getElementById('hero-title').innerHTML = data.config.hero_titulo;
-            }
-            if (data.config && data.config.hero_sub) {
-                document.getElementById('hero-subtitle').innerText = data.config.hero_sub;
-            }
-
-            // 2. Renderizado de Servicios
-            const serviciosWrap = document.getElementById('render-servicios');
-            const listaServicios = (data.servicios && data.servicios.length > 0) ? data.servicios : fallbackData.servicios;
-            serviciosWrap.innerHTML = listaServicios.map(s => `
-                <div class="service-card">
-                    <div class="service-icon"><i class="${s.icono || 'fas fa-laptop-code'}"></i></div>
-                    <h3>${s.titulo}</h3>
-                    <p>${s.descripcion}</p>
-                </div>
-            `).join('');
-
-            // 3. Renderizado de Catálogo de Productos
-            const productosWrap = document.getElementById('render-productos');
-            const listaProductos = (data.productos && data.productos.length > 0) ? data.productos : fallbackData.productos;
-            productosWrap.innerHTML = listaProductos.map(p => `
-                <div class="product-card">
-                    <img class="product-img" src="${p.imagen || 'placeholder.png'}" alt="${p.nombre}">
-                    <div class="product-info">
-                        <span style="font-size:11px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
-                        <h3>${p.nombre}</h3>
-                        <div class="product-price">₡${Number(p.precio).toLocaleString('es-CR')}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            // 4. Renderizado de Logos / Socios
-            const sociosWrap = document.getElementById('render-socios');
-            const listaSocios = (data.socios && data.socios.length > 0) ? data.socios : fallbackData.socios;
-            sociosWrap.innerHTML = listaSocios.map(partner => `
-                <img class="partner-img" src="${partner.imagen}" alt="Socio">
-            `).join('');
-
-            // 5. Renderizado de Reseñas
-            const resenasWrap = document.getElementById('render-reseñas');
-            const listaResenas = (data.resenas && data.resenas.length > 0) ? data.resenas : fallbackData.resenas;
-            resenasWrap.innerHTML = listaResenas.map(r => `
-                <div class="review-card">
-                    <p class="review-text">"${r.comentario}"</p>
-                    <div class="review-author">
-                        <img class="author-img" src="${r.imagen_cliente || 'user-placeholder.png'}" alt="${r.cliente}">
-                        <div class="author-info">
-                            <h4>${r.cliente}</h4>
-                            <p>${r.puesto || 'Socio Corporativo'}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            // Se cargan primero tus líneas de información de respaldo de inmediato
-            aplicarRender(fallbackData);
-
-            // Se intenta sincronizar de fondo con tu servidor Neon SQL
-            fetch('/api/todo')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && (data.servicios || data.productos || data.resenas)) {
-                        aplicarRender(data); // Si la base de datos ya tiene información real, actualiza la vista
-                    }
-                })
-                .catch(err => {
-                    console.log("Servidor operando de modo local con líneas de información fijas.");
-                });
-        });
-    </script>
 </body>
 </html>

@@ -1716,13 +1716,12 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            fetch(`${API}/todo`).then(r => r.json()).then(data => {
-                if (data.config) {
-                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
-                    document.getElementById('m-t').innerText = data.config.mision || "";
-                    document.getElementById('v-t').innerText = data.config.vision || "";
-                    document.getElementById('c-t').innerText = data.config.compromiso || "";
-                }
+            const menuToggle = document.getElementById('menu-toggle');
+            if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('active');
+            });
+        }
                 
                 const choGrid = document.getElementById('cho-grid');
                 if (choGrid && data.beneficios) {
@@ -1819,10 +1818,6 @@
                 }
                 applyAnimations();
             });
-            document.getElementById('menu-toggle').addEventListener('click', () => {
-               document.getElementById('mobile-nav').classList.toggle('active');
-            });
-        });
     </script>
 </body>
 </html>

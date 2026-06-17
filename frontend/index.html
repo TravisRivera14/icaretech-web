@@ -1638,7 +1638,6 @@
     function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
     document.addEventListener("DOMContentLoaded", () => {
-        // CORRECCIÓN ID MENÚ: mobile-menu (coincide con tu HTML)
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
         if (menuToggle && mobileMenu) {
@@ -1725,7 +1724,31 @@
                 }
             })
             .catch(err => console.error("Error al cargar:", err));
-    })
+    });
+
+    // ==========================================
+    // FUNCIÓN FALTANTE: ANIMACIONES DE SCROLL
+    // ==========================================
+    function applyAnimations() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // Si el elemento entra en la pantalla, le agregamos la clase "visible"
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { 
+            threshold: 0.1, // Se activa cuando al menos el 10% del elemento es visible
+            rootMargin: "0px 0px -50px 0px" 
+        });
+
+        // Seleccionamos todos los elementos invisibles y los ponemos a observar
+        const animatedElements = document.querySelectorAll('.anim-up');
+        animatedElements.forEach(el => {
+            observer.observe(el);
+        });
+    }
+
 </script>
 </body>
 </html>

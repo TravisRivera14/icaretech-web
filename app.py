@@ -254,35 +254,32 @@ def dar_baja_empresa_soporte(id):
 
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
-    # Inicializamos con estructuras vacías
-    data = {"servicios": [], "productos": [], "socios": [], "empresas": [], "objetivos": [], "beneficios": []}
-    
-    # Intentamos cargar cada tabla individualmente para no romper todo el servidor
     try:
-        data["servicios"] = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in (db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando servicios: {e}", file=sys.stderr)
+        # 1. Obtenemos todo
+        servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
+        prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
+        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or []
+        empresas_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan", fetch=True) or []
+        objetivos_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos", fetch=True) or []
+        beneficios_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios", fetch=True) or []
+        
+        # --- AQUÍ ESTABA EL ERROR: Agregamos la carga de la configuración ---
+        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
+        config_dict = {r[0]: r[1] for r in config_raw} 
+        # ------------------------------------------------------------------
 
-    try:
-        data["productos"] = [{"id": r[0], "nombre": r[1], "precio": float(r[2]), "imagen": r[3], "categoria": r[4]} for r in (db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando productos: {e}", file=sys.stderr)
-
-    try:
-        data["socios"] = [{"id": r[0], "nombre": r[1], "imagen": r[2], "url": r[3]} for r in (db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando socios: {e}", file=sys.stderr)
-
-    try:
-        data["empresas"] = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in (db_query("SELECT id, nombre, imagen FROM empresas_recomiendan", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando empresas: {e}", file=sys.stderr)
-
-    try:
-        data["objetivos"] = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in (db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando objetivos: {e}", file=sys.stderr)
-
-    try:
-        data["beneficios"] = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in (db_query("SELECT id, icono, titulo, descripcion FROM beneficios", fetch=True) or [])]
-    except Exception as e: print(f"Error cargando beneficios: {e}", file=sys.stderr)
-
-    return jsonify(data)
+        return jsonify({
+            "servicios": [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw],
+            "productos": [{"id": r[0], "nombre": r[1], "precio": float(r[2]), "imagen": r[3], "categoria": r[4]} for r in prods_raw],
+            "socios": [{"id": r[0], "nombre": r[1], "imagen": r[2], "url": r[3]} for r in parts_raw],
+            "empresas": [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in empresas_raw],
+            "objetivos": [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in objetivos_raw],
+            "beneficios": [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in beneficios_raw],
+            "config": config_dict # <--- Ahora el frontend recibirá el objeto config
+        })
+    except Exception as e:
+        print(f"Error en /api/todo: {e}", file=sys.stderr)
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/socios', methods=['POST'])
 def guardar_socio():

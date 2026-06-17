@@ -1636,13 +1636,11 @@
     let currentCat = 'Todos';
     let publicReviewImg = ""; 
 
-    // Función global para WhatsApp
     function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-    // 1. Envuelve todo dentro del evento 'DOMContentLoaded'
     document.addEventListener("DOMContentLoaded", () => {
         
-        // A. Lógica del menú (ahora es segura)
+        // Lógica del menú
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
         if (menuToggle && mobileMenu) {
@@ -1651,14 +1649,17 @@
             });
         }
 
+        // Carga de datos centralizada
         fetch(`${API}/todo`)
             .then(r => r.json())
             .then(data => {
-                console.log("Datos recibidos de Neon:", data);
-                // Aquí dentro pones tus funciones de renderizado:
-                // renderServicios(data.servicios);
-                // renderSocios(data.socios);
-            })
+                console.log("Datos recibidos:", data);
+                
+                // 1. Configuración Hero
+                if (data.config) {
+                    const heroTitle = document.getElementById('hero-title');
+                    if(heroTitle) heroTitle.innerText = data.config.hero_titulo || "Bienvenidos";
+                }
 
                 // 2. Beneficios
                 const choGrid = document.getElementById('cho-grid');
@@ -1691,7 +1692,7 @@
                         </div>`).join('');
                 }
 
-                // 5. Servicios (y detalle inicial)
+                // 5. Servicios
                 const srvC = document.getElementById('srv-c');
                 if (srvC && data.servicios) {
                     cacheServicios = data.servicios; 
@@ -1705,15 +1706,18 @@
 
                     if(cacheServicios.length > 0) {
                         const prim = cacheServicios[0];
-                        document.getElementById('det-titulo').innerText = prim.titulo;
-                        document.getElementById('det-descripcion').innerText = prim.proceso || "";
-                        document.getElementById('det-imagen').src = prim.imagen || "";
+                        const detT = document.getElementById('det-titulo');
+                        if(detT) detT.innerText = prim.titulo;
+                        const detD = document.getElementById('det-descripcion');
+                        if(detD) detD.innerText = prim.proceso || "";
+                        const detI = document.getElementById('det-imagen');
+                        if(detI) detI.src = prim.imagen || "";
                         const lista = document.getElementById('det-beneficios');
-                        lista.innerHTML = (prim.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
+                        if(lista) lista.innerHTML = (prim.beneficios || "").split('\n').map(l => l.trim() ? `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>` : "").join('');
                     }
                 }
 
-                // 6. Productos y Catálogo
+                // 6. Productos
                 if (data.productos) { 
                     allProducts = data.productos; 
                     const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
@@ -1726,7 +1730,7 @@
                     filterAll(); 
                 }
 
-                // 7. SOCIOS (Mejora solicitada: enlaces y colores)
+                // 7. SOCIOS
                 const partC = document.getElementById('partners-c');
                 if (partC && data.socios) { 
                     partC.innerHTML = data.socios.map(p => `
@@ -1737,30 +1741,16 @@
 
                 applyAnimations();
             })
-            .catch(err => console.error("Error al conectar:", err));
+            .catch(err => console.error("Error al cargar datos:", err));
+    });
 
-    // FUNCIONES GLOBALES
+    // FUNCIONES GLOBALES (FUERA DEL DOMContentLoaded)
     function applyAnimations() { 
         const animObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
         }, { threshold: 0.1 });
         document.querySelectorAll('.anim-up, .value-card').forEach(el => animObserver.observe(el)); 
     }
-
-    window.enviarResenaPublica = function() {
-        const data = { 
-            cliente: document.getElementById('revPublicClient').value, 
-            puesto: document.getElementById('revPublicPos').value, 
-            comentario: document.getElementById('revPublicText').value, 
-            imagen_cliente: publicReviewImg 
-        };
-        fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-            .then(() => location.reload());
-    };
-
-    window.scrollCatalog = function(dir) {
-        document.getElementById('prod-c').scrollBy({ left: dir * 335, behavior: 'smooth' });
-    };
 
     window.setCategory = function(cat) { 
         currentCat = cat; 
@@ -1769,7 +1759,8 @@
     };
 
     window.filterAll = function() {
-        const term = document.getElementById('catSearch').value.toLowerCase();
+        const searchInput = document.getElementById('catSearch');
+        const term = searchInput ? searchInput.value.toLowerCase() : "";
         const prodC = document.getElementById('prod-c');
         if (!prodC) return;
         const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });

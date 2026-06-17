@@ -245,19 +245,20 @@ def dar_baja_empresa_soporte(id):
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
     try:
-        # Recuperación unificada
+        # Asegúrate de que estas tablas EXISTEN en Neon. 
+        # Si una tabla no existe, la consulta fallará y dará error 500.
         servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
         prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
-        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or [] # URL incluida
-        empresas_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan", fetch=True) or []
+        parts_raw = db_query("SELECT id, nombre, imagen, url FROM socios", fetch=True) or []
         
+        # Mapeo a diccionario
         servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
         prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]), "imagen": r[3], "categoria": r[4]} for r in prods_raw]
         parts = [{"id": r[0], "nombre": r[1], "imagen": r[2], "url": r[3]} for r in parts_raw]
-        empresas = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in empresas_raw]
         
-        return jsonify({"servicios": servs, "productos": prods, "socios": parts, "empresas": empresas})
+        return jsonify({"servicios": servs, "productos": prods, "socios": parts})
     except Exception as e:
+        print(f"Error en API: {e}") # Mira esto en los LOGS de Vercel
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/socios', methods=['POST'])

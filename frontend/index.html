@@ -9,18 +9,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
+            --dark-bg: #0b0c10;
+            --card-bg: #1f2833;
             --turquoise-main: #00b4d8;
             --turquoise-dark: #0077b6;
             --turquoise-light: #90e0ef;
-            --dark-bg: #0b0c10;
-            --card-bg: #1f2833;
             --text-light: #f5f5f7;
-            --radius-premium: 20px;
-            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --text-secondary: #8a99ad;
+            --border-smooth: rgba(255, 255, 255, 0.05);
+            --radius-premium: 16px;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
             --max-width-desktop: 1200px;
         }
 
@@ -29,7 +32,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.2px;
         }
 
         body {
@@ -39,7 +42,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* CONTENEDOR MAESTRO DE RESPONSIVIDAD */
+        /* ENVOLTORIO GLOBAL DE RESPONSIVIDAD SÉRICA */
         .container-wrapper {
             max-width: var(--max-width-desktop);
             margin: 0 auto;
@@ -47,17 +50,16 @@
             padding: 0 24px;
         }
 
-        /* NAVBAR ORIGINAL ADAPTABLE */
+        /* HEADER / NAVBAR DE ALTA INGENIERÍA OSCURA */
         header {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100%;
             z-index: 1000;
             background: rgba(11, 12, 16, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border-smooth);
             transition: var(--transition-smooth);
         }
 
@@ -71,7 +73,7 @@
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             color: #ffffff;
             display: flex;
@@ -94,7 +96,7 @@
         nav ul li a {
             color: #ffffff;
             text-decoration: none;
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 600;
             opacity: 0.8;
             transition: var(--transition-smooth);
@@ -105,13 +107,26 @@
             color: var(--turquoise-main);
         }
 
-        @media(max-width: 768px) {
-            nav { display: none; }
+        .btn-portal-link {
+            color: var(--turquoise-main) !important;
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: rgba(0, 180, 216, 0.05);
+        }
+        .btn-portal-link:hover {
+            background: var(--turquoise-main) !important;
+            color: #000000 !important;
+            box-shadow: 0 0 15px rgba(0, 180, 216, 0.3);
         }
 
-        /* HERO SECTION CON EL IMPACTANTE RADIAL-GRADIENT ORIGINAL */
+        @media(max-width: 768px) {
+            nav { display: none; } /* Navegación simplificada e inteligente en móviles */
+        }
+
+        /* HERO SECTION CON MISMO RESPLANDOR NEÓN QUE EL ADMIN */
         .hero {
-            min-height: 90vh;
+            min-height: 85vh;
             display: flex;
             align-items: center;
             padding-top: 100px;
@@ -119,19 +134,20 @@
         }
 
         .hero-content {
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
         }
 
         .hero-content h1 {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             line-height: 1.15;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            color: #ffffff;
         }
 
         @media(min-width: 992px) {
-            .hero-content h1 { font-size: 56px; }
+            .hero-content h1 { font-size: 54px; }
         }
 
         .hero-content h1 span {
@@ -142,9 +158,9 @@
         }
 
         .hero-content p {
-            font-size: 16px;
+            font-size: 15.5px;
             line-height: 1.6;
-            color: #8a99ad;
+            color: var(--text-secondary);
             margin-bottom: 35px;
         }
 
@@ -152,32 +168,34 @@
             .hero-content p { font-size: 18px; }
         }
 
+        /* BOTONES MAESTROS TURQUESAS */
         .btn-premium {
             display: inline-flex;
             align-items: center;
             gap: 10px;
             background: var(--turquoise-main);
             color: #000000;
-            padding: 15px 35px;
-            border-radius: 30px;
+            padding: 14px 32px;
+            border-radius: 25px;
             font-weight: 700;
+            font-size: 15px;
             text-decoration: none;
             transition: var(--transition-smooth);
-            box-shadow: 0 10px 30px rgba(0, 180, 216, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 180, 216, 0.2);
         }
 
         .btn-premium:hover {
             background: var(--turquoise-light);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 180, 216, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 180, 216, 0.4);
         }
 
-        /* CONTENEDORES DE SECCIÓN */
+        /* COMPONENTES ADAPTABLES DE SECCIÓN */
         .section-padding {
             padding: 60px 0;
         }
         @media(min-width: 992px) {
-            .section-padding { padding: 100px 0; }
+            .section-padding { padding: 90px 0; }
         }
 
         .section-title {
@@ -186,21 +204,22 @@
         }
 
         .section-title h2 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            color: #ffffff;
         }
 
         @media(min-width: 992px) {
-            .section-title h2 { font-size: 36px; }
+            .section-title h2 { font-size: 34px; }
         }
 
         .section-title p {
-            color: #8a99ad;
-            font-size: 15px;
+            color: var(--text-secondary);
+            font-size: 14.5px;
         }
 
-        /* REJILLA DE SERVICIOS - ADAPTACIÓN MÓVIL Y ESCRITORIO */
+        /* REJILLAS CYBERPUNK CARDS (SERVICIOS) */
         .services-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -216,36 +235,38 @@
         .service-card {
             background: var(--card-bg);
             border-radius: var(--radius-premium);
-            padding: 40px 30px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 35px 30px;
+            border: 1px solid var(--border-smooth);
             transition: var(--transition-smooth);
+            box-shadow: var(--shadow-premium);
         }
 
         .service-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(0, 180, 216, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(-6px);
+            border-color: rgba(0, 180, 216, 0.25);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
 
         .service-icon {
-            font-size: 32px;
+            font-size: 30px;
             color: var(--turquoise-main);
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .service-card h3 {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 700;
             margin-bottom: 12px;
+            color: #ffffff;
         }
 
         .service-card p {
-            color: #8a99ad;
-            font-size: 14.5px;
-            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.55;
         }
 
-        /* CARRUSEL DE PRODUCTOS DESLIZABLE ORIGINAL */
+        /* CAROUSEL HORIZONTAL DE HARDWARE CRÍTICO */
         .products-container {
             display: flex;
             gap: 25px;
@@ -262,34 +283,37 @@
             background: var(--card-bg);
             border-radius: var(--radius-premium);
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-smooth);
             transition: var(--transition-smooth);
+            box-shadow: var(--shadow-premium);
         }
 
         .product-img {
             width: 100%;
-            height: 210px;
+            height: 200px;
             object-fit: cover;
-            background: #111;
+            background: #11141a;
+            border-bottom: 1px solid var(--border-smooth);
         }
 
         .product-info {
-            padding: 24px;
+            padding: 22px;
         }
 
         .product-info h3 {
-            font-size: 17px;
+            font-size: 16.5px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            color: #ffffff;
         }
 
         .product-price {
             color: var(--turquoise-main);
-            font-size: 19px;
+            font-size: 18.5px;
             font-weight: 800;
         }
 
-        /* REJILLA DE RESEÑAS ADAPTABLE */
+        /* REJILLA DE RESEÑAS CORPORATIVAS */
         .reviews-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -304,17 +328,18 @@
 
         .review-card {
             background: var(--card-bg);
-            padding: 35px;
+            padding: 30px;
             border-radius: var(--radius-premium);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-smooth);
+            box-shadow: var(--shadow-premium);
         }
 
         .review-text {
-            font-size: 14.5px;
+            font-size: 14px;
             line-height: 1.6;
             color: #cfd8dc;
             font-style: italic;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .review-author {
@@ -324,34 +349,36 @@
         }
 
         .author-img {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
+            border: 1px solid var(--border-smooth);
         }
 
         .author-info h4 {
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 700;
+            color: #ffffff;
         }
 
         .author-info p {
-            font-size: 12.5px;
-            color: #8a99ad;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        /* LOGOS DE FABRICANTES */
+        /* FABRICANTES / SPONSORS */
         .partners-logo-wrap {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 50px;
             flex-wrap: wrap;
-            opacity: 0.6;
+            opacity: 0.5;
         }
 
         .partner-img {
-            height: 40px;
+            height: 38px;
             filter: grayscale(1) brightness(2);
             object-fit: contain;
             transition: var(--transition-smooth);
@@ -362,10 +389,10 @@
             filter: none;
         }
 
-        /* FOOTER / CONTACTO EN BLOQUES INTEGRADOS */
+        /* FOOTER UNIFICADO CON LOS COMPONENTES DE FORMULARIO DEL ADMIN */
         footer {
             background: #060709;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid var(--border-smooth);
             padding: 60px 0 30px 0;
         }
 
@@ -376,15 +403,15 @@
             margin-bottom: 40px;
         }
         @media(min-width: 992px) {
-            .footer-grid { grid-template-columns: 1fr 1fr; gap: 60px; }
-            footer { padding: 90px 0 30px 0; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 70px; }
+            footer { padding: 80px 0 30px 0; }
         }
 
         .contact-form input, .contact-form textarea {
             width: 100%;
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            background: var(--dark-bg);
+            border: 1px solid transparent;
+            padding: 14px;
             border-radius: 10px;
             color: white;
             margin-bottom: 14px;
@@ -400,10 +427,10 @@
 
         .contact-form button {
             background: var(--turquoise-main);
-            color: #000;
+            color: #000000;
             border: none;
-            padding: 14px 32px;
-            border-radius: 25px;
+            padding: 12px 30px;
+            border-radius: 22px;
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition-smooth);
@@ -411,7 +438,7 @@
 
         .contact-form button:hover {
             background: var(--turquoise-light);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -420,14 +447,14 @@
     <header>
         <div class="header-container">
             <a href="#" class="logo">
-                <i class="fas fa-laptop-medical"></i> iCare Tech<span>CR</span>
+                <i class="fas fa-shield-halved" style="color: var(--turquoise-main);"></i> iCare Tech<span>CR</span>
             </a>
             <nav>
                 <ul>
                     <li><a href="#servicios">Servicios</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
                     <li><a href="#testimonios">Reseñas</a></li>
-                    <li><a href="/service" style="color:var(--turquoise-main);"><i class="fas fa-headset"></i> Portal Soporte</a></li>
+                    <li><a href="/service" class="btn-portal-link"><i class="fas fa-headset"></i> Portal Soporte</a></li>
                 </ul>
             </nav>
         </div>
@@ -439,7 +466,7 @@
             <div class="hero-content">
                 <h1 id="hero-title">Soluciones Tecnológicas <span>Especializadas</span></h1>
                 <p id="hero-subtitle">Alta disponibilidad y soporte de TI premium para infraestructuras corporativas y usuarios exigentes en Costa Rica.</p>
-                <a href="#contacto" class="btn-premium">Solicitar Diagnóstico <i class="fas fa-arrow-right"></i></a>
+                <a href="#contacto" class="btn-premium">Solicitar Diagnóstico Técnico <i class="fas fa-arrow-right"></i></a>
             </div>
         </section>
 
@@ -461,7 +488,7 @@
                 </div>
         </section>
 
-        <section class="section-padding">
+        <section class="section-padding" style="border-top: 1px solid var(--border-smooth); border-bottom: 1px solid var(--border-smooth); margin-bottom: 20px;">
             <div class="partners-logo-wrap" id="render-socios">
                 </div>
         </section>
@@ -479,11 +506,11 @@
         <footer>
             <div class="footer-grid">
                 <div>
-                    <h3 style="font-size:24px; margin-bottom:20px;">Hablemos de tu <span style="color:var(--turquoise-main);">Proyecto</span></h3>
-                    <p style="color:#8a99ad; line-height:1.6; margin-bottom:30px;">Envíanos tus requerimientos de red o fallas de sistema. Un ingeniero especialista se pondrá en contacto para coordinar soporte inmediato.</p>
-                    <div style="display:flex; flex-direction:column; gap:15px; color:#cfd8dc;">
-                        <div><i class="fas fa-envelope" style="color:var(--turquoise-main); margin-right:10px;"></i> soporte@icaretechcr.com</div>
-                        <div><i class="fas fa-phone-alt" style="color:var(--turquoise-main); margin-right:10px;"></i> +506 4000-0000</div>
+                    <h3 style="font-size:24px; font-weight:800; margin-bottom:15px; letter-spacing:-0.5px;">Hablemos de tu <span style="color:var(--turquoise-main);">Proyecto</span></h3>
+                    <p style="color:var(--text-secondary); line-height:1.5; margin-bottom:25px; font-size:15px;">Envíanos tus requerimientos de red o fallas de sistema. Un ingeniero especialista se pondrá en contacto para coordinar soporte inmediato.</p>
+                    <div style="display:flex; flex-direction:column; gap:12px; font-size:14px; color:#ffffff; font-weight:600;">
+                        <div><i class="fas fa-envelope" style="color:var(--turquoise-main); margin-right:8px;"></i> soporte@icaretechcr.com</div>
+                        <div><i class="fas fa-phone-alt" style="color:var(--turquoise-main); margin-right:8px;"></i> +506 4000-0000</div>
                     </div>
                 </div>
                 <div>
@@ -495,7 +522,7 @@
                     </form>
                 </div>
             </div>
-            <div style="text-align:center; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05); color:#546e7a; font-size:13px;">
+            <div style="text-align:center; padding-top:20px; border-top:1px solid var(--border-smooth); color:var(--text-secondary); font-size:12px; font-weight:500;">
                 &copy; 2026 iCare Tech CR. Todos los derechos reservados. Control de Alta Disponibilidad Premium.
             </div>
         </footer>
@@ -521,7 +548,7 @@
                     const serviciosWrap = document.getElementById('render-servicios');
                     if (serviciosWrap && data.servicios && Array.isArray(data.servicios)) {
                         if (data.servicios.length === 0) {
-                            serviciosWrap.innerHTML = `<p style="color:#8a99ad; text-align:center; grid-column:1/-1;">Próximamente módulos de servicio.</p>`;
+                            serviciosWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1;">Próximamente módulos de servicio.</p>`;
                         } else {
                             serviciosWrap.innerHTML = data.servicios.map(s => `
                                 <div class="service-card">
@@ -537,21 +564,20 @@
                     const productosWrap = document.getElementById('render-productos');
                     if (productosWrap && data.productos && Array.isArray(data.productos)) {
                         if (data.productos.length === 0) {
-                            productosWrap.innerHTML = `<p style="color:#8a99ad; padding:20px;">Próximamente componentes en catálogo.</p>`;
+                            productosWrap.innerHTML = `<p style="color:var(--text-secondary); padding:20px;">Próximamente componentes en catálogo.</p>`;
                         } else {
                             productosWrap.innerHTML = data.productos.map(p => `
                                 <div class="product-card">
                                     <img class="product-img" src="${p.imagen || 'placeholder.png'}" alt="${p.nombre}">
                                     <div class="product-info">
-                                        <span style="font-size:12px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
-                                        <h3 style="margin-top:5px;">${p.nombre}</h3>
+                                        <span style="font-size:11px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
+                                        <h3>${p.nombre}</h3>
                                         <div class="product-price">₡${Number(p.precio).toLocaleString('es-CR')}</div>
                                     </div>
                                 </div>
                             `).join('');
                         }
                     }
-                    
 
                     // 4. Logos de Socios Fabricantes
                     const sociosWrap = document.getElementById('render-socios');
@@ -565,7 +591,7 @@
                     const resenasWrap = document.getElementById('render-reseñas');
                     if (resenasWrap && data.resenas && Array.isArray(data.resenas)) {
                         if (data.resenas.length === 0) {
-                            resenasWrap.innerHTML = `<p style="color:#8a99ad; text-align:center; grid-column:1/-1;">Respaldados por altos estándares de SLA.</p>`;
+                            resenasWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1;">Respaldados por altos estándares de SLA.</p>`;
                         } else {
                             resenasWrap.innerHTML = data.resenas.map(r => `
                                 <div class="review-card">
@@ -583,7 +609,7 @@
                     }
                 })
                 .catch(err => {
-                    console.error("Error cargando flujos serverless:", err);
+                    console.error("Error cargando los flujos consolidados:", err);
                 });
         });
     </script>

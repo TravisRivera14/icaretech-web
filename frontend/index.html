@@ -1414,7 +1414,6 @@
 </head>
 <body>
 
-    <!-- Reemplaza tu <header> actual con esto -->
     <header>
         <div class="nav-bar">
             <a href="#" class="logo-area"><img src="Logo.png" class="logo-img"></a>
@@ -1629,8 +1628,8 @@
 
     <a href="#" class="wa-float" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp"></i></a>
 
-    <script>
-   const API = '/api';
+<script>
+    const API = '/api';
     let allProducts = [];
     let cacheServicios = []; 
     let currentCat = 'Todos';
@@ -1721,7 +1720,9 @@
                         </a>`).join('');
                 }
 
-                applyAnimations();
+                if (typeof applyAnimations === "function") {
+                    applyAnimations();
+                }
             })
             .catch(err => console.error("Error al cargar:", err));
     })

@@ -42,7 +42,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ENVOLTORIO GLOBAL DE RESPONSIVIDAD SÉRICA */
         .container-wrapper {
             max-width: var(--max-width-desktop);
             margin: 0 auto;
@@ -50,7 +49,7 @@
             padding: 0 24px;
         }
 
-        /* HEADER / NAVBAR DE ALTA INGENIERÍA OSCURA */
+        /* HEADER / NAVBAR */
         header {
             position: fixed;
             top: 0; left: 0;
@@ -121,10 +120,10 @@
         }
 
         @media(max-width: 768px) {
-            nav { display: none; } /* Navegación simplificada e inteligente en móviles */
+            nav { display: none; }
         }
 
-        /* HERO SECTION CON MISMO RESPLANDOR NEÓN QUE EL ADMIN */
+        /* HERO SECTION */
         .hero {
             min-height: 85vh;
             display: flex;
@@ -168,7 +167,6 @@
             .hero-content p { font-size: 18px; }
         }
 
-        /* BOTONES MAESTROS TURQUESAS */
         .btn-premium {
             display: inline-flex;
             align-items: center;
@@ -190,7 +188,7 @@
             box-shadow: 0 6px 25px rgba(0, 180, 216, 0.4);
         }
 
-        /* COMPONENTES ADAPTABLES DE SECCIÓN */
+        /* SECCIONES */
         .section-padding {
             padding: 60px 0;
         }
@@ -219,7 +217,7 @@
             font-size: 14.5px;
         }
 
-        /* REJILLAS CYBERPUNK CARDS (SERVICIOS) */
+        /* GRID DE SERVICIOS */
         .services-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -266,7 +264,7 @@
             line-height: 1.55;
         }
 
-        /* CAROUSEL HORIZONTAL DE HARDWARE CRÍTICO */
+        /* CARRUSEL DE PRODUCTOS */
         .products-container {
             display: flex;
             gap: 25px;
@@ -313,7 +311,7 @@
             font-weight: 800;
         }
 
-        /* REJILLA DE RESEÑAS CORPORATIVAS */
+        /* RESEÑAS */
         .reviews-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -367,7 +365,7 @@
             color: var(--text-secondary);
         }
 
-        /* FABRICANTES / SPONSORS */
+        /* SPONSORS */
         .partners-logo-wrap {
             display: flex;
             justify-content: center;
@@ -389,7 +387,7 @@
             filter: none;
         }
 
-        /* FOOTER UNIFICADO CON LOS COMPONENTES DE FORMULARIO DEL ADMIN */
+        /* FOOTER */
         footer {
             background: #060709;
             border-top: 1px solid var(--border-smooth);
@@ -530,86 +528,138 @@
     </div>
 
     <script>
+        // Tus líneas de información originales listas para mostrarse de inmediato
+        const fallbackData = {
+            servicios: [
+                {
+                    titulo: "Soporte Técnico y Hardware",
+                    descripcion: "Diagnóstico avanzado y reparación a nivel de componentes para smartphones premium, laptops corporativas y sistemas táctiles.",
+                    icono: "fas fa-laptop-medical"
+                },
+                {
+                    titulo: "Infraestructura de Redes & WiFi Mesh",
+                    descripcion: "Diseño, despliegue e ingeniería de conectividad inteligente para optimizar la cobertura y ciberseguridad en áreas de alta concurrencia.",
+                    icono: "fas fa-network-wired"
+                },
+                {
+                    titulo: "Alta Disponibilidad TI Corporativa",
+                    descripcion: "Planes administrados de soporte técnico continuo y retención mensual estructurada para mantener sistemas críticos operando con cero caídas.",
+                    icono: "fas fa-server"
+                }
+            ],
+            productos: [
+                {
+                    nombre: "Módulo Router WiFi Mesh Corporativo",
+                    precio: 85000,
+                    categoria: "Conectividad",
+                    imagen: "https://images.unsplash.com/photo-1601524909162-be87252be698?w=400"
+                },
+                {
+                    nombre: "Componentes Certificados Premium (Laptops/iPhones)",
+                    precio: 45000,
+                    categoria: "Hardware",
+                    imagen: "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=400"
+                },
+                {
+                    nombre: "Kit de Pantalla y Repuestos Avanzados Tab P11",
+                    precio: 65000,
+                    categoria: "Repuestos",
+                    imagen: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400"
+                }
+            ],
+            socios: [
+                { imagen: "https://upload.wikimedia.org/wikipedia/commons/2/fa/Apple_logo_black.svg" },
+                { imagen: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Lenovo_logo_2015.svg" },
+                { imagen: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Intel_logo_%282020%29.svg" }
+            ],
+            resenas: [
+                {
+                    comentario: "Excelente ejecución técnica en la modernización de nuestros sistemas inalámbricos y seguridad perimetral de red.",
+                    cliente: "Taller Pedagógico Montebello",
+                    puesto: "Socio Corporativo",
+                    imagen_cliente: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100"
+                },
+                {
+                    comentario: "La implementación del plan de retención mensual con ingenieros especializados solucionó por completo nuestras fallas de hardware.",
+                    cliente: "Ing. Distribuciones Locales",
+                    puesto: "Director de TI",
+                    imagen_cliente: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100"
+                }
+            ]
+        };
+
+        function aplicarRender(data) {
+            // 1. Textos del Hero
+            if (data.config && data.config.hero_titulo) {
+                document.getElementById('hero-title').innerHTML = data.config.hero_titulo;
+            }
+            if (data.config && data.config.hero_sub) {
+                document.getElementById('hero-subtitle').innerText = data.config.hero_sub;
+            }
+
+            // 2. Renderizado de Servicios
+            const serviciosWrap = document.getElementById('render-servicios');
+            const listaServicios = (data.servicios && data.servicios.length > 0) ? data.servicios : fallbackData.servicios;
+            serviciosWrap.innerHTML = listaServicios.map(s => `
+                <div class="service-card">
+                    <div class="service-icon"><i class="${s.icono || 'fas fa-laptop-code'}"></i></div>
+                    <h3>${s.titulo}</h3>
+                    <p>${s.descripcion}</p>
+                </div>
+            `).join('');
+
+            // 3. Renderizado de Catálogo de Productos
+            const productosWrap = document.getElementById('render-productos');
+            const listaProductos = (data.productos && data.productos.length > 0) ? data.productos : fallbackData.productos;
+            productosWrap.innerHTML = listaProductos.map(p => `
+                <div class="product-card">
+                    <img class="product-img" src="${p.imagen || 'placeholder.png'}" alt="${p.nombre}">
+                    <div class="product-info">
+                        <span style="font-size:11px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
+                        <h3>${p.nombre}</h3>
+                        <div class="product-price">₡${Number(p.precio).toLocaleString('es-CR')}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // 4. Renderizado de Logos / Socios
+            const sociosWrap = document.getElementById('render-socios');
+            const listaSocios = (data.socios && data.socios.length > 0) ? data.socios : fallbackData.socios;
+            sociosWrap.innerHTML = listaSocios.map(partner => `
+                <img class="partner-img" src="${partner.imagen}" alt="Socio">
+            `).join('');
+
+            // 5. Renderizado de Reseñas
+            const resenasWrap = document.getElementById('render-reseñas');
+            const listaResenas = (data.resenas && data.resenas.length > 0) ? data.resenas : fallbackData.resenas;
+            resenasWrap.innerHTML = listaResenas.map(r => `
+                <div class="review-card">
+                    <p class="review-text">"${r.comentario}"</p>
+                    <div class="review-author">
+                        <img class="author-img" src="${r.imagen_cliente || 'user-placeholder.png'}" alt="${r.cliente}">
+                        <div class="author-info">
+                            <h4>${r.cliente}</h4>
+                            <p>${r.puesto || 'Socio Corporativo'}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            // Se cargan primero tus líneas de información de respaldo de inmediato
+            aplicarRender(fallbackData);
+
+            // Se intenta sincronizar de fondo con tu servidor Neon SQL
             fetch('/api/todo')
                 .then(res => res.json())
                 .then(data => {
-                    // 1. Textos del Servidor (Hero)
-                    if (data && data.config) {
-                        if (data.config.hero_titulo) {
-                            document.getElementById('hero-title').innerHTML = data.config.hero_titulo;
-                        }
-                        if (data.config.hero_sub) {
-                            document.getElementById('hero-subtitle').innerText = data.config.hero_sub;
-                        }
-                    }
-
-                    // 2. Módulos de Servicios
-                    const serviciosWrap = document.getElementById('render-servicios');
-                    if (serviciosWrap && data.servicios && Array.isArray(data.servicios)) {
-                        if (data.servicios.length === 0) {
-                            serviciosWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1;">Próximamente módulos de servicio.</p>`;
-                        } else {
-                            serviciosWrap.innerHTML = data.servicios.map(s => `
-                                <div class="service-card">
-                                    <div class="service-icon"><i class="${s.icono || 'fas fa-laptop-code'}"></i></div>
-                                    <h3>${s.titulo}</h3>
-                                    <p>${s.descripcion}</p>
-                                </div>
-                            `).join('');
-                        }
-                    }
-
-                    // 3. Catálogo de Productos
-                    const productosWrap = document.getElementById('render-productos');
-                    if (productosWrap && data.productos && Array.isArray(data.productos)) {
-                        if (data.productos.length === 0) {
-                            productosWrap.innerHTML = `<p style="color:var(--text-secondary); padding:20px;">Próximamente componentes en catálogo.</p>`;
-                        } else {
-                            productosWrap.innerHTML = data.productos.map(p => `
-                                <div class="product-card">
-                                    <img class="product-img" src="${p.imagen || 'placeholder.png'}" alt="${p.nombre}">
-                                    <div class="product-info">
-                                        <span style="font-size:11px; text-transform:uppercase; color:var(--turquoise-main); font-weight:700;">${p.categoria || 'Hardware'}</span>
-                                        <h3>${p.nombre}</h3>
-                                        <div class="product-price">₡${Number(p.precio).toLocaleString('es-CR')}</div>
-                                    </div>
-                                </div>
-                            `).join('');
-                        }
-                    }
-
-                    // 4. Logos de Socios Fabricantes
-                    const sociosWrap = document.getElementById('render-socios');
-                    if (sociosWrap && data.socios && Array.isArray(data.socios)) {
-                        sociosWrap.innerHTML = data.socios.map(partner => `
-                            <img class="partner-img" src="${partner.imagen}" alt="${partner.nombre || 'Socio'}">
-                        `).join('');
-                    }
-
-                    // 5. Reseñas Corporativas
-                    const resenasWrap = document.getElementById('render-reseñas');
-                    if (resenasWrap && data.resenas && Array.isArray(data.resenas)) {
-                        if (data.resenas.length === 0) {
-                            resenasWrap.innerHTML = `<p style="color:var(--text-secondary); text-align:center; grid-column:1/-1;">Respaldados por altos estándares de SLA.</p>`;
-                        } else {
-                            resenasWrap.innerHTML = data.resenas.map(r => `
-                                <div class="review-card">
-                                    <p class="review-text">"${r.comentario}"</p>
-                                    <div class="review-author">
-                                        <img class="author-img" src="${r.imagen_cliente || 'user-placeholder.png'}" alt="${r.cliente}">
-                                        <div class="author-info">
-                                            <h4>${r.cliente}</h4>
-                                            <p>${r.puesto || 'Socio Corporativo'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('');
-                        }
+                    if (data && (data.servicios || data.productos || data.resenas)) {
+                        aplicarRender(data); // Si la base de datos ya tiene información real, actualiza la vista
                     }
                 })
                 .catch(err => {
-                    console.error("Error cargando los flujos consolidados:", err);
+                    console.log("Servidor operando de modo local con líneas de información fijas.");
                 });
         });
     </script>

@@ -1639,27 +1639,29 @@
     // Función global para WhatsApp
     function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
+    // 1. Envuelve todo dentro del evento 'DOMContentLoaded'
     document.addEventListener("DOMContentLoaded", () => {
+        
         // A. ESCUDO DE SEGURIDAD PARA EL MENÚ
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
+        
+        // Verifica que existan antes de añadir el listener para evitar el error 'null'
         if (menuToggle && mobileMenu) {
             menuToggle.addEventListener('click', () => {
                 mobileMenu.classList.toggle('active');
             });
         }
 
-        // B. CARGA DE DATOS CENTRALIZADA
+        // B. CARGA DE DATOS DESPUÉS DE ASEGURAR QUE EL HTML ESTÁ LISTO
+        const API = '/api';
         fetch(`${API}/todo`)
             .then(r => r.json())
             .then(data => {
-                // 1. Configuración Hero
-                if (data.config) {
-                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Bienvenidos";
-                    document.getElementById('m-t').innerText = data.config.mision || "";
-                    document.getElementById('v-t').innerText = data.config.vision || "";
-                    document.getElementById('c-t').innerText = data.config.compromiso || "";
-                }
+                // Aquí va toda tu lógica de renderizado:
+                // document.getElementById('hero-title').innerText = ...
+                // console.log("Datos recibidos:", data);
+            })
 
                 // 2. Beneficios
                 const choGrid = document.getElementById('cho-grid');
@@ -1738,8 +1740,7 @@
 
                 applyAnimations();
             })
-            .catch(err => console.error("Error al cargar datos:", err));
-    });
+            .catch(err => console.error("Error al conectar:", err));
 
     // FUNCIONES GLOBALES
     function applyAnimations() { 

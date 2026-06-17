@@ -13,19 +13,18 @@
 
     <style>
         :root { 
-            --brand-dark: #111111;
-            --brand-green: #1b4332;
-            --neon-green: #7cf5a6; 
-            --edit: #0071e3; 
+            --dark-bg: #0b0c10;
+            --card-bg: #1f2833;
+            --turquoise-main: #00b4d8;
+            --turquoise-dark: #0077b6;
+            --turquoise-light: #90e0ef;
             --del: #ff3b30; 
-            --apple-bg: #f5f5f7; 
-            --apple-card: #ffffff;
-            --text-main: #1d1d1f;
-            --text-secondary: #86868b;
-            --border-smooth: rgba(0, 0, 0, 0.08);
+            --text-light: #f5f5f7;
+            --text-secondary: #8a99ad;
+            --border-smooth: rgba(255, 255, 255, 0.05);
             --radius-premium: 16px;
             --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            --shadow-premium: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         
         * { 
@@ -37,19 +36,19 @@
         }
         
         body { 
-            background: var(--apple-bg); 
-            color: var(--text-main); 
+            background: var(--dark-bg); 
+            color: var(--text-light); 
             -webkit-font-smoothing: antialiased; 
             display: flex;
             min-height: 100vh;
         }
 
-        /* OVERLAY DE LOGIN ESTILO APPLE GLASS */
+        /* OVERLAY DE LOGIN ESTILO GLASS NEÓN OSCURO */
         #login-overlay {
             position: fixed; 
             top: 0; left: 0; 
             width: 100%; height: 100%; 
-            background: rgba(245, 245, 247, 0.85); 
+            background: rgba(11, 12, 16, 0.9); 
             z-index: 99999; 
             display: flex; 
             align-items: center; 
@@ -59,20 +58,20 @@
         }
         
         .login-card {
-            background: var(--apple-card); 
+            background: var(--card-bg); 
             padding: 45px 35px; 
             border-radius: 24px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
+            box-shadow: var(--shadow-premium); 
             width: 100%; 
             max-width: 400px; 
             text-align: center;
             border: 1px solid var(--border-smooth);
         }
 
-        /* COMPONENTE INTERACTIVO SIDEBAR */
+        /* COMPONENTE INTERACTIVO SIDEBAR OSCURO */
         .sidebar {
             width: 280px;
-            background: #ffffff;
+            background: #11141a;
             border-right: 1px solid var(--border-smooth);
             padding: 30px 20px;
             display: flex;
@@ -86,7 +85,7 @@
         .sidebar-brand {
             font-size: 18px;
             font-weight: 800;
-            color: var(--brand-dark);
+            color: #ffffff;
             margin-bottom: 35px;
             padding-left: 10px;
             display: flex;
@@ -95,7 +94,7 @@
         }
 
         .sidebar-brand span {
-            color: var(--edit);
+            color: var(--turquoise-main);
         }
 
         .sidebar-menu {
@@ -119,12 +118,12 @@
         }
 
         .sidebar-item:hover, .sidebar-item.active {
-            background: var(--apple-bg);
-            color: var(--text-main);
+            background: var(--card-bg);
+            color: #ffffff;
         }
         
         .sidebar-item.active i {
-            color: var(--edit);
+            color: var(--turquoise-main);
         }
 
         /* CONTENEDOR PRINCIPAL DE CONTENIDO */
@@ -142,7 +141,7 @@
         .header-area h1 {
             font-size: 28px;
             font-weight: 800;
-            color: var(--text-main);
+            color: #ffffff;
             letter-spacing: -0.8px;
         }
 
@@ -155,7 +154,7 @@
         /* SECCIONES DINÁMICAS (TAB CONTENT) */
         .tab-section {
             display: none;
-            animation: appleFadeIn 0.5s ease forwards;
+            animation: techFadeIn 0.5s ease forwards;
         }
 
         .tab-section.active {
@@ -164,20 +163,23 @@
             gap: 25px;
         }
 
-        @keyframes appleFadeIn {
+        @keyframes techFadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .grid-two-columns {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 25px;
         }
+        @media (min-width: 901px) {
+            .grid-two-columns { grid-template-columns: 1fr 1fr; }
+        }
 
-        /* TARJETAS ESTILO APPLE */
+        /* TARJETAS ESTILO CYBERPUNK CARD */
         .card { 
-            background: var(--apple-card); 
+            background: var(--card-bg); 
             padding: 30px; 
             border-radius: var(--radius-premium); 
             box-shadow: var(--shadow-premium); 
@@ -189,21 +191,21 @@
             font-size: 16px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: var(--text-main);
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* COMPONENTES DE FORMULARIO LIMPIOS */
+        /* COMPONENTES DE FORMULARIO LIMPIOS Y OSCUROS */
         input, textarea, button, select { 
             width: 100%; 
             padding: 14px; 
             margin: 6px 0 16px 0; 
             border-radius: 10px; 
             border: 1px solid transparent; 
-            background: var(--apple-bg);
-            color: var(--text-main);
+            background: var(--dark-bg);
+            color: var(--text-light);
             box-sizing: border-box; 
             font-size: 14.5px;
             outline: none;
@@ -211,9 +213,9 @@
         }
         
         input:focus, textarea:focus, select:focus {
-            background: #ffffff;
-            border-color: var(--edit);
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+            background: #11141a;
+            border-color: var(--turquoise-main);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
         }
         
         label {
@@ -224,35 +226,39 @@
             margin-top: 4px;
         }
         
-        /* BOTONES INTERACTIVOS */
+        /* BOTONES INTERACTIVOS TURQUESAS */
         button { 
-            background: var(--text-main); 
-            color: white; 
+            background: var(--turquoise-main); 
+            color: #000000; 
             border: none; 
             cursor: pointer; 
-            font-weight: 600; 
+            font-weight: 700; 
             margin-bottom: 0;
             border-radius: 22px;
             padding: 12px 24px;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15);
         }
         
         button:hover { 
-            background: #000000;
+            background: var(--turquoise-light);
             transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
         }
 
         .btn-brand-accent {
-            background: var(--brand-green);
+            background: var(--turquoise-dark);
+            color: white;
         }
         .btn-brand-accent:hover {
-            background: #122d22;
+            background: var(--turquoise-main);
+            color: black;
         }
 
-        /* TABLAS Y LISTADOS MINIMALISTAS */
+        /* TABLAS Y LISTADOS MINIMALISTAS OSCUROS */
         .list-container {
             max-height: 400px; 
             overflow-y: auto; 
-            background: #ffffff; 
+            background: #11141a; 
             border: 1px solid var(--border-smooth); 
             border-radius: 12px; 
             padding: 8px;
@@ -263,7 +269,7 @@
             justify-content: space-between; 
             align-items: center; 
             padding: 14px 16px; 
-            border-bottom: 1px solid #f5f5f7; 
+            border-bottom: 1px solid var(--border-smooth); 
             font-size: 13.5px; 
         }
         
@@ -273,20 +279,22 @@
         
         .list-item span {
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-light);
         }
         
         .btn-edit { 
-            background: rgba(0, 113, 227, 0.1); 
-            color: var(--edit);
+            background: rgba(0, 180, 216, 0.15); 
+            color: var(--turquoise-main);
             width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
+            box-shadow: none;
         }
-        .btn-edit:hover { background: var(--edit); color: #fff; }
+        .btn-edit:hover { background: var(--turquoise-main); color: #000; }
 
         .btn-del { 
-            background: rgba(255, 59, 48, 0.1); 
+            background: rgba(255, 59, 48, 0.15); 
             color: var(--del);
             width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
+            box-shadow: none;
         }
         .btn-del:hover { background: var(--del); color: #fff; }
         
@@ -295,7 +303,7 @@
             overflow-x: auto;
             border: 1px solid var(--border-smooth);
             border-radius: 12px;
-            background: #ffffff;
+            background: #11141a;
         }
 
         .ticket-table {
@@ -307,13 +315,17 @@
         .ticket-table th, .ticket-table td {
             text-align: left;
             padding: 14px 16px;
-            border-bottom: 1px solid #f5f5f7;
+            border-bottom: 1px solid var(--border-smooth);
         }
         
         .ticket-table th {
-            background: #fafafa;
+            background: #161a22;
             font-weight: 700;
-            color: var(--text-main);
+            color: #ffffff;
+        }
+
+        .ticket-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
         }
         
         .badge {
@@ -323,16 +335,16 @@
             font-size: 11px;
             display: inline-block;
         }
-        .badge-alta { background: #fee2e2; color: #dc3545; }
-        .badge-media { background: #fef3c7; color: #b45309; }
-        .badge-baja { background: #dcfce7; color: #15803d; }
+        .badge-alta { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
+        .badge-media { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 
-        /* 🤖 MODAL DE DETALLE GRANDE CON INTELIGENCIA ARTIFICIAL */
+        /* 🤖 MODAL DE DETALLE MAESTRO INTELIGENTE */
         .apple-modal {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             z-index: 50000;
@@ -343,12 +355,12 @@
         }
 
         .apple-modal-content {
-            background: #ffffff;
+            background: var(--card-bg);
             width: 100%;
             max-width: 680px;
             border-radius: 20px;
             padding: 35px;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.15);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.5);
             border: 1px solid var(--border-smooth);
             animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             max-height: 90vh;
@@ -364,14 +376,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #f5f5f7;
+            border-bottom: 1px solid var(--border-smooth);
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
         .modal-close-btn {
-            background: #f5f5f7;
-            color: var(--text-main);
+            background: var(--dark-bg);
+            color: var(--text-light);
             width: 32px; height: 32px;
             border-radius: 50%;
             display: grid;
@@ -380,11 +392,11 @@
             font-size: 14px;
             transition: var(--transition-smooth);
         }
-        .modal-close-btn:hover { background: #e8e8ed; }
+        .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
 
         .ai-bulletin-box {
-            background: linear-gradient(135deg, rgba(78, 165, 206, 0.06), rgba(124, 245, 166, 0.06));
-            border: 1px dashed #4ea5ce;
+            background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02));
+            border: 1px dashed var(--turquoise-main);
             border-radius: 12px;
             padding: 20px;
             margin-top: 25px;
@@ -395,7 +407,6 @@
             body { flex-direction: column; }
             .sidebar { width: 100%; height: auto; position: relative; padding: 20px; }
             .main-content { margin-left: 0; padding: 20px; }
-            .grid-two-columns { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -403,12 +414,12 @@
 
 <div id="login-overlay">
     <div class="login-card">
-        <h2 style="margin-bottom:6px; font-weight:800; color:var(--brand-green); font-size: 24px;">Control Maestro</h2>
+        <h2 style="margin-bottom:6px; font-weight:800; color:var(--turquoise-main); font-size: 24px;">Control Maestro</h2>
         <p style="color:var(--text-secondary); font-size:14px; margin-bottom:28px;">iCare Tech CR</p>
         <form id="form-login-master">
             <input type="text" id="login-user" placeholder="Usuario de red" required>
             <input type="password" id="login-pass" placeholder="Contraseña cifrada" required>
-            <button type="submit" style="width:100%; background:var(--brand-green);">Ingresar al Panel</button>
+            <button type="submit" style="width:100%;">Ingresar al Panel</button>
         </form>
         <div id="login-error" style="color:var(--del); margin-top:16px; font-weight:600; display:none; font-size: 13.5px;">⚠️ Credenciales de red incorrectas</div>
     </div>
@@ -416,7 +427,7 @@
 
 <aside class="sidebar">
     <div class="sidebar-brand">
-        <i class="fas fa-shield-halved"></i> iCare Admin <span>•</span>
+        <i class="fas fa-shield-halved" style="color: var(--turquoise-main);"></i> iCare Admin <span>•</span>
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-item active" onclick="switchTab('tab-tickets')"><i class="fas fa-headset"></i> Tickets de Soporte</li>
@@ -436,7 +447,7 @@
 
     <section id="tab-tickets" class="tab-section active">
         <div class="card">
-            <h2><i class="fas fa-filter" style="color: #4ea5ce;"></i> Segmentación de Incidencias</h2>
+            <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
             <label>Filtrar y dividir vista por Empresa:</label>
             <select id="filtroEmpresaTickets" onchange="filtrarTicketsPorEmpresa(this.value)">
                 <option value="Todos">-- Mostrar Todas las Empresas --</option>
@@ -457,7 +468,7 @@
                         </tr>
                     </thead>
                     <tbody id="tabla-tickets-soporte">
-                        <tr><td colspan="8" style="text-align:center; color:#888;">Cargando flujos de datos...</td></tr>
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Cargando flujos de datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -467,12 +478,12 @@
     <section id="tab-empresas" class="tab-section">
         <div class="grid-two-columns">
             <div class="card">
-                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--brand-green);"></i> Dar de Alta Empresa</h2>
+                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa</h2>
                 <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
                 <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Vincular Cliente</button>
             </div>
             <div class="card">
-                <h2><i class="fas fa-list-ol"></i> Empresas Activas en Soporte</h2>
+                <h2><i class="fas fa-list-ol" style="color: var(--turquoise-main);"></i> Empresas Activas en Soporte</h2>
                 <div id="lista-empresas-soporte-bajas" class="list-container">Cargando datos...</div>
             </div>
         </div>
@@ -482,38 +493,38 @@
         <div class="grid-two-columns">
             <div>
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="srv-label"><i class="fas fa-laptop-code"></i> Gestionar Módulos de Servicio</h2>
+                    <h2 id="srv-label"><i class="fas fa-laptop-code" style="color: var(--turquoise-main);"></i> Gestionar Módulos de Servicio</h2>
                     <input type="text" id="sIcon" placeholder="Emoji o Icono descriptivo">
                     <input type="text" id="sTitle" placeholder="Nombre del servicio técnico">
                     <textarea id="sDesc" rows="2" placeholder="Resumen corto de cara al cliente"></textarea>
                     <textarea id="sProcess" rows="3" placeholder="Flujo o proceso de ejecución técnica"></textarea>
                     <textarea id="sBenefits" rows="3" placeholder="Beneficios integrados (Uno por línea)"></textarea>
                     <label>Imagen opcional:</label>
-                    <input type="file" id="sImgFile" accept="image/*">
+                    <input type="file" id="sImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirServicio()">Guardar en Servidor</button>
                 </div>
                 
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="prod-label"><i class="fas fa-box-open"></i> Catálogo e Inyección de Productos</h2>
+                    <h2 id="prod-label"><i class="fas fa-box-open" style="color: var(--turquoise-main);"></i> Catálogo e Inyección de Productos</h2>
                     <input type="text" id="pName" placeholder="Nombre de la pieza o componente">
                     <input type="text" id="pPrice" placeholder="Valor comercial bruto (₡)">
                     <input type="text" id="pCat" placeholder="Categoría para filtros rápidos">
                     <label>Captura o fotografía técnica:</label>
-                    <input type="file" id="pImgFile" accept="image/*">
+                    <input type="file" id="pImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirProducto()">Inyectar al Catálogo</button>
                 </div>
 
                 <div class="card">
-                    <h2 id="partner-label"><i class="fas fa-handshake"></i> Marcas Asociadas (Socios)</h2>
+                    <h2 id="partner-label"><i class="fas fa-handshake" style="color: var(--turquoise-main);"></i> Marcas Asociadas (Socios)</h2>
                     <input type="text" id="partnerName" placeholder="Nombre comercial del fabricante">
-                    <input type="file" id="partnerImgFile" accept="image/*">
+                    <input type="file" id="partnerImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirSocio()">Vincular Fabricante</button>
                 </div>
             </div>
 
             <div>
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2><i class="fas fa-sliders"></i> Textos Maestros de Identidad</h2>
+                    <h2><i class="fas fa-sliders" style="color: var(--turquoise-main);"></i> Textos Maestros de Identidad</h2>
                     <input type="text" id="h_titulo" placeholder="Encabezado Hero Principal">
                     <textarea id="mision" rows="2" placeholder="Nuestra Misión"></textarea>
                     <textarea id="vision" rows="2" placeholder="Nuestra Visión"></textarea>
@@ -522,7 +533,7 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="ben-label"><i class="fas fa-award"></i> Tarjetas de Valor Adicional</h2>
+                    <h2 id="ben-label"><i class="fas fa-award" style="color: var(--turquoise-main);"></i> Tarjetas de Valor Adicional</h2>
                     <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
                     <input type="text" id="bTitle" placeholder="Título de la ventaja">
                     <textarea id="bDesc" rows="2" placeholder="Explicación concisa..."></textarea>
@@ -530,7 +541,7 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="obj-label"><i class="fas fa-crosshairs"></i> Segmentación Clientes Objetivos</h2>
+                    <h2 id="obj-label"><i class="fas fa-crosshairs" style="color: var(--turquoise-main);"></i> Segmentación Clientes Objetivos</h2>
                     <input type="text" id="objIcon" placeholder="Icono FontAwesome">
                     <input type="text" id="objTitle" placeholder="Perfil comercial objetivo">
                     <textarea id="objDesc" rows="2" placeholder="Solución a medida provista..."></textarea>
@@ -538,24 +549,24 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="emp-label"><i class="fas fa-square-poll-horizontal"></i> Marcas que nos Recomiendan</h2>
+                    <h2 id="emp-label"><i class="fas fa-square-poll-horizontal" style="color: var(--turquoise-main);"></i> Marcas que nos Recomiendan</h2>
                     <input type="text" id="empName" placeholder="Nombre de la institución o local">
-                    <input type="file" id="empImgFile" accept="image/*">
+                    <input type="file" id="empImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirEmpresa()">Fijar Insignia Logotipo</button>
                 </div>
 
                 <div class="card">
-                    <h2 id="rev-label"><i class="fas fa-star" style="color: #f59e0b;"></i> Reseñas & Clientes Satisfechos</h2>
+                    <h2 id="rev-label"><i class="fas fa-star" style="color: var(--turquoise-main);"></i> Reseñas & Clientes Satisfechos</h2>
                     <input type="text" id="revClient" placeholder="Nombre completo">
                     <input type="text" id="revPos" placeholder="Compañía o puesto laboral">
                     <textarea id="revText" rows="3" placeholder="Testimonio textual..."></textarea>
-                    <input type="file" id="revImgFile" accept="image/*">
+                    <input type="file" id="revImgFile" accept="image/*" style="padding: 10px;">
                     <button onclick="subirResena()">Publicar Testimonio</button>
                 </div>
             </div>
             
             <div class="card" style="grid-column: 1/-1;">
-                <h2><i class="fas fa-database"></i> Árbol Actual de Contenidos Disponibles</h2>
+                <h2><i class="fas fa-database" style="color: var(--turquoise-main);"></i> Árbol Actual de Contenidos Disponibles</h2>
                 <div id="master-list" class="list-container" style="max-height: 500px;">Conectando a Vercel serverless...</div>
             </div>
         </div>
@@ -564,7 +575,7 @@
     <section id="tab-personal" class="tab-section">
         <div id="seccion-usuarios-admin" class="grid-two-columns">
             <div class="card">
-                <h2><i class="fas fa-user-plus"></i> Registrar Cuenta de Personal</h2>
+                <h2><i class="fas fa-user-plus" style="color: var(--turquoise-main);"></i> Registrar Cuenta de Personal</h2>
                 <form id="form-alta-trabajador">
                     <input type="text" id="new-emp-name" placeholder="Nombre completo del usuario" required>
                     <input type="text" id="new-emp-user" placeholder="Nombre de usuario exclusivo" required>
@@ -578,8 +589,8 @@
                     <button type="submit">Dar de Alta Acceso</button>
                 </form>
 
-                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:var(--apple-bg); border-radius:12px;">
-                    <h3 style="font-size:14px; margin-bottom:12px; color:var(--edit);">✏️ Actualizar Credenciales de Red</h3>
+                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:var(--dark-bg); border-radius:12px; border: 1px solid var(--border-smooth);">
+                    <h3 style="font-size:14px; margin-bottom:12px; color:var(--turquoise-main);">✏️ Actualizar Credenciales de Red</h3>
                     <form id="form-editar-trabajador">
                         <input type="hidden" id="edit-emp-id">
                         <input type="text" id="edit-emp-name" placeholder="Nombre" required>
@@ -592,15 +603,15 @@
                             <option value="cliente">Cliente Empresarial</option>
                         </select>
                         <div style="display:flex; gap:10px; margin-top: 10px;">
-                            <button type="submit" style="background:var(--edit);">Actualizar</button>
-                            <button type="button" onclick="cancelarEdicion()" style="background:#64748b;">Descartar</button>
+                            <button type="submit">Actualizar</button>
+                            <button type="button" onclick="cancelarEdicion()" style="background:#4b5563; color:white;">Descartar</button>
                         </div>
                     </form>
                 </div>
             </div>
             
             <div class="card">
-                <h2><i class="fas fa-users-viewfinder"></i> Cuentas Activas con Privilegios</h2>
+                <h2><i class="fas fa-users-viewfinder" style="color: var(--turquoise-main);"></i> Cuentas Activas con Privilegios</h2>
                 <div id="lista-usuarios-tecnicos" class="list-container" style="max-height: 350px;"></div>
             </div>
         </div>
@@ -608,7 +619,7 @@
 
     <section id="tab-auditoria" class="tab-section">
         <div class="card" id="seccion-logs-admin">
-            <h2><i class="fas fa-history"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
+            <h2><i class="fas fa-history" style="color: var(--turquoise-main);"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
             <div id="lista-logs-auditoria" class="list-container" style="max-height: 550px; font-family: monospace; font-size: 13px; line-height: 1.6;">
                 Sincronizando logs en tiempo real...
             </div>
@@ -619,37 +630,37 @@
 <div id="modalTicketGrande" class="apple-modal">
     <div class="apple-modal-content">
         <div class="modal-header">
-            <h2 style="margin:0;"><i class="fas fa-expand" style="color:var(--edit);"></i> Detalle de Incidencia Externa</h2>
+            <h2 style="margin:0;"><i class="fas fa-expand" style="color:var(--turquoise-main);"></i> Detalle de Incidencia Externa</h2>
             <div class="modal-close-btn" onclick="cerrarModalTicket()"><i class="fas fa-times"></i></div>
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-size:14px; margin-bottom:20px;">
-            <div><span style="color:var(--text-secondary);">Empresa:</span> <br><b id="modalEmpresa" style="color:var(--brand-green);"></b></div>
-            <div><span style="color:var(--text-secondary);">Reportado Por:</span> <br><b id="modalContacto"></b></div>
+            <div><span style="color:var(--text-secondary);">Empresa:</span> <br><b id="modalEmpresa" style="color:var(--turquoise-main);"></b></div>
+            <div><span style="color:var(--text-secondary);">Reportado Por:</span> <br><b id="modalContacto" style="color: white;"></b></div>
             <div><span style="color:var(--text-secondary);">Fecha Ingreso:</span> <br><span id="modalFecha"></span></div>
             <div><span style="color:var(--text-secondary);">Urgencia Asignada:</span> <br><div id="modalPrioridad" style="margin-top:4px;"></div></div>
         </div>
 
-        <div style="margin-bottom:20px; background:var(--apple-bg); padding:16px; border-radius:10px;">
+        <div style="margin-bottom:20px; background:var(--dark-bg); padding:16px; border-radius:10px; border: 1px solid var(--border-smooth);">
             <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Asunto:</span>
-            <h3 id="modalAsunto" style="margin: 4px 0 12px 0; font-size:16px;"></h3>
+            <h3 id="modalAsunto" style="margin: 4px 0 12px 0; font-size:16px; color: white;"></h3>
             
             <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Descripción Completa de la Falla:</span>
-            <p id="modalDescripcion" style="margin-top:4px; font-size:14px; line-height:1.5; color:#333; white-space:pre-wrap;"></p>
+            <p id="modalDescripcion" style="margin-top:4px; font-size:14px; line-height:1.5; color:#cfd8dc; white-space:pre-wrap;"></p>
         </div>
 
         <div style="display:flex; gap:12px;">
-            <button id="btnModalResolver" style="background:var(--brand-green); flex:1;"><i class="fas fa-check-circle"></i> Marcar como Resuelto</button>
-            <button onclick="generarSolucionIA()" style="background:#000000; color:#ffffff; flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <i class="fas fa-robot" style="color:var(--neon-green);"></i> Generar Solución con IA
+            <button id="btnModalResolver" style="flex:1; background: var(--turquoise-dark); color: white;"><i class="fas fa-check-circle"></i> Marcar como Resuelto</button>
+            <button onclick="generarSolucionIA()" style="background:#ffffff; color:#000000; flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-robot" style="color:var(--turquoise-dark);"></i> Generar Solución con IA
             </button>
         </div>
 
         <div id="boxSolucionIA" class="ai-bulletin-box">
-            <h3 style="font-size:14px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; color:#1b4332;">
+            <h3 style="font-size:14px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; color:var(--turquoise-main);">
                 <i class="fas fa-wand-magic-sparkles"></i> Diagnóstico Predictivo & Viñeta de Solución iCare IA:
             </h3>
-            <div id="textSolucionIA" style="font-size:13.5px; line-height:1.6; color:#222;"></div>
+            <div id="textSolucionIA" style="font-size:13.5px; line-height:1.6; color:#cfd8dc;"></div>
         </div>
     </div>
 </div>
@@ -724,7 +735,7 @@
         .then(res => res.json())
         .then(logs => {
             const container = document.getElementById('lista-logs-auditoria');
-            container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid #f5f5f7;">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--edit);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
+            container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid var(--border-smooth);">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--turquoise-main);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
         });
     }
 
@@ -735,7 +746,7 @@
             const div = document.getElementById('lista-usuarios-tecnicos');
             div.innerHTML = usuarios.map(u => `
                 <div class="list-item">
-                    <span>${u.nombre} (<code style="background:#f5f5f7; padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--brand-green);">${u.rol.toUpperCase()}</b></span>
+                    <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
                     <div>
                         <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}')">Editar</button>
                         <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
@@ -833,12 +844,12 @@
             return `
                 <tr style="cursor:pointer;" onclick="abrirModalTicketGrande(${t.id})">
                     <td style="color:var(--text-secondary); font-weight:500;">${fechaStr}</td>
-                    <td><b style="color:var(--brand-green);"><i class="fas fa-building"></i> ${t.empresa_nombre}</b></td>
+                    <td><b style="color:var(--turquoise-main);"><i class="fas fa-building"></i> ${t.empresa_nombre}</b></td>
                     <td><b>${t.contacto}</b></td>
-                    <td style="font-weight:600; color:var(--edit);">${t.asunto}</td>
-                    <td style="color:#424245; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.descripcion}</td>
+                    <td style="font-weight:600; color:var(--turquoise-light);">${t.asunto}</td>
+                    <td style="color:#cfd8dc; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.descripcion}</td>
                     <td><span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span></td>
-                    <td><b style="color:${t.estado === 'Abierto' ? '#dc3545' : 'green'};">${t.estado}</b></td>
+                    <td><b style="color:${t.estado === 'Abierto' ? '#ff3b30' : '#10b981'};">${t.estado}</b></td>
                     <td onclick="event.stopPropagation();">
                         <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
                     </td>
@@ -930,9 +941,10 @@
     function ajustarEdicionEmpresaSoporte(id, nombre) {
         editSupportEmpId = id;
         document.getElementById('newSupportEmpName').value = nombre;
-        document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--edit);"></i> Editar Empresa Soporte`;
+        document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
         document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Nombre Empresa";
-        document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--edit)";
+        document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
+        document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
     }
 
     function filtrarTicketsPorEmpresa(empresaId) {
@@ -974,9 +986,10 @@
                 alert("Nombre de la empresa corporativa actualizado con éxito.");
                 editSupportEmpId = null;
                 document.getElementById('newSupportEmpName').value = "";
-                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--brand-green);"></i> Dar de Alta Empresa`;
+                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
                 document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
-                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--brand-green)";
+                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
+                document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
                 loadContent();
             });
         } else {
@@ -1046,9 +1059,8 @@
                 `).join('');
             }
             
-            let h = "<b style='color:var(--edit); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
+            let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
             
-            // CORREGIDO: Uso exclusivo de comillas invertidas (backticks) para la inyección limpia de variables de servidor
             cacheData.servicios.forEach((s, idx) => {
                 h += `
                     <div class="list-item">
@@ -1060,9 +1072,8 @@
                     </div>`;
             });
             
-            h += "<br><b style='color:var(--edit); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
+            h += "<br><b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
             
-            // CORREGIDO: Uso exclusivo de comillas invertidas (backticks) para la inyección limpia de variables de servidor
             cacheData.productos.forEach((p, idx) => {
                 h += `
                     <div class="list-item">

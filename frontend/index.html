@@ -876,15 +876,14 @@
         }
         
         .partner-card { 
-            background: var(--card-bg); 
-            border-radius: var(--radius-premium); 
-            padding: 24px; 
+            background: transparent !important; /* Eliminamos fondo */
+            box-shadow: none !important;        /* Eliminamos sombra */
+            border: none !important;            /* Eliminamos borde */
+            padding: 10px;
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            box-shadow: var(--card-shadow); 
-            border: 1px solid var(--border-smooth); 
-            height: 140px; 
+            height: 120px; 
             transition: var(--transition-smooth); 
         }
         
@@ -1400,31 +1399,28 @@
 <body>
 
     <header>
-        <div class="nav-bar">
-            <a href="#" class="logo-area">
-                <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
-            </a>
-            <nav class="nav-links">
-                <div class="dropdown-menu-container">
-                    <a class="dropdown-trigger">Ver Categorías ▾</a>
-                    <div class="dropdown-content" id="nav-dropdown-cats">
-                        </div>
-                </div>
-                <a href="/servicio" style="color: var(--neon-green); font-weight: 700;"><i class="fas fa-headset"></i> Soporte Corporativo</a>
-                <a href="#nosotros">Proyectos</a>
-                <a href="#catalogo">Tienda</a>
-                <a href="#clientes">Reseñas</a>
-                <a href="#contacto">Contáctanos ▾</a>
-            </nav>
-            <div class="nav-actions">
-                <div class="search-bar">
-                    <input type="text" placeholder="Busca tu pieza...">
-                    <span style="font-size: 18px;">🔍</span>
-                </div>
-                <a href="#" class="btn-neon" onclick="openWA('Hola, necesito asistencia técnica.')">¡Llama Ya!</a>
-            </div>
+    <div class="nav-bar">
+        <!-- Logo -->
+        <a href="#" class="logo-area">
+            <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
+        </a>
+        
+        <!-- Acciones principales visibles -->
+        <div class="nav-actions-mobile">
+            <i class="fas fa-search" style="color:var(--text-light); font-size: 20px; cursor:pointer;"></i>
+            <a href="/servicio" class="btn-brand" style="padding: 8px 15px;">Soporte</a>
+            <i class="fas fa-bars" id="menu-toggle" style="color:white; font-size: 24px; cursor:pointer; margin-left: 15px;"></i>
         </div>
-    </header>
+
+        <!-- Menú que se despliega (oculto por defecto) -->
+        <nav class="nav-links mobile-menu" id="mobile-nav">
+            <a href="/servicio">Soporte Corporativo</a>
+            <a href="#nosotros">Proyectos</a>
+            <a href="#catalogo">Tienda</a>
+            <a href="#clientes">Reseñas</a>
+        </nav>
+    </div>
+ </header>
 
     <section class="hero-banner" id="hero-sec">
         <div class="container">
@@ -1826,6 +1822,9 @@
                     data.resenas.forEach(r => { revC.innerHTML += `<div class="review-card"><p class="review-text">"${r.comentario}"</p><div class="reviewer-info"><img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img"><div class="reviewer-meta"><div class="reviewer-name">${r.cliente}</div><div class="reviewer-pos">${r.puesto}</div></div></div></div>`; });
                 }
                 applyAnimations();
+            });
+            document.getElementById('menu-toggle').addEventListener('click', () => {
+               document.getElementById('mobile-nav').classList.toggle('active');
             });
         });
     </script>

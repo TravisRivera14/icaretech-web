@@ -16,6 +16,14 @@
       "dest": "app.py"
     },
     {
+      "src": "/servicio",
+      "dest": "frontend/servicio.html"
+    },
+    {
+      "src": "/service",
+      "dest": "frontend/servicio.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "frontend/$1"
     }

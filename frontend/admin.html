@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin iCare | Control Maestro</title>
     <link rel="icon" href="Logo_Admin_v2.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
             --brand: #1b4332; 
@@ -46,7 +48,7 @@
             margin-bottom: 15px;
             color: #222;
         }
-        input, textarea, button { 
+        input, textarea, button, select { 
             width: 100%; 
             padding: 12px; 
             margin: 6px 0 12px 0; 
@@ -55,7 +57,7 @@
             box-sizing: border-box; 
             font-size: 14px;
         }
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4ea5ce;
         }
@@ -102,6 +104,8 @@
             font-size: 11px; 
             border-radius: 4px;
             display: inline-block;
+            color: white;
+            border: none;
         }
         .btn-del { 
             background: var(--del); 
@@ -110,7 +114,34 @@
             font-size: 11px; 
             border-radius: 4px;
             display: inline-block;
+            color: white;
+            border: none;
         }
+        
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .ticket-table th, .ticket-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .ticket-table th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .badge-alta { background: #fee2e2; color: #dc3545; }
+        .badge-media { background: #fef3c7; color: #b45309; }
+        .badge-baja { background: #dcfce7; color: #15803d; }
         
         @media (max-width: 900px) {
             .container {
@@ -168,6 +199,17 @@
             <label>Logotipo del Socio:</label>
             <input type="file" id="partnerImgFile" accept="image/*">
             <button onclick="subirSocio()">Guardar Socio</button>
+        </div>
+
+        <div class="card" style="border: 1px solid var(--brand);">
+            <h2><i class="fas fa-building" style="color: var(--brand);"></i> Agregar / Eliminar Empresas (Soporte Técnico)</h2>
+            <input type="text" id="newSupportEmpName" placeholder="Nombre de la Empresa Cliente (Ej: Banco Central)">
+            <button onclick="agregarEmpresaSoporte()">+ Dar de Alta Empresa</button>
+            
+            <h3 style="font-size: 13px; margin-top: 15px; margin-bottom: 8px; font-weight: 700;">Empresas Activas en Soporte:</h3>
+            <div id="lista-empresas-soporte-bajas" style="max-height: 150px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px;">
+                Cargando empresas clientes...
+            </div>
         </div>
     </div>
     
@@ -249,6 +291,34 @@
             </div>
         </div>
 
+        <div class="card" style="border: 1px solid #4ea5ce; grid-column: 1/-1;">
+            <h2><i class="fas fa-headset" style="color: #4ea5ce;"></i> Monitoreo y Movimientos de Tickets de Soporte</h2>
+            <label>Filtrar y dividir por Empresa Cliente:</label>
+            <select id="filtroEmpresaTickets" onchange="filtrarTicketsPorEmpresa(this.value)">
+                <option value="Todos">-- Mostrar Todas las Empresas --</option>
+            </select>
+            
+            <div style="overflow-x: auto;">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Empresa</th>
+                            <th>Contacto</th>
+                            <th>Asunto</th>
+                            <th>Descripción</th>
+                            <th>Urgencia</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-tickets-soporte">
+                        <tr><td colspan="8" style="text-align:center; color:#888;">Cargando movimientos de tickets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="card" style="grid-column: 1/-1;">
             <h2>📋 Gestión Actual de Contenidos</h2>
             <div id="master-list" style="max-height: 500px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
@@ -262,6 +332,7 @@
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
+    let cacheTickets = [];
 
     const handleFile = (id, cb) => {
         const el = document.getElementById(id);
@@ -297,6 +368,7 @@
                     document.getElementById('seccion-logs-admin').style.display = 'block';
                     cargarListaTrabajadores();
                     cargarHistorialLogs();
+                    cargarTicketsAdmin();
                 }
             } else {
                 document.getElementById('login-error').style.display = 'block';
@@ -375,6 +447,92 @@
         });
     });
 
+    // NUEVAS FUNCIONES PARA CARGAR Y FILTRAR TICKETS DE SOPORTE POR CADA EMPRESA CLIENTE
+    function cargarTicketsAdmin() {
+        fetch(`${API}/admin/tickets`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(tickets => {
+            cacheTickets = tickets;
+            renderTablaTickets(tickets);
+        });
+    }
+
+    function renderTablaTickets(lista) {
+        const tbody = document.getElementById('tabla-tickets-soporte');
+        if(lista.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888;">No hay movimientos ni tickets registrados.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = lista.map(t => {
+            const fechaStr = new Date(t.fecha).toLocaleDateString('es-CR', {hour: '2-digit', minute:'2-digit'});
+            return `
+                <tr>
+                    <td>${fechaStr}</td>
+                    <td><b>${t.empresa_nombre}</b></td>
+                    <td>${t.contacto}</td>
+                    <td>${t.asunto}</td>
+                    <td>${t.descripcion}</td>
+                    <td><span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span></td>
+                    <td><b>${t.estado}</b></td>
+                    <td>
+                        ${t.estado === 'Abierto' ? `<button class="btn-edit" style="padding:4px 8px;" onclick="cambiarEstadoTicket(${t.id}, 'Resuelto')">Resolver</button>` : `<span style="color:green;"><i class="fas fa-check-circle"></i> Listo</span>`}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function filtrarTicketsPorEmpresa(empresaId) {
+        if(empresaId === "Todos") {
+            renderTablaTickets(cacheTickets);
+        } else {
+            const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId);
+            renderTablaTickets(filtrados);
+        }
+    }
+
+    function cambiarEstadoTicket(id, nuevoEstado) {
+        fetch(`${API}/admin/tickets/${id}/estado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ estado: nuevoEstado })
+        })
+        .then(r => r.json())
+        .then(() => {
+            alert("Estado del ticket actualizado con éxito.");
+            cargarTicketsAdmin();
+        });
+    }
+
+    function agregarEmpresaSoporte() {
+        const nombre = document.getElementById('newSupportEmpName').value;
+        if(!nombre) return alert("Escribe el nombre de la empresa.");
+        fetch(`${API}/admin/empresas-soporte`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ nombre: nombre })
+        })
+        .then(r => r.json())
+        .then(() => {
+            alert("Empresa dada de alta correctamente.");
+            document.getElementById('newSupportEmpName').value = "";
+            loadContent();
+        });
+    }
+
+    function eliminarEmpresaSoporte(id) {
+        if(confirm("¿Seguro que deseas dar de baja esta empresa cliente? Se desvincularán sus tickets.")) {
+            fetch(`${API}/admin/empresas-soporte/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(r => r.json())
+            .then(() => {
+                alert("Empresa dada de baja.");
+                loadContent();
+            });
+        }
+    }
+
     function loadContent() {
         fetch(`${API}/todo`)
         .then(r => r.json())
@@ -386,6 +544,26 @@
             cacheData.beneficios = data.beneficios || [];
             cacheData.objetivos = data.objetivos || [];
             cacheData.empresas = data.empresas || [];
+            
+            // Renderiza el selector de empresas en el panel de tickets
+            const selectFiltro = document.getElementById('filtroEmpresaTickets');
+            selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
+            cacheData.empresas.forEach(e => {
+                selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            });
+
+            // Renderiza la lista compacta para eliminar empresas clientes
+            const divBajas = document.getElementById('lista-empresas-soporte-bajas');
+            if(cacheData.empresas.length === 0) {
+                divBajas.innerHTML = `<div style="padding:10px; color:#888;">No hay empresas dadas de alta.</div>`;
+            } else {
+                divBajas.innerHTML = cacheData.empresas.map(e => `
+                    <div class="list-item">
+                        <span>🏢 ${e.nombre}</span>
+                        <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                    </div>
+                `).join('');
+            }
             
             let h = "<b>💻 SERVICIOS:</b>";
             cacheData.servicios.forEach((s, idx) => h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios',${s.id})">Eliminar</button></div></div>`);
@@ -415,7 +593,7 @@
         .then(() => { alert("Guardado!"); loadContent(); editId = null; });
     }
 
-    function subirServicio() { saveItem('servicios', {titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS}); }
+    function subirServicio() { saveItem('servicios', {titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, benefits: document.getElementById('sBenefits').value, imagen: imgS}); }
     function subirProducto() { saveItem('productos', {nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP}); }
     function subirResena() { saveItem('resenas', {cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev}); }
     function subirSocio() { saveItem('socios', {nombre: document.getElementById('partnerName').value, imagen: imgPartner}); }
@@ -434,7 +612,13 @@
         }
     }
     
-    window.onload = loadContent;
+    window.onload = function() {
+        loadContent();
+        // Cargar tickets de inmediato en el fondo si ya se está autenticado
+        fetch(`${API}/admin/tickets`, { credentials: 'include' })
+        .then(res => { if(res.ok) return res.json(); })
+        .then(tickets => { if(tickets) { cacheTickets = tickets; renderTablaTickets(tickets); } });
+    };
 </script>
 </body>
 </html>

@@ -40,6 +40,20 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    
+    # MODIFICACIÓN TÉCNICA: Se comprueba y crea la tabla para las empresas corporativas que reciben soporte técnico
+    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
+    
+    # MODIFICACIÓN TÉCNICA: Tabla maestra para la gestión de tickets segmentada por empresa cliente
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (
+                    id SERIAL PRIMARY KEY, 
+                    empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, 
+                    contacto VARCHAR(100) NOT NULL, 
+                    asunto VARCHAR(200) NOT NULL, 
+                    descripcion TEXT NOT NULL, 
+                    prioridad VARCHAR(20) NOT NULL, 
+                    estado VARCHAR(20) DEFAULT 'Abierto', 
+                    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     c.close()
     conn.close()
@@ -154,6 +168,89 @@ def setup_admin():
     db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
     return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
 
+
+# ==========================================
+# 🎫 NUEVOS CONTROLADORES MAESTROS DE SOPORTE Y TICKETS
+# ==========================================
+
+@app.route('/api/tickets', methods=['POST'])
+def crear_ticket_publico():
+    """Ruta pública para que los clientes envíen incidencias desde la interfaz /servicio."""
+    d = request.json or {}
+    empresa_id = d.get('empresa_id')
+    contacto = d.get('contacto')
+    asunto = d.get('asunto')
+    descripcion = d.get('descripcion')
+    prioridad = d.get('prioridad', 'Alta')
+
+    if not empresa_id or not contacto or not asunto or not descripcion:
+        return jsonify({"error": "Todos los campos del reporte de soporte son obligatorios"}), 400
+
+    db_query(
+        "INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s)",
+        (empresa_id, contacto, asunto, descripcion, prioridad)
+    )
+    registrar_cambio("Ticket Creado", f"Avería reportada por {contacto} (Asunto: {asunto})")
+    return jsonify({"success": True, "message": "Ticket registrado con éxito"})
+
+@app.route('/api/admin/tickets', methods=['GET'])
+def listar_tickets_admin():
+    """Ruta protegida para auditar e inyectar todos los tickets en la tabla administrativa."""
+    if not session.get('rol'):
+        return jsonify({"message": "No autorizado"}), 401
+
+    query = '''SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, t.descripcion, t.prioridad, t.estado, t.fecha 
+               FROM tickets_soporte t
+               JOIN empresas_recomiendan e ON t.empresa_id = e.id
+               ORDER BY t.fecha DESC'''
+    
+    tickets_raw = db_query(query, fetch=True) or []
+    resultado = [{
+        "id": r[0], "empresa_id": r[1], "empresa_nombre": r[2], "contacto": r[3],
+        "asunto": r[4], "descripcion": r[5], "prioridad": r[6], "estado": r[7],
+        "fecha": r[8].isoformat() if hasattr(r[8], 'isoformat') else str(r[8])
+    } for r in tickets_raw]
+    return jsonify(resultado)
+
+@app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
+def cambiar_estado_ticket(id):
+    """Permite al administrador o personal marcar una incidencia corporativa como resuelta."""
+    if not session.get('rol'):
+        return jsonify({"message": "No autorizado"}), 401
+
+    d = request.json or {}
+    nuevo_estado = d.get('estado', 'Resuelto')
+
+    db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (nuevo_estado, id))
+    registrar_cambio("Resolvió Ticket", f"Ticket ID {id} cambiado a estado: {nuevo_estado}")
+    return jsonify({"success": True})
+
+@app.route('/api/admin/empresas-soporte', methods=['POST'])
+def dar_alta_empresa_soporte():
+    """Ruta privada para ingresar nuevos clientes corporativos al sistema."""
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+
+    d = request.json or {}
+    nombre = d.get('nombre')
+    if not nombre:
+        return jsonify({"error": "Nombre requerido"}), 400
+
+    db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre,))
+    registrar_cambio("Alta Empresa", f"Se dio de alta a la empresa cliente: {nombre}")
+    return jsonify({"success": True})
+
+@app.route('/api/admin/empresas-soporte/<int:id>', methods=['DELETE'])
+def dar_baja_empresa_soporte(id):
+    """Permite remover una empresa de la base de datos de Neon de manera permanente."""
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+
+    db_query("DELETE FROM empresas_recomiendan WHERE id = %s", (id,))
+    registrar_cambio("Baja Empresa", f"Removida la empresa cliente ID {id}")
+    return jsonify({"success": True})
+
+
 # ==========================================
 # 🛠️ RUTAS DE CONTENIDO (AUDITADAS AUTOMÁTICAMENTE)
 # ==========================================
@@ -173,24 +270,25 @@ def obtener_todo():
         if 'compromiso' not in config:
             db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
-        db_query("DELETE FROM beneficios")
-        
-        ventajas_defecto = [
-            ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
-            ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
-            ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
-            ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
-            ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
-            ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
-            ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
-            ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),
-            ("Experiencia en seguridad electrónica", "Tienen conocimientos específicos en sistemas como cámaras de vigilancia, alarmas y controles de acceso.", "fas fa-video"),
-            ("Compromiso con la calidad", "Se enfocan en realizar trabajos bien hechos que aseguren la satisfacción del cliente a largo plazo.", "fas fa-star"),
-            ("Cobertura a domicilio en Costa Rica", "Brindan comodidad al desplazarse a tu casa o empresa en cualquier parte del país para realizar el servicio.", "fas fa-map-marked-alt"),
-            ("Repuestos genéricos", "Ofrecemos piezas de alta compatibilidad y bajo costo, ideales para optimizar tu presupuesto sin perder funcionalidad.", "fas fa-exchange-alt")
-        ]
-        for titulo, desc, icono in ventajas_defecto:
-            db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))
+        # Modificación para evitar vaciar constantemente si ya existen datos cargados dinámicamente
+        beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
+        if beneficios_existentes and beneficios_existentes[0][0] == 0:
+            ventajas_defecto = [
+                ("Técnicos Certificados", "Tu infraestructura y equipos son manipulados exclusivamente por profesionales expertos.", "fas fa-user-check"),
+                ("Repuestos Originales", "Utilizamos componentes genuinos y de grado premium para asegurar la máxima durabilidad.", "fas fa-shield-alt"),
+                ("Transparencia Total", "Sin costos ocultos ni sorpresas. Te explicamos el problema y validamos el presupuesto antes de proceder.", "fas fa-handshake"),
+                ("Atención personalizada", "Ofrecemos soluciones directas y personalizadas para cada cliente.", "fas fa-user-heart"),
+                ("Soluciones integrales en tecnología", "Soporte, instalaciones y asesoría global para tu infraestructura.", "fas fa-laptop-code"),
+                ("Equipos y herramientas modernas", "Trabajamos con instrumental de vanguardia para diagnósticos precisos.", "fas fa-tools"),
+                ("Servicio confiable y profesional", "Cuentan con personal capacitado que garantiza ética, puntualidad y cumplimiento en su trabajo.", "fas fa-award"),
+                ("Soporte técnico especializado", "Ofrecen asistencia experta para resolver problemas complejos de hardware o software.", "fas fa-microchip"),
+                ("Experiencia en seguridad electrónica", "Tienen conocimientos específicos en sistemas como cámaras de vigilancia, alarmas y controles de acceso.", "fas fa-video"),
+                ("Compromiso con la calidad", "Se enfocan en realizar trabajos bien hechos que aseguren la satisfacción del cliente a largo plazo.", "fas fa-star"),
+                ("Cobertura a domicilio en Costa Rica", "Brindan comodidad al desplazarse a tu casa o empresa en cualquier parte del país para realizar el servicio.", "fas fa-map-marked-alt"),
+                ("Repuestos genéricos", "Ofrecemos piezas de alta compatibilidad y bajo costo, ideales para optimizar tu presupuesto sin perder funcionalidad.", "fas fa-exchange-alt")
+            ]
+            for titulo, desc, icono in ventajas_defecto:
+                db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))
 
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
@@ -353,6 +451,8 @@ def eliminar_item(tabla, id):
 # INICIO DE LA APLICACIÓN
 # ==========================================
 
+# Garantizar que las tablas se inicialicen de inmediato al levantar el servidor
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True, port=5001)

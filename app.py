@@ -45,73 +45,6 @@ def init_db():
     conn.close()
 
 def registrar_cambio(accion, detalle):
-    try:
-        db_query("INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)", 
-                 (session.get('user_id'), session.get('nombre', 'Sistema'), accion, detalle))
-    except: pass
-
-# --- RUTAS DE AUTENTICACIÓN Y ADMINISTRACIÓN ---
-@app.route('/api/login', methods=['POST'])
-def login():
-    d = request.json or {}
-    res = db_query("SELECT id, usuario, password_hash, rol, nombre FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
-    if res and check_password_hash(res[0][2], d.get('password')):
-        session.update({'user_id': res[0][0], 'rol': res[0][3], 'nombre': res[0][4], 'modified': True})
-        return jsonify({"success": True, "usuario": res[0][1], "rol": res[0][3], "nombre": res[0][4]})
-    return jsonify({"success": False}), 401
-
-@app.route('/api/admin/usuarios', methods=['GET'])
-def listar_usuarios():
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    users = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
-    return jsonify([{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users])
-
-@app.route('/api/admin/crear-usuario', methods=['POST'])
-def crear_usuario():
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    d = request.json or {}
-    try:
-        db_query("INSERT INTO usuarios (usuario, password_hash, rol, nombre) VALUES (%s, %s, 'personal', %s)", 
-                 (d['usuario'], generate_password_hash(d['password']), d['nombre']))
-        registrar_cambio("Creó Usuario", f"Se registró a {d['nombre']}")
-        return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
-
-@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
-def eliminar_usuario(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
-
-# --- RUTAS ORIGINALES DE CONTENIDO ---
-@app.route('/api/todo', methods=['GET'])
-def obtener_todo():
-    try:
-        # Aquí puedes añadir tu lógica de servicios/productos/reseñas
-        return jsonify({"status": "ok"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
-def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
-    if tabla in tablas_permitidas:
-        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
-        return jsonify({"mensaje": "🗑️"})
-    return jsonify({"error": "No válida"}), 400
-
-if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, port=5001)
-
-
-
-# ==========================================
-# 🔐 NUEVAS RUTAS DE AUTENTICACIÓN Y AUDITORÍA
-# ==========================================
-
-def registrar_cambio(accion, detalle):
     """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
     usuario_id = session.get('user_id')
     usuario_nombre = session.get('nombre', 'Sistema / Web')
@@ -123,6 +56,10 @@ def registrar_cambio(accion, detalle):
     except Exception as e:
         print(f"Error guardando log de auditoría: {e}")
 
+# ==========================================
+# 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
+# ==========================================
+
 @app.route('/api/login', methods=['POST'])
 def login():
     d = request.json or {}
@@ -131,22 +68,6 @@ def login():
         session.update({'user_id': res[0][0], 'rol': res[0][3], 'nombre': res[0][4], 'modified': True})
         return jsonify({"success": True, "usuario": res[0][1], "rol": res[0][3], "nombre": res[0][4]})
     return jsonify({"success": False}), 401
-    if res and check_password_hash(res[0][2], password):
-        session['user_id'] = res[0][0]
-        session['username'] = res[0][1]
-        session['rol'] = res[0][3]
-        session['nombre'] = res[0][4]
-        
-        session.modified = True
-        
-        return jsonify({
-            "success": True,
-            "usuario": res[0][1],
-            "rol": res[0][3],
-            "nombre": res[0][4]
-        })
-        
-    return jsonify({"success": False, "message": "Usuario o contraseña incorrectos"}), 401
 
 @app.route('/api/admin/logs', methods=['GET'])
 def obtener_logs():
@@ -220,9 +141,21 @@ def editar_usuario():
     registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id} ({nuevo_usuario})")
     return jsonify({"success": True, "message": "Usuario modificado correctamente"})
 
+@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
+def eliminar_usuario(id):
+    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
+    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+    registrar_cambio("Eliminó Usuario", f"ID {id}")
+    return jsonify({"success": True})
+
+@app.route('/api/setup-admin', methods=['GET'])
+def setup_admin():
+    password_encriptada = generate_password_hash('AdminiCare2026')
+    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
+    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
 
 # ==========================================
-# 🛠️ RUTAS ORIGINALES AUDITADAS AUTOMÁTICAMENTE
+# 🛠️ RUTAS DE CONTENIDO (AUDITADAS AUTOMÁTICAMENTE)
 # ==========================================
 
 @app.route('/api/todo', methods=['GET'])
@@ -417,50 +350,7 @@ def eliminar_item(tabla, id):
     return jsonify({"error": "No válida"}), 400
 
 # ==========================================
-# RUTAS DE ADMINISTRACIÓN DE USUARIOS
-
-
-@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
-def eliminar_usuario(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
-
-@app.route('/api/setup-admin', methods=['GET'])
-def setup_admin():
-    password_encriptada = generate_password_hash('AdminiCare2026')
-    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
-    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
-
-@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
-def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
-    if tabla in tablas_permitidas:
-        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
-        registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
-        return jsonify({"mensaje": "🗑️"})
-    return jsonify({"error": "No válida"}), 400
-
-# ==========================================
-# AQUÍ ES DONDE DEBES PEGAR EL BLOQUE NUEVO
-# ==========================================
-
-@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
-def eliminar_usuario(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
-
-@app.route('/api/setup-admin', methods=['GET'])
-def setup_admin():
-    password_encriptada = generate_password_hash('AdminiCare2026')
-    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
-    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
-
-# ==========================================
-# ESTA ES LA LÍNEA FINAL QUE YA TENÍAS
+# INICIO DE LA APLICACIÓN
 # ==========================================
 
 if __name__ == '__main__':

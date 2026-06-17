@@ -1394,33 +1394,29 @@
                 height: auto !important;
             }
         }
+        .mobile-nav-content { display: none; background: #11141a; padding: 20px; text-align: center; border-bottom: 1px solid var(--border-smooth); }
+        .mobile-nav-content.active { display: block; }
+        .mobile-nav-content a { display: block; color: var(--text-light); padding: 15px; text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
+    <!-- Reemplaza tu <header> actual con esto -->
     <header>
-    <div class="nav-bar">
-        <!-- Logo -->
-        <a href="#" class="logo-area">
-            <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
-        </a>
-        
-        <!-- Acciones principales visibles -->
-        <div class="nav-actions-mobile">
-            <i class="fas fa-search" style="color:var(--text-light); font-size: 20px; cursor:pointer;"></i>
-            <a href="/servicio" class="btn-brand" style="padding: 8px 15px;">Soporte</a>
-            <i class="fas fa-bars" id="menu-toggle" style="color:white; font-size: 24px; cursor:pointer; margin-left: 15px;"></i>
+        <div class="nav-bar">
+            <a href="#" class="logo-area"><img src="Logo.png" class="logo-img"></a>
+            <div class="nav-actions">
+                <i class="fas fa-search" style="font-size: 20px; cursor:pointer;"></i>
+                <a href="/servicio" class="btn-brand">SOPORTE</a>
+                <i class="fas fa-bars" id="menu-toggle" style="font-size: 24px; cursor:pointer; margin-left:15px;"></i>
+            </div>
         </div>
-
-        <!-- Menú que se despliega (oculto por defecto) -->
-        <nav class="nav-links mobile-menu" id="mobile-nav">
-            <a href="/servicio">Soporte Corporativo</a>
+        <nav id="mobile-menu" class="mobile-nav-content">
             <a href="#nosotros">Proyectos</a>
             <a href="#catalogo">Tienda</a>
             <a href="#clientes">Reseñas</a>
         </nav>
-    </div>
- </header>
+    </header>
 
     <section class="hero-banner" id="hero-sec">
         <div class="container">

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import request, jsonify
 import os
 import psycopg2
 import requests
@@ -179,32 +180,37 @@ def crear_ticket_publico():
     d = request.json or {}
     empresa_id = d.get('empresa_id')
     contacto = d.get('contacto')
-    whatsapp = d.get('whatsapp') # Capturamos el nuevo campo
+    whatsapp = d.get('whatsapp') 
     asunto = d.get('asunto')
     descripcion = d.get('descripcion')
     prioridad = d.get('prioridad', 'Alta')
 
+    # Validación: Si falta el número de WhatsApp, retorna error
     if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:
         return jsonify({"error": "Todos los campos, incluido el WhatsApp, son obligatorios"}), 400
 
-    # Guardamos en la base de datos
-    # NOTA: Debes agregar la columna 'whatsapp' a tu tabla 'tickets_soporte' en init_db()
+    # Inserción: Se guarda la columna 'whatsapp' en la base de datos
     db_query(
-        "INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s)",
-        (empresa_id, contacto, asunto, descripcion, prioridad)
+        "INSERT INTO tickets_soporte (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s, %s)",
+        (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad)
     )
 
     # Lógica de Notificación por WhatsApp
     mensaje = f"🎫 Nuevo Ticket en iCareTechCR: {asunto}. Cliente: {contacto}. WhatsApp: {whatsapp}. Prioridad: {prioridad}."
-    # API de ejemplo: CallMeBot (debes registrar tu número en callmebot.com para obtener apiKey)
+    
+    # Obtenemos los valores desde las variables de entorno configuradas en Vercel
+    phone = os.environ.get('WHATSAPP_PHONE')
+    apikey = os.environ.get('WHATSAPP_APIKEY')
+    
     try:
-        requests.get(f"https://api.callmebot.com/whatsapp.php?phone=TU_NUMERO&text={mensaje}&apikey=TU_APIKEY")
+        # Construcción de la URL con las variables seguras
+        url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={mensaje}&apikey={apikey}"
+        requests.get(url)
     except Exception as e:
         print(f"Error enviando WhatsApp: {e}")
 
     registrar_cambio("Ticket Creado", f"Avería reportada por {contacto} (Asunto: {asunto})")
     return jsonify({"success": True, "message": "Ticket registrado con éxito"})
-
 @app.route('/api/admin/tickets', methods=['GET'])
 def listar_tickets_admin():
     """Ruta protegida para auditar e inyectar todos los tickets en la tabla administrativa."""
@@ -464,7 +470,10 @@ def eliminar_item(tabla, id):
 # ==========================================
 
 # Garantizar que las tablas se inicialicen de inmediato al levantar el servidor
-init_db()
+@app.before_request
+def asegurarse_db():
+    # Esto corre antes de CADA petición, lo cual es seguro y garantiza que las tablas existan.
+    init_db()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

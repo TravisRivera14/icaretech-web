@@ -85,7 +85,7 @@
         <div class="ticket-card">
             <h2>Centro de Soporte Técnico</h2>
             <p>Reporta tu requerimiento. Nuestro equipo de ingeniería lo atenderá.</p>
-            
+        
             <form id="ticketForm" onsubmit="enviarTicket(event)">
                 <div class="form-group">
                     <label for="empresaSelect">Empresa</label>
@@ -93,39 +93,39 @@
                         <option value="">Cargando...</option>
                     </select>
                 </div>
+            <div class="form-group">
+                <label for="ticketContacto">Contacto</label>
+                <input type="text" id="ticketContacto" class="form-control" placeholder="Nombre completo" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="ticketContacto">Contacto</label>
-                    <input type="text" id="ticketContacto" class="form-control" placeholder="Nombre completo" required>
-                </div>
-                <div class="form-group">
+            <div class="form-group">
                 <label for="ticketWhatsApp">WhatsApp de contacto</label>
                 <input type="tel" id="ticketWhatsApp" class="form-control" placeholder="+506 8888 8888" required>
-                </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="ticketAsunto">Asunto</label>
-                    <input type="text" id="ticketAsunto" class="form-control" placeholder="Ej: Servidor inaccesible" required>
-                </div>
+            <div class="form-group">
+                <label for="ticketAsunto">Asunto</label>
+                <input type="text" id="ticketAsunto" class="form-control" placeholder="Ej: Servidor inaccesible" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="ticketDescripcion">Descripción</label>
-                    <textarea id="ticketDescripcion" class="form-control" rows="4" placeholder="Detalle del problema..." required></textarea>
-                </div>
+            <div class="form-group">
+                <label for="ticketDescripcion">Descripción</label>
+                <textarea id="ticketDescripcion" class="form-control" rows="4" placeholder="Detalle del problema..." required></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label>Prioridad</label>
-                    <div class="priority-selector">
-                        <div class="priority-option" data-value="Baja" onclick="selectPriority('Baja')">Baja</div>
-                        <div class="priority-option" data-value="Media" onclick="selectPriority('Media')">Media</div>
-                        <div class="priority-option selected" data-value="Alta" onclick="selectPriority('Alta')">Alta</div>
-                    </div>
+            <div class="form-group">
+                <label>Prioridad</label>
+                <div class="priority-selector">
+                    <div class="priority-option" data-value="Baja" onclick="selectPriority('Baja')">Baja</div>
+                    <div class="priority-option" data-value="Media" onclick="selectPriority('Media')">Media</div>
+                    <div class="priority-option selected" data-value="Alta" onclick="selectPriority('Alta')">Alta</div>
                 </div>
+            </div>
 
-                <button type="submit" class="btn-submit">Enviar Ticket</button>
-            </form>
-        </div>
+            <button type="submit" class="btn-submit">Enviar Ticket</button>
+        </form>
     </div>
+</div>
 
     <footer class="site-footer">
         <div>© 2026 iCare Tech CR.</div>

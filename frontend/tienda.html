@@ -169,10 +169,7 @@
             const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
 
             const filtrados = tiendaProductos.filter(p => {
-                // LOGICA MEJORADA: Si categoriaActiva está vacío, mostramos todo (Catálogo General)
-                const categoriaDelProducto = p.categoria || "Otros";
-                const coincideCat = (categoriaActiva === "" || categoriaDelProducto === categoriaActiva);
-                
+                const coincideCat = (p.categoria || "Otros") === categoriaActiva;
                 const coincideTxt = p.nombre && p.nombre.toLowerCase().includes(txt);
                 const coincidePrecio = p.precio >= min && p.precio <= max;
                 
@@ -186,7 +183,7 @@
             document.getElementById('results-count').innerText = `${filtrados.length} productos encontrados`;
 
             if(filtrados.length === 0) {
-                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">No hay componentes cargados para estos criterios.</div>`;
+                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">No hay componentes cargados para este filtro en este momento.</div>`;
                 return;
             }
 
@@ -196,14 +193,17 @@
                         <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="product-img">
                         <h3>${p.nombre}</h3>
                         <div class="product-price">${formatter.format(p.precio)}</div>
-                        <button class="btn-quote" onclick="openWA('Hola iCare, estoy interesado en cotizar: ${p.nombre}')">Cotizar Componente</button>
+                        <button class="btn-quote" onclick="openWA('Hola iCare, estoy interesado en cotizar la pieza: ${p.nombre}')">Cotizar Componente</button>
                     </div>`;
             });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Actualizar título dinámicamente
-            document.getElementById('current-cat-title').innerText = categoriaActiva || "Catálogo General";
+            if(!categoriaActiva) {
+                document.getElementById('current-cat-title').innerText = "Catálogo General";
+            } else {
+                document.getElementById('current-cat-title').innerText = categoriaActiva;
+            }
 
             fetch(`${API}/todo`)
             .then(r => r.json())
@@ -213,7 +213,7 @@
                     filtrarCatalogo();
                 }
             }).catch(() => {
-                document.getElementById('shop-products-container').innerHTML = "Error al conectar con el servidor.";
+                document.getElementById('shop-products-container').innerHTML = "Error al conectar con la base de datos.";
             });
         });
     </script>

@@ -10,22 +10,22 @@
       "use": "@vercel/static"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/app.py"
+      "src": "/api/(.*)",
+      "dest": "app.py"
     },
     {
-      "source": "/servicio",
-      "destination": "/frontend/servicio.html"
+      "src": "/servicio",
+      "dest": "frontend/servicio.html"
     },
     {
-      "source": "/service",
-      "destination": "/frontend/servicio.html"
+      "src": "/service",
+      "dest": "frontend/servicio.html"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "src": "/(.*)",
+      "dest": "frontend/$1"
     }
   ]
 }

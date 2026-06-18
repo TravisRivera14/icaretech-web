@@ -875,41 +875,29 @@
             align-items: center; 
         }
         
-        /* Estilo para las burbujas cuadradas semi-transparentes */
-        .partner-card {
-            background: rgba(255, 255, 255, 0.03) !important;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 16px !important;
-            padding: 15px !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 120px; /* Altura fija para alinear todos */
-            width: 120px;  /* Ancho fijo para alinearlos */
-            transition: var(--transition-smooth);
-            text-decoration: none; /* Porque ahora será un link */
+        .partner-card { 
+            background: var(--card-bg); 
+            border-radius: var(--radius-premium); 
+            padding: 24px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: var(--card-shadow); 
+            border: 1px solid var(--border-smooth); 
+            height: 140px; 
+            transition: var(--transition-smooth); 
         }
-
-        .partner-card:hover {
-            background: rgba(0, 180, 216, 0.1) !important;  /* Brillo azul al pasar el mouse */
-            border-color: var(--icon-blue) !important;
-            transform: translateY(-5px);
+        
+        .partner-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 40px rgba(0, 180, 216, 0.08); 
+            border-color: var(--icon-blue);
         }
-
-        /* Para quitar el fondo blanco de los logos, aplicamos filtro */
-        /* Logos a color */
-        .partner-logo {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; /* Esto hace que el logo no se deforme */
-            filter: none !important; /* Asegura que se vea a color */
-            opacity: 1 !important;
-            transform: scale(1.1);
-        }
-
-        .partner-card:hover .partner-logo {
-            opacity: 1;
+        
+        .partner-logo { 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
         }
         
         .recomiendan-logo { 
@@ -1407,27 +1395,35 @@
                 height: auto !important;
             }
         }
-        .mobile-nav-content { display: none; background: #11141a; padding: 20px; text-align: center; border-bottom: 1px solid var(--border-smooth); }
-        .mobile-nav-content.active { display: block; }
-        .mobile-nav-content a { display: block; color: var(--text-light); padding: 15px; text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="nav-bar">
-            <a href="#" class="logo-area"><img src="Logo.png" class="logo-img"></a>
+            <a href="#" class="logo-area">
+                <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
+            </a>
+            <nav class="nav-links">
+                <div class="dropdown-menu-container">
+                    <a class="dropdown-trigger">Ver Categorías ▾</a>
+                    <div class="dropdown-content" id="nav-dropdown-cats">
+                        </div>
+                </div>
+                <a href="/servicio" style="color: var(--neon-green); font-weight: 700;"><i class="fas fa-headset"></i> Soporte Corporativo</a>
+                <a href="#nosotros">Proyectos</a>
+                <a href="#catalogo">Tienda</a>
+                <a href="#clientes">Reseñas</a>
+                <a href="#contacto">Contáctanos ▾</a>
+            </nav>
             <div class="nav-actions">
-                <i class="fas fa-search" style="font-size: 20px; cursor:pointer;"></i>
-                <a href="/servicio" class="btn-brand">SOPORTE</a>
-                <i class="fas fa-bars" id="menu-toggle" style="font-size: 24px; cursor:pointer; margin-left:15px;"></i>
+                <div class="search-bar">
+                    <input type="text" placeholder="Busca tu pieza...">
+                    <span style="font-size: 18px;">🔍</span>
+                </div>
+                <a href="#" class="btn-neon" onclick="openWA('Hola, necesito asistencia técnica.')">¡Llama Ya!</a>
             </div>
         </div>
-        <nav id="mobile-menu" class="mobile-nav-content">
-            <a href="#nosotros">Proyectos</a>
-            <a href="#catalogo">Tienda</a>
-            <a href="#clientes">Reseñas</a>
-        </nav>
     </header>
 
     <section class="hero-banner" id="hero-sec">
@@ -1628,127 +1624,210 @@
 
     <a href="#" class="wa-float" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp"></i></a>
 
-<script>
-    const API = '/api';
-    let allProducts = [];
-    let cacheServicios = []; 
-    let currentCat = 'Todos';
-    let publicReviewImg = ""; 
+    <script>
+        const API = '/api';
+        let allProducts = [];
+        let cacheServicios = []; 
+        let currentCat = 'Todos';
+        let publicReviewImg = ""; 
+        
+        function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-    function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
+        document.querySelector('.dropdown-trigger').addEventListener('click', function(e) {
+            if(window.innerWidth <= 900) {
+                e.preventDefault();
+                document.querySelector('.dropdown-content').classList.toggle('show');
+            }
+        });
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (menuToggle && mobileMenu) {
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active');
+        const animObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => { 
+                if (entry.isIntersecting) { 
+                    entry.target.classList.add('visible'); 
+                    observer.unobserve(entry.target); 
+                } 
             });
+        }, { threshold: 0.1 });
+
+        function applyAnimations() { 
+            document.querySelectorAll('.anim-up, .value-card').forEach(el => { animObserver.observe(el); }); 
         }
 
-        fetch(`${API}/todo`)
-            .then(r => r.json())
-            .then(data => {
-                console.log("Datos recibidos:", data);
+        document.getElementById('revPublicFile').onchange = (e) => {
+            const r = new FileReader(); r.onload = () => publicReviewImg = r.result;
+            if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
+        };
 
-                // 1. Config
-                if (data.config && document.getElementById('hero-title')) {
-                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
-                    if(document.getElementById('m-t')) document.getElementById('m-t').innerText = data.config.mision || "";
-                    if(document.getElementById('v-t')) document.getElementById('v-t').innerText = data.config.vision || "";
-                    if(document.getElementById('c-t')) document.getElementById('c-t').innerText = data.config.compromiso || "";
-                }
+        window.enviarResenaPublica = function() {
+            const data = { cliente: document.getElementById('revPublicClient').value, puesto: document.getElementById('revPublicPos').value, comentario: document.getElementById('revPublicText').value, imagen_cliente: publicReviewImg };
+            if(!data.cliente || !data.comentario) return alert("Completa los datos obligatorios.");
+            fetch(`${API}/resenas`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(() => location.reload());
+        };
 
-                // 2. Beneficios
-                const choGrid = document.getElementById('cho-grid');
-                if (choGrid && data.beneficios) {
-                    choGrid.innerHTML = data.beneficios.map(b => `
-                        <div class="value-card">
-                            <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
-                            <h3>${b.titulo}</h3>
-                            <p>${b.descripcion}</p>
-                        </div>`).join('');
-                }
+        window.scrollCatalog = function(direction) {
+            const container = document.getElementById('prod-c');
+            const scrollAmount = 335; 
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        };
 
-                // 3. Objetivos
-                const objGrid = document.getElementById('obj-grid');
-                if (objGrid && data.objetivos) {
-                    objGrid.innerHTML = data.objetivos.map(o => `
-                        <div class="target-card">
-                            <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
-                            <h3>${o.titulo}</h3>
-                            <p>${o.descripcion}</p>
-                        </div>`).join('');
-                }
+        window.setCategory = function(cat) { 
+            currentCat = cat; 
+            const sel = document.getElementById('mobileCatSelector');
+            if(sel) sel.value = cat;
+            
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if(btn.innerText === cat) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            filterAll(); 
+        };
 
-                // 4. Servicios
-                const srvC = document.getElementById('srv-c');
-                if (srvC && data.servicios) {
-                    cacheServicios = data.servicios;
-                    srvC.innerHTML = data.servicios.map(s => `
-                        <div class="service-card anim-up">
-                            ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
-                            <h3>${s.titulo}</h3>
-                            <p>${s.descripcion}</p>
-                            <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
-                        </div>`).join('');
-                }
+        window.filterAll = function() {
+            const term = document.getElementById('catSearch').value.toLowerCase();
+            const prodC = document.getElementById('prod-c'); 
+            if (!prodC) return; 
+            prodC.innerHTML = "";
+            const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
 
-                // 5. Reseñas
-                const revC = document.getElementById('rev-c');
-                if (revC && data.resenas) {
-                    revC.innerHTML = data.resenas.map(r => `
-                        <div class="review-card">
-                            <p class="review-text">"${r.comentario}"</p>
-                            <div class="reviewer-info">
-                                <img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img">
-                                <div class="reviewer-meta">
-                                    <div class="reviewer-name">${r.cliente}</div>
-                                    <div class="reviewer-pos">${r.puesto}</div>
-                                </div>
-                            </div>
-                        </div>`).join('');
-                }
+            allProducts.filter(p => (currentCat === 'Todos' || (p.categoria || "Otros") === currentCat) && (p.nombre && p.nombre.toLowerCase().includes(term))).forEach((p) => { 
+                prodC.innerHTML += `
+                    <div class="service-card visible catalog-card" style="padding: 30px;">
+                        <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="service-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;">
+                        <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center;">${p.nombre}</h3>
+                        <p style="color:var(--icon-blue); font-weight:bold; font-size:19px; margin-bottom: 25px;">${formatter.format(p.precio)}</p>
+                        <button class="btn-ver-mas" onclick="openWA('Interés en el producto: ${p.nombre}')">Cotizar</button>
+                    </div>`; 
+            });
+            
+            prodC.scrollLeft = 0;
+        };
 
-                // 6. Socios
-                const partC = document.getElementById('partners-c');
-                if (partC && data.socios) {
-                    partC.innerHTML = data.socios.map(p => `
-                        <a href="${p.url || '#'}" target="_blank" class="partner-card">
-                            <img src="${p.imagen}" alt="${p.nombre}" class="partner-logo">
-                        </a>`).join('');
-                }
+        window.mostrarDetalleServicio = function(id) {
+            const servicio = cacheServicios.find(s => s.id === id);
+            if(!servicio) return;
 
-                if (typeof applyAnimations === "function") {
-                    applyAnimations();
-                }
-            })
-            .catch(err => console.error("Error al cargar:", err));
-    });
-
-    // ==========================================
-    // FUNCIÓN FALTANTE: ANIMACIONES DE SCROLL
-    // ==========================================
-    function applyAnimations() {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                // Si el elemento entra en la pantalla, le agregamos la clase "visible"
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+            document.getElementById('det-titulo').innerText = servicio.titulo;
+            document.getElementById('det-descripcion').innerText = servicio.proceso || "Contamos con ingenieros listos para resolver tu requerimiento de forma ágil y transparente.";
+            document.getElementById('det-imagen').src = servicio.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
+            
+            const lista = document.getElementById('det-beneficios');
+            lista.innerHTML = ""; 
+            
+            const lineas = servicio.beneficios ? servicio.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico transparente de hardware", "Técnicos certificados"];
+            lineas.forEach(linea => {
+                if(linea.trim()) {
+                    lista.innerHTML += `<li><i class="fas fa-check-circle"></i> <span>${linea}</span></li>`;
                 }
             });
-        }, { 
-            threshold: 0.1, // Se activa cuando al menos el 10% del elemento es visible
-            rootMargin: "0px 0px -50px 0px" 
-        });
 
-        // Seleccionamos todos los elementos invisibles y los ponemos a observar
-        const animatedElements = document.querySelectorAll('.anim-up');
-        animatedElements.forEach(el => {
-            observer.observe(el);
-        });
-    }
+            document.getElementById('detalle-servicio-bloque').scrollIntoView({ behavior: 'smooth' });
+        };
 
-</script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch(`${API}/todo`).then(r => r.json()).then(data => {
+                if (data.config) {
+                    document.getElementById('hero-title').innerText = data.config.hero_titulo || "Servicio Técnico Profesional";
+                    document.getElementById('m-t').innerText = data.config.mision || "";
+                    document.getElementById('v-t').innerText = data.config.vision || "";
+                    document.getElementById('c-t').innerText = data.config.compromiso || "";
+                }
+                
+                const choGrid = document.getElementById('cho-grid');
+                if (choGrid && data.beneficios) {
+                    choGrid.innerHTML = "";
+                    data.beneficios.forEach((b) => {
+                        choGrid.innerHTML += `
+                            <div class="value-card">
+                                <div class="value-icon-box"><i class="${b.icono || 'fas fa-check'}"></i></div>
+                                <h3>${b.titulo}</h3>
+                                <p>${b.descripcion}</p>
+                            </div>`;
+                    });
+                }
+                
+                const objGrid = document.getElementById('obj-grid');
+                if (objGrid && data.objetivos) {
+                    objGrid.innerHTML = "";
+                    data.objetivos.forEach(o => {
+                        objGrid.innerHTML += `
+                            <div class="target-card">
+                                <div class="target-icon-box"><i class="${o.icono || 'fas fa-bullseye'}"></i></div>
+                                <h3>${o.titulo}</h3>
+                                <p style="color:var(--text-grey); font-size:14.5px; line-height:1.6;">${o.descripcion}</p>
+                            </div>`;
+                    });
+                }
+                
+                const empGrid = document.getElementById('empresas-c');
+                if (empGrid && data.empresas) {
+                    data.empresas.forEach(e => { empGrid.innerHTML += `<div class="partner-card"><img src="${e.imagen}" alt="${e.nombre}" class="recomiendan-logo" title="${e.nombre}"></div>`; });
+                }
+                
+                const srvC = document.getElementById('srv-c');
+                if (srvC && data.servicios) {
+                    cacheServicios = data.servicios; 
+                    data.servicios.forEach(s => { 
+                        srvC.innerHTML += `
+                            <div class="service-card anim-up">
+                                ${s.imagen ? `<img src="${s.imagen}" class="service-img">` : `<div class="service-icon">${s.icono}</div>`}
+                                <h3>${s.titulo}</h3>
+                                <p>${s.descripcion}</p>
+                                <button onclick="mostrarDetalleServicio(${s.id})" class="btn-ver-mas">Ver Más</button>
+                            </div>`; 
+                    });
+
+                    if(cacheServicios.length > 0) {
+                        const prim = cacheServicios[0];
+                        document.getElementById('det-titulo').innerText = prim.titulo;
+                        document.getElementById('det-descripcion').innerText = prim.proceso || "Contamos con ingenieros listos para resolver tu requerimiento de forma ágil.";
+                        document.getElementById('det-imagen').src = prim.imagen || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80";
+                        const lista = document.getElementById('det-beneficios');
+                        lista.innerHTML = "";
+                        const lineas = prim.beneficios ? prim.beneficios.split('\n') : ["Garantía escrita por iCare Tech", "Diagnóstico de hardware"];
+                        lineas.forEach(l => { if(l.trim()) lista.innerHTML += `<li><i class="fas fa-check-circle"></i> <span>${l}</span></li>`; });
+                    }
+                }
+                
+                if (data.productos) { 
+                    allProducts = data.productos; 
+                    const categories = ["Todos", ...new Set(allProducts.map(p => p.categoria || "Otros"))];
+                    
+                    const filterContainer = document.getElementById('catFilters');
+                    if (filterContainer) {
+                        filterContainer.innerHTML = categories.map(cat => 
+                            `<button class="cat-btn ${cat === 'Todos' ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+                        ).join('');
+                    }
+
+                    if(window.innerWidth <= 900) {
+                        const mobileSelector = document.getElementById('mobileCatSelector');
+                        if(mobileSelector) {
+                            document.querySelector('.mobile-selector-container').style.display = "block";
+                            mobileSelector.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                        }
+                    }
+
+                    const dropdownContainer = document.getElementById('nav-dropdown-cats');
+                    if (dropdownContainer) {
+                        const realCats = categories.filter(c => c !== "Todos");
+                        dropdownContainer.innerHTML = realCats.map(cat => 
+                            `<a href="tienda.html?cat=${encodeURIComponent(cat)}"><span>${cat}</span> <i class="fas fa-chevron-right" style="font-size:10px; color:#ccc;"></i></a>`
+                        ).join('');
+                    }
+                    
+                    filterAll(); 
+                }
+
+                const partC = document.getElementById('partners-c');
+                if (partC && data.socios) { data.socios.forEach(p => { partC.innerHTML += `<div class="partner-card"><img src="${p.imagen}" alt="${p.nombre}" class="partner-logo"></div>`; }); }
+                
+                const revC = document.getElementById('rev-c');
+                if (revC && data.resenas) {
+                    data.resenas.forEach(r => { revC.innerHTML += `<div class="review-card"><p class="review-text">"${r.comentario}"</p><div class="reviewer-info"><img src="${r.imagen_cliente || 'https://via.placeholder.com/65'}" class="reviewer-img"><div class="reviewer-meta"><div class="reviewer-name">${r.cliente}</div><div class="reviewer-pos">${r.puesto}</div></div></div></div>`; });
+                }
+                applyAnimations();
+            });
+        });
+    </script>
 </body>
 </html>

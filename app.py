@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import psycopg2
@@ -22,11 +22,13 @@ def db_query(query, params=(), fetch=False):
             conn.commit()
     except Exception as e:
         print(f"Error en BD: {e}", file=sys.stderr)
+        raise e # Es importante relanzar el error para debug
     finally:
         conn.close()
     return res
 
-# Inicialización de tablas
+# Inicialización segura para entornos Serverless
+@app.before_first_request
 def init_db():
     queries = [
         "CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT)",
@@ -38,15 +40,16 @@ def init_db():
         "CREATE TABLE IF NOT EXISTS socios (id SERIAL PRIMARY KEY, nombre TEXT, imagen TEXT, url TEXT)",
         "CREATE TABLE IF NOT EXISTS resenas (id SERIAL PRIMARY KEY, cliente TEXT, puesto TEXT, comentario TEXT, imagen_cliente TEXT)"
     ]
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    c = conn.cursor()
-    for q in queries: c.execute(q)
-    conn.commit()
-    conn.close()
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        with conn.cursor() as c:
+            for q in queries: c.execute(q)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error inicializando BD: {e}", file=sys.stderr)
 
-init_db()
-
-# RUTA MAESTRA: El frontend consulta aquí para cargar toda la web
+# RUTA MAESTRA
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
     try:
@@ -62,19 +65,6 @@ def obtener_todo():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# RUTAS DE ADMINISTRACIÓN (Ejemplos básicos)
-@app.route('/api/productos', methods=['POST'])
-def guardar_producto():
-    d = request.json or {}
-    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", 
-             (d.get('nombre'), d.get('precio'), d.get('imagen'), d.get('categoria')))
-    return jsonify({"success": True})
-
-@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
-def eliminar_item(tabla, id):
-    db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
-    return jsonify({"success": True})
 
 if __name__ == '__main__':
     app.run(debug=True)

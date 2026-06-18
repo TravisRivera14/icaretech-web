@@ -178,12 +178,19 @@ def setup_admin():
 @app.route('/api/tickets', methods=['POST'])
 def crear_ticket_publico():
     d = request.json or {}
+    # Imprimimos lo que llega para verlo en los logs de Vercel
+    print(f"DEBUG_DATOS_RECIBIDOS: {d}") 
+    
     empresa_id = d.get('empresa_id')
     contacto = d.get('contacto')
     whatsapp = d.get('whatsapp') 
     asunto = d.get('asunto')
     descripcion = d.get('descripcion')
     prioridad = d.get('prioridad', 'Alta')
+    # Si algún campo es None o vacío, imprimimos cuál
+    if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:
+        print(f"DEBUG_ERROR: Validación fallida. Datos: empresa_id={empresa_id}, contacto={contacto}, whatsapp={whatsapp}, asunto={asunto}, descripcion={descripcion}")
+        return jsonify({"error": "Todos los campos son obligatorios"}), 400
 
     # Validación: Si falta el número de WhatsApp, retorna error
     if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:

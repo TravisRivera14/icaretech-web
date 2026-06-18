@@ -178,46 +178,43 @@ def setup_admin():
 @app.route('/api/tickets', methods=['POST'])
 def crear_ticket_publico():
     d = request.json or {}
-    # Imprimimos lo que llega para verlo en los logs de Vercel
-    print(f"DEBUG_DATOS_RECIBIDOS: {d}") 
     
+    # DEBUG: Esto imprimirá los datos en los logs de Vercel para que veamos qué llega
+    print(f"DATOS_RECIBIDOS_EN_BACKEND: {d}")
+
+    # Extraemos con valores por defecto para no romper el código si algo falta
     empresa_id = d.get('empresa_id')
     contacto = d.get('contacto')
     whatsapp = d.get('whatsapp') 
     asunto = d.get('asunto')
     descripcion = d.get('descripcion')
     prioridad = d.get('prioridad', 'Alta')
-    # Si algún campo es None o vacío, imprimimos cuál
-    if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:
-        print(f"DEBUG_ERROR: Validación fallida. Datos: empresa_id={empresa_id}, contacto={contacto}, whatsapp={whatsapp}, asunto={asunto}, descripcion={descripcion}")
-        return jsonify({"error": "Todos los campos son obligatorios"}), 400
 
-    # Validación: Si falta el número de WhatsApp, retorna error
-    if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:
-        return jsonify({"error": "Todos los campos, incluido el WhatsApp, son obligatorios"}), 400
+    # Validamos solo lo esencial, dejando de lado los que a veces llegan como None
+    if not contacto or not asunto or not descripcion:
+        return jsonify({"error": f"Faltan campos obligatorios. Recibí: {d}"}), 400
 
-    # Inserción: Se guarda la columna 'whatsapp' en la base de datos
+    # Inserción a BD
     db_query(
         "INSERT INTO tickets_soporte (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s, %s)",
         (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad)
     )
 
-    # Lógica de Notificación por WhatsApp
-    mensaje = f"🎫 Nuevo Ticket en iCareTechCR: {asunto}. Cliente: {contacto}. WhatsApp: {whatsapp}. Prioridad: {prioridad}."
-    
-    # Obtenemos los valores desde las variables de entorno configuradas en Vercel
+    # Lógica de Notificación WhatsApp
+    mensaje = f"🎫 Ticket: {asunto}. Cliente: {contacto}. WhatsApp: {whatsapp}."
     phone = os.environ.get('WHATSAPP_PHONE')
     apikey = os.environ.get('WHATSAPP_APIKEY')
     
-    try:
-        # Construcción de la URL con las variables seguras
-        url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={mensaje}&apikey={apikey}"
-        requests.get(url)
-    except Exception as e:
-        print(f"Error enviando WhatsApp: {e}")
+    if phone and apikey:
+        try:
+            url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={mensaje}&apikey={apikey}"
+            requests.get(url)
+        except Exception as e:
+            print(f"Error WhatsApp: {e}")
 
-    registrar_cambio("Ticket Creado", f"Avería reportada por {contacto} (Asunto: {asunto})")
+    registrar_cambio("Ticket Creado", f"Avería reportada por {contacto}")
     return jsonify({"success": True, "message": "Ticket registrado con éxito"})
+
 @app.route('/api/admin/tickets', methods=['GET'])
 def listar_tickets_admin():
     """Ruta protegida para auditar e inyectar todos los tickets en la tabla administrativa."""

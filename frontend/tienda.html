@@ -7,213 +7,62 @@
     <link rel="icon" href="Logo_Pestana_v2.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { 
-            --nav-bg: #355c6b; 
-            --neon-green: #7cf5a6; 
-            --neon-green-hover: #65d98e;
-            --icon-blue: #4ea5ce;
-            --bg-light: #f4f7f6;
-            --text-dark: #111111;
-            --text-grey: #666666;
-            --white: #ffffff;
-            --footer-dark: #1a1a1a;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
-
-        header { background: var(--nav-bg); padding: 15px 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
-        .logo-area { display: flex; align-items: center; text-decoration: none; color: white; font-weight: bold; gap: 10px; }
-        .logo-img { height: 50px; width: auto; filter: brightness(0) invert(1); } 
-        .btn-back { color: white; text-decoration: none; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-
-        /* DISEÑO DE DOS COLUMNAS RESPONSIVO */
-        .shop-layout { 
-            display: grid; 
-            grid-template-columns: 280px 1fr; 
-            gap: 30px; 
-            max-width: 1300px; 
-            margin: 40px auto; 
-            padding: 0 20px; 
-        }
-
-        .sidebar-filters { background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; height: fit-content; }
-        .filter-group { margin-bottom: 30px; }
-        .filter-group h4 { font-size: 16px; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; color: #111; border-bottom: 2px solid var(--bg-light); padding-bottom: 8px; }
-        .filter-group input[type="text"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-bottom: 10px; }
-        .range-inputs { display: flex; gap: 10px; align-items: center; }
-        .range-inputs input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; text-align: center; font-size: 13px; }
-        
-        .gama-option { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; color: #444; cursor: pointer; }
-
-        .results-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            background: var(--white); 
-            padding: 15px 25px; 
-            border-radius: 12px; 
-            border: 1px solid #e2e8f0; 
-        }
-        .results-header h2 { font-size: 22px; font-weight: 800; color: #111; }
-        
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-            gap: 25px; 
-        }
-        .product-card { background: var(--white); padding: 30px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #eaeaea; transition: 0.3s; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
-        .product-img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
-        .product-card h3 { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 10px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-        .product-price { color: var(--icon-blue); font-weight: 800; font-size: 18px; margin-bottom: 20px; }
-        .btn-quote { background: var(--neon-green); color: #000; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
-        .btn-quote:hover { background: var(--neon-green-hover); }
-
-        /* 📱 OPTIMIZACIÓN DE TIENDA PARA CELULARES */
-        @media (max-width: 900px) {
-            header {
-                padding: 15px 20px;
-            }
-            .shop-layout { 
-                grid-template-columns: 1fr; 
-                margin: 20px auto;
-            }
-            .results-header {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-            .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            }
-        }
+        :root { --nav-bg: #355c6b; --neon-green: #7cf5a6; --turquoise-main: #00b4d8; --bg-light: #f4f7f6; }
+        body { background-color: var(--bg-light); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 20px; }
+        .catalogo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .product-img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 10px; }
+        .btn-quote { background: var(--turquoise-main); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="nav-bar">
-            <a href="index.html" class="logo-area">
-                <img src="Logo.png" alt="Logo" class="logo-img">
-                <span>Catálogo iCare</span>
-            </a>
-            <div style="display: flex; align-items: center; gap: 25px;">
-                <a href="/servicio" style="color: var(--neon-green); text-decoration: none; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px;"><i class="fas fa-headset"></i> Soporte Corporativo</a>
-                <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
-            </div>
-        </div>
-    </header>
-
-    <div class="shop-layout">
-        <aside class="sidebar-filters">
-            <div class="filter-group">
-                <h4>Buscar Pieza</h4>
-                <input type="text" id="shopSearch" placeholder="Nombre de componente..." onkeyup="filtrarCatalogo()">
-            </div>
-            
-            <div class="filter-group">
-                <h4>Filtrar por Precio</h4>
-                <div class="range-inputs">
-                    <input type="number" id="priceMin" placeholder="Mín ₡" onkeyup="filtrarCatalogo()">
-                    <span>-</span>
-                    <input type="number" id="priceMax" placeholder="Máx ₡" onkeyup="filtrarCatalogo()">
-                </div>
-            </div>
-
-            <div class="filter-group">
-                <h4>Gamas</h4>
-                <div class="gama-option"><input type="radio" name="gama" checked onclick="setGama('todas')"> Todas las gamas</div>
-                <div class="gama-option"><input type="radio" name="gama" onclick="setGama('premium')"> Premium Service Pack</div>
-                <div class="gama-option"><input type="radio" name="gama" onclick="setGama('estandar')"> Componentes Estándar</div>
-            </div>
-        </aside>
-
-        <main>
-            <div class="results-header">
-                <h2 id="current-cat-title">Cargando Categoría...</h2>
-                <span id="results-count" style="font-size: 14px; color: var(--text-grey); font-weight: 500;">0 productos encontrados</span>
-            </div>
-
-            <div class="products-grid" id="shop-products-container"></div>
-        </main>
+    <h1 id="current-cat-title">Catálogo</h1>
+    <div id="shop-products-container" class="catalogo-grid">
+        <p>Cargando catálogo premium...</p>
     </div>
 
     <script>
-        const API = '/api';
+        const API = "http://localhost:5000";
         let tiendaProductos = [];
-        let categoriaActiva = "";
-        let gamaFiltro = "todas";
+        const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'USD' });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        categoriaActiva = urlParams.get('cat') || "";
-
-        function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
-
-        function setGama(gama) {
-            gamaFiltro = gama;
-            filtrarCatalogo();
+        function openWA(mensaje) {
+            const numero = "506XXXXXXXX"; // Tu número de empresa aquí
+            window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`, '_blank');
         }
 
         function filtrarCatalogo() {
-            const txt = document.getElementById('shopSearch').value.toLowerCase();
-            const min = parseFloat(document.getElementById('priceMin').value) || 0;
-            const max = parseFloat(document.getElementById('priceMax').value) || Infinity;
-            
             const contenedor = document.getElementById('shop-products-container');
-            if(!contenedor) return;
-            contenedor.innerHTML = "";
-
-            const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
-
-            const filtrados = tiendaProductos.filter(p => {
-                // LOGICA MEJORADA: Si categoriaActiva está vacío, mostramos todo (Catálogo General)
-                const categoriaDelProducto = p.categoria || "Otros";
-                const coincideCat = (categoriaActiva === "" || categoriaDelProducto === categoriaActiva);
-                
-                const coincideTxt = p.nombre && p.nombre.toLowerCase().includes(txt);
-                const coincidePrecio = p.precio >= min && p.precio <= max;
-                
-                let coincideGama = true;
-                if (gamaFiltro === 'premium') coincideGama = p.nombre && p.nombre.toLowerCase().includes('service pack');
-                if (gamaFiltro === 'estandar') coincideGama = p.nombre && !p.nombre.toLowerCase().includes('service pack');
-
-                return coincideCat && coincideTxt && coincidePrecio && coincideGama;
-            });
-
-            document.getElementById('results-count').innerText = `${filtrados.length} productos encontrados`;
-
-            if(filtrados.length === 0) {
-                contenedor.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">No hay componentes cargados para estos criterios.</div>`;
+            contenedor.innerHTML = '';
+            
+            if (tiendaProductos.length === 0) {
+                contenedor.innerHTML = '<p>No hay productos disponibles actualmente.</p>';
                 return;
             }
 
-            filtrados.forEach(p => {
+            tiendaProductos.forEach(p => {
                 contenedor.innerHTML += `
                     <div class="product-card">
-                        <img src="${p.imagen || 'https://via.placeholder.com/200'}" class="product-img">
+                        <img src="${p.imagen}" class="product-img" alt="${p.nombre}">
                         <h3>${p.nombre}</h3>
-                        <div class="product-price">${formatter.format(p.precio)}</div>
-                        <button class="btn-quote" onclick="openWA('Hola iCare, estoy interesado en cotizar: ${p.nombre}')">Cotizar Componente</button>
+                        <p><strong>${formatter.format(p.precio)}</strong></p>
+                        <button class="btn-quote" onclick="openWA('Hola, me interesa: ${p.nombre}')">Cotizar</button>
                     </div>`;
             });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Actualizar título dinámicamente
-            document.getElementById('current-cat-title').innerText = categoriaActiva || "Catálogo General";
-
-            fetch(`${API}/todo`)
+            fetch(`${API}/api/data`)
             .then(r => r.json())
             .then(data => {
                 if(data.productos) {
                     tiendaProductos = data.productos;
                     filtrarCatalogo();
                 }
-            }).catch(() => {
-                document.getElementById('shop-products-container').innerHTML = "Error al conectar con el servidor.";
+            })
+            .catch(() => {
+                document.getElementById('shop-products-container').innerHTML = "Error al conectar con la base de datos.";
             });
         });
     </script>

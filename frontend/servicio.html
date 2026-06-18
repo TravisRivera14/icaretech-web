@@ -5,172 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centro de Soporte | iCare Tech CR</title>
     <link rel="icon" href="Logo_Pestana_v2.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
     <style>
-        :root { 
-            --nav-bg: rgba(53, 92, 107, 0.9); 
-            --neon-green: #7cf5a6; 
-            --neon-green-hover: #65d98e;
-            --icon-blue: #4ea5ce;
-            --bg-light: #f4f7f6;
-            --text-dark: #111111;
-            --text-grey: #666666;
-            --white: #ffffff;
-            --footer-dark: #1a1a1a;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
-
-        header { 
-            background: var(--nav-bg); 
-            padding: 5px 40px; 
-            position: sticky; top: 0; z-index: 1000; 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
-        .logo-img { height: 75px; width: auto; object-fit: contain; }
-
-        .support-container { max-width: 800px; margin: 60px auto; padding: 0 20px; }
-        .ticket-card {
-            background: var(--white);
-            padding: 45px 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
-        }
-        .ticket-card h2 { font-size: 28px; font-weight: 800; margin-bottom: 10px; color: var(--text-dark); text-align: center; }
-        .ticket-card p { color: var(--text-grey); text-align: center; margin-bottom: 35px; font-size: 15px; }
-
-        .form-group { margin-bottom: 24px; }
-        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
-        .form-control {
-            width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e1;
-            outline: none; font-size: 15px; transition: var(--transition-smooth); background: var(--white);
-        }
-        .form-control:focus { border-color: var(--icon-blue); box-shadow: 0 0 10px rgba(78, 165, 206, 0.15); }
-        
-        .priority-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .priority-option {
-            border: 2px solid #cbd5e1; padding: 12px; border-radius: 10px; text-align: center;
-            font-weight: 700; cursor: pointer; transition: var(--transition-smooth);
-        }
-        .priority-option[data-value="Baja"]:hover { border-color: #28a745; color: #28a745; }
-        .priority-option[data-value="Media"]:hover { border-color: #ffc107; color: #ffc107; }
-        .priority-option[data-value="Alta"]:hover { border-color: #dc3545; color: #dc3545; }
-        
-        .priority-option.selected[data-value="Baja"] { background: #28a745; color: white; border-color: #28a745; }
-        .priority-option.selected[data-value="Media"] { background: #ffc107; color: black; border-color: #ffc107; }
-        .priority-option.selected[data-value="Alta"] { background: #dc3545; color: white; border-color: #dc3545; }
-
-        .btn-submit {
-            width: 100%; padding: 16px; border-radius: 30px; background: var(--neon-green);
-            color: #000000; font-weight: 700; border: none; cursor: pointer;
-            transition: var(--transition-smooth); font-size: 16px;
-            box-shadow: 0 4px 15px rgba(124, 245, 166, 0.3); margin-top: 10px;
-        }
-        .btn-submit:hover { background: var(--neon-green-hover); transform: translateY(-2px); }
-        
-        .site-footer { background-color: var(--footer-dark); color: #ffffff; padding: 45px 0; text-align: center; border-top: 4px solid var(--neon-green); margin-top: 80px; }
+        :root { --nav-bg: #355c6b; --neon-green: #7cf5a6; --turquoise-main: #00b4d8; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f4f7f6; padding: 20px; }
+        .form-container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input, select, textarea { width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: var(--turquoise-main); color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 5px; width: 100%; }
+        button:disabled { background: #ccc; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="nav-bar">
-            <a href="index.html" class="logo-area">
-                <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
-            </a>
-        </div>
-    </header>
-
-    <div class="support-container">
-        <div class="ticket-card">
-            <h2><i class="fas fa-headset" style="color: var(--icon-blue);"></i> Centro de Soporte Técnico</h2>
-            <p>Reporta tu avería o requerimiento. Nuestro equipo de ingenieros lo atenderá de inmediato.</p>
+    <div class="form-container">
+        <h1>Solicitar Soporte Técnico</h1>
+        <form id="ticketForm" onsubmit="enviarTicket(event)">
+            <select id="empresaSelect" required>
+                <option value="">Cargando empresas...</option>
+            </select>
+            <input type="text" id="ticketContacto" placeholder="Nombre o Contacto" required>
+            <input type="text" id="ticketAsunto" placeholder="Asunto del reporte" required>
+            <textarea id="ticketDescripcion" rows="4" placeholder="Detalles técnicos" required></textarea>
             
-            <form id="ticketForm" onsubmit="enviarTicket(event)">
-                <div class="form-group">
-                    <label for="empresaSelect">Selecciona tu Empresa</label>
-                    <select id="empresaSelect" class="form-control" required>
-                        <option value="">Cargando empresas asociadas...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="ticketContacto">Tu Nombre / Contacto</label>
-                    <input type="text" id="ticketContacto" class="form-control" placeholder="Ej: Juan Pérez" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="ticketAsunto">Asunto del Problema</label>
-                    <input type="text" id="ticketAsunto" class="form-control" placeholder="Ej: Servidor de archivos inaccesible o Laptop no enciende" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="ticketDescripcion">Descripción Detallada</label>
-                    <textarea id="ticketDescripcion" class="form-control" rows="5" placeholder="Por favor detalla el error o los síntomas del equipo..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Prioridad / Urgencia</label>
-                    <div class="priority-selector">
-                        <div class="priority-option" data-value="Baja" onclick="selectPriority('Baja')">Baja</div>
-                        <div class="priority-option" data-value="Media" onclick="selectPriority('Media')">Media</div>
-                        <div class="priority-option selected" data-value="Alta" onclick="selectPriority('Alta')">Alta</div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">Crear Ticket de Soporte</button>
-            </form>
-        </div>
+            <label>Prioridad:</label>
+            <div id="prioridad-selector">
+                <button type="button" onclick="selectPriority('Alta')">Alta</button>
+            </div>
+            
+            <button type="submit" id="btn-submit">Enviar Ticket</button>
+        </form>
     </div>
 
-    <footer class="site-footer">
-        <div>© 2026 iCare Tech CR. Todos los derechos reservados.</div>
-    </footer>
-
     <script>
-        const API = '/api';
-        let prioridadSeleccionada = "Alta";
+        const API = "http://localhost:5000";
+        let prioridadSeleccionada = 'Alta';
 
-        function selectPriority(val) {
-            prioridadSeleccionada = val;
-            document.querySelectorAll('.priority-option').forEach(opt => {
-                if(opt.getAttribute('data-value') === val) opt.classList.add('selected');
-                else opt.classList.remove('selected');
-            });
-        }
-
-        // Carga dinámicamente las empresas que diste de alta en la base de datos
+        // Cargar empresas al iniciar
         document.addEventListener("DOMContentLoaded", () => {
-            fetch(`${API}/todo`)
+            fetch(`${API}/api/empresas`)
                 .then(r => r.json())
                 .then(data => {
                     const select = document.getElementById('empresaSelect');
-                    if(data.empresas && data.empresas.length > 0) {
-                        select.innerHTML = '<option value="">-- Selecciona una empresa --</option>';
-                        data.empresas.forEach(emp => {
-                            select.innerHTML += `<option value="${emp.id}">${emp.nombre}</option>`;
-                        });
-                    } else {
-                        select.innerHTML = '<option value="">No hay empresas registradas</option>';
-                    }
+                    select.innerHTML = data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
                 }).catch(() => {
-                    document.getElementById('empresaSelect').innerHTML = '<option value="">Error cargando empresas</option>';
+                    document.getElementById('empresaSelect').innerHTML = '<option>Error al cargar empresas</option>';
                 });
         });
 
-        function enviarTicket(e) {
+        async function enviarTicket(e) {
             e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+
             const data = {
                 empresa_id: document.getElementById('empresaSelect').value,
                 contacto: document.getElementById('ticketContacto').value,
@@ -179,19 +67,27 @@
                 prioridad: prioridadSeleccionada
             };
 
-            fetch(`${API}/tickets`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            })
-            .then(r => r.json())
-            .then(res => {
-                alert("¡Ticket creado con éxito! Un técnico se pondrá en contacto pronto.");
-                document.getElementById('ticketForm').reset();
-                selectPriority('Alta');
-            })
-            .catch(() => alert("Error al procesar el ticket. Reintenta más tarde."));
+            try {
+                const res = await fetch(`${API}/tickets`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    alert("¡Ticket creado con éxito!");
+                    document.getElementById('ticketForm').reset();
+                } else {
+                    throw new Error("Error en servidor");
+                }
+            } catch (err) {
+                alert("Error al procesar el ticket. Intenta más tarde.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Enviar Ticket";
+            }
         }
+
+        function selectPriority(p) { prioridadSeleccionada = p; }
     </script>
 </body>
 </html>

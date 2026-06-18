@@ -480,6 +480,8 @@
             <div class="card">
                 <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa</h2>
                 <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
+                <label>Logo corporativo (Opcional):</label>
+                <input type="file" id="newSupportEmpImg" accept="image/*" style="padding: 10px;">
                 <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Vincular Cliente</button>
             </div>
             <div class="card">
@@ -667,7 +669,7 @@
 
 <script>
     const API = '/api';
-    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", editId=null, editType=null;
+    let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", imgSupportEmp="", editId=null, editType=null;
     let editSupportEmpId = null; 
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
@@ -704,6 +706,7 @@
     handleFile('revImgFile', res => imgRev = res);
     handleFile('partnerImgFile', res => imgPartner = res);
     handleFile('empImgFile', res => imgEmp = res);
+    handleFile('newSupportEmpImg', res => imgSupportEmp = res);
 
     document.getElementById('form-login-master').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -938,11 +941,14 @@
         }, 1200);
     }
 
-    function ajustarEdicionEmpresaSoporte(id, nombre) {
+    function ajustarEdicionEmpresaSoporte(id, nombre, imagenActual) {
         editSupportEmpId = id;
         document.getElementById('newSupportEmpName').value = nombre;
+        // Magia: Si ya hay imagen, la guardamos en memoria para no borrarla
+        imgSupportEmp = (imagenActual && imagenActual !== 'undefined' && imagenActual !== 'null') ? imagenActual : "";
+        
         document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
-        document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Nombre Empresa";
+        document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Empresa y Logo";
         document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
         document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
     }
@@ -974,38 +980,30 @@
         const nombre = document.getElementById('newSupportEmpName').value;
         if(!nombre) return alert("Especifica el nombre corporativo.");
         
-        if (editSupportEmpId) {
-            fetch(`${API}/recomiendan/${editSupportEmpId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ nombre: nombre, imagen: "" })
-            })
-            .then(r => r.json())
-            .then(() => {
-                alert("Nombre de la empresa corporativa actualizado con éxito.");
-                editSupportEmpId = null;
-                document.getElementById('newSupportEmpName').value = "";
-                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
-                document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
-                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
-                document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
-                loadContent();
-            });
-        } else {
-            fetch(`${API}/admin/empresas-soporte`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ nombre: nombre })
-            })
-            .then(r => r.json())
-            .then(() => {
-                alert("Vínculo corporativo completado.");
-                document.getElementById('newSupportEmpName').value = "";
-                loadContent();
-            });
-        }
+        // Usamos la ruta inteligente de tu backend que soporta imágenes
+        const method = editSupportEmpId ? 'PUT' : 'POST';
+        const url = editSupportEmpId ? `${API}/recomiendan/${editSupportEmpId}` : `${API}/recomiendan`;
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ nombre: nombre, imagen: imgSupportEmp })
+        })
+        .then(r => r.json())
+        .then(() => {
+            alert(editSupportEmpId ? "Empresa corporativa actualizada con éxito." : "Vínculo corporativo completado.");
+            editSupportEmpId = null;
+            document.getElementById('newSupportEmpName').value = "";
+            document.getElementById('newSupportEmpImg').value = ""; // Limpiamos el input
+            imgSupportEmp = ""; // Limpiamos memoria
+            
+            document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
+            document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
+            document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
+            document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
+            loadContent();
+        });
     }
 
     function eliminarEmpresaSoporte(id) {
@@ -1048,15 +1046,18 @@
             if(cacheData.empresas.length === 0) {
                 divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
             } else {
-                divBajas.innerHTML = cacheData.empresas.map(e => `
+                divBajas.innerHTML = cacheData.empresas.map(e => {
+                    // Si la empresa tiene imagen, crea el <img>, si no, pon el emoji 🏢
+                    const imgTag = e.imagen ? `<img src="${e.imagen}" alt="Logo" style="height:25px; width:auto; border-radius:4px; margin-right:10px; vertical-align:middle;">` : `🏢 `;
+                    return `
                     <div class="list-item">
-                        <span>🏢 ${e.nombre}</span>
+                        <span style="display:flex; align-items:center;">${imgTag} ${e.nombre}</span>
                         <div>
-                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}')">Editar</button>
+                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
                             <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             
             let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";

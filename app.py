@@ -3,6 +3,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
+import requests
 
 app = Flask(__name__)
 
@@ -175,21 +176,32 @@ def setup_admin():
 
 @app.route('/api/tickets', methods=['POST'])
 def crear_ticket_publico():
-    """Ruta pública para que los clientes envíen incidencias desde la interfaz /servicio."""
     d = request.json or {}
     empresa_id = d.get('empresa_id')
     contacto = d.get('contacto')
+    whatsapp = d.get('whatsapp') # Capturamos el nuevo campo
     asunto = d.get('asunto')
     descripcion = d.get('descripcion')
     prioridad = d.get('prioridad', 'Alta')
 
-    if not empresa_id or not contacto or not asunto or not descripcion:
-        return jsonify({"error": "Todos los campos del reporte de soporte son obligatorios"}), 400
+    if not empresa_id or not contacto or not asunto or not descripcion or not whatsapp:
+        return jsonify({"error": "Todos los campos, incluido el WhatsApp, son obligatorios"}), 400
 
+    # Guardamos en la base de datos
+    # NOTA: Debes agregar la columna 'whatsapp' a tu tabla 'tickets_soporte' en init_db()
     db_query(
         "INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s)",
         (empresa_id, contacto, asunto, descripcion, prioridad)
     )
+
+    # Lógica de Notificación por WhatsApp
+    mensaje = f"🎫 Nuevo Ticket en iCareTechCR: {asunto}. Cliente: {contacto}. WhatsApp: {whatsapp}. Prioridad: {prioridad}."
+    # API de ejemplo: CallMeBot (debes registrar tu número en callmebot.com para obtener apiKey)
+    try:
+        requests.get(f"https://api.callmebot.com/whatsapp.php?phone=TU_NUMERO&text={mensaje}&apikey=TU_APIKEY")
+    except Exception as e:
+        print(f"Error enviando WhatsApp: {e}")
+
     registrar_cambio("Ticket Creado", f"Avería reportada por {contacto} (Asunto: {asunto})")
     return jsonify({"success": True, "message": "Ticket registrado con éxito"})
 

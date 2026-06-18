@@ -12,6 +12,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+
+        /* ... todos tus estilos actuales ... */
+
+        /* 📱 OPTIMIZACIÓN MÓVIL PARA EL ENCABEZADO */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 15px !important;
+            }
+            .nav-bar {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            .logo-img {
+                height: 50px !important;
+                width: auto;
+            }
+            .nav-links {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                font-size: 14px;
+            }
+        }
+        
         :root { 
             --dark-bg: #0b0c10;
             --card-bg: #1f2833;

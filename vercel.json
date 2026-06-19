@@ -24,12 +24,7 @@
       "dest": "config_hacienda.html"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "assets/$1"
-    },
-    {
-      "src": "/((?!api|servicio|service|config_hacienda).*\\.(png|jpg|jpeg|gif|ico|svg|css|js|db))",
-      "dest": "$1"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",

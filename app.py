@@ -88,7 +88,7 @@ def registrar_cambio(accion, detalle):
 
 
 # ==========================================
-# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA
+# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA (PRIMERO)
 # ==========================================
 
 def obtener_oauth_token_hacienda(id_empresa):
@@ -145,7 +145,7 @@ def obtener_oauth_token_hacienda(id_empresa):
 
 
 # ==========================================
-# ENDPOINT DE DIAGNÓSTICO (CORREGIDO: Ubicado después de definir la función)
+# ENDPOINT TEMPORAL DE DIAGNÓSTICO (CORREGIDO)
 # ==========================================
 @app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
 def probar_conexion_hacienda_test():
@@ -242,7 +242,7 @@ def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     ahora = datetime.now()
     dia = ahora.strftime("%d")
     mes = ahora.strftime("%m")
-    ano = ahora.strftime("%y")
+    ano = Generic = ahora.strftime("%y")
 
     cedula_limpia = "".join(filter(str.isdigit, str(cedula_emisor)))
     cedula_12 = cedula_limpia.zfill(12)

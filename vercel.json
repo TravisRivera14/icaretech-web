@@ -24,8 +24,16 @@
       "dest": "config_hacienda.html"
     },
     {
+      "src": "/(assets/.*)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|ico|svg|css|js))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "$1"
+      "dest": "index.html"
     }
   ]
 }

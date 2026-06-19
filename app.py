@@ -20,9 +20,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True
 )
 
-DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON')
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+DATABASE_URL = "postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
 def db_query(query, params=(), fetch=False):
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -217,10 +215,10 @@ def obtener_oauth_token_hacienda(id_empresa):
         }
 
 # Endpoint de prueba interna para verificar que tus credenciales de ATV de verdad funcionan
-@app.route('/api/admin/facturacion/probar-conexion/<int:id_empresa>', methods=['GET'])
-def probar_conexion_hacienda(id_empresa):
-    if not session.get('rol'):
-        return jsonify({"message": "Acceso denegado"}), 403
+#@app.route('/api/admin/facturacion/probar-conexion/<int:id_empresa>', methods=['GET'])
+#def probar_conexion_hacienda(id_empresa):
+#    if not session.get('rol'):
+#        return jsonify({"message": "Acceso denegado"}), 403
         
     resultado = obtener_oauth_token_hacienda(id_empresa)
     

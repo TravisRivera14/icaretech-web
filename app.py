@@ -50,6 +50,16 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
+        # 🇨🇷 NUEVA TABLA ESENCIAL: Guarda las llaves de Hacienda amarradas a la empresa corporativa
+    c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (
+                    id_configuracion SERIAL PRIMARY KEY,
+                    id_empresa INT NOT NULL,
+                    cedula_juridica VARCHAR(20) DEFAULT '3101000000',
+                    hacienda_usuario_idp TEXT NOT NULL,
+                    hacienda_password_idp TEXT NOT NULL,
+                    ruta_llave_p12 TEXT NOT NULL,
+                    pin_llave_p12 VARCHAR(10) NOT NULL,
+                    ambiente_produccion BOOLEAN DEFAULT FALSE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (
                     id SERIAL PRIMARY KEY, 
                     empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, 

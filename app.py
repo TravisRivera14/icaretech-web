@@ -729,6 +729,19 @@ def eliminar_item(tabla, id):
 @app.before_request
 def asegurarse_db():
     init_db()
+    
+# ==========================================
+# 🏠 DESPACHADOR DE ARCHIVOS RAÍZ (SOLUCIÓN DE HERENCIA VERCEL)
+# ==========================================
+@app.route('/')
+def servir_raiz():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:path>')
+def servir_archivos_sueltos(path):
+    if os.path.exists(path):
+        return send_from_directory('.', path)
+    return send_from_directory('.', 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

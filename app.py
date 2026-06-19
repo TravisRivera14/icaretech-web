@@ -47,10 +47,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    
-    # CORREGIDO: Sintaxis limpia sin el residuo de comillas al final
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (
@@ -64,7 +61,6 @@ def init_db():
                     estado VARCHAR(20) DEFAULT 'Abierto', 
                     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
 
-    # INTEGRADO: Tabla maestra de Hacienda enlazada a Neon
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (
                     id_configuracion SERIAL PRIMARY KEY,
                     id_empresa INT NOT NULL,
@@ -91,94 +87,7 @@ def registrar_cambio(accion, detalle):
 
 
 # ==========================================
-# 🇨🇷 MÓDULO DE FACTURACIÓN: CONFIGURACIÓN HACIENDA
-# ==========================================
-
-@app.route('/api/admin/configuracion-hacienda', methods=['POST'])
-def guardar_configuracion_hacienda():
-    if not session.get('rol'):
-        return jsonify({"message": "Acceso denegado"}), 403
-
-    usuario_idp = request.form.get('usuario_idp')
-    password_idp = request.form.get('password_idp')
-    pin_p12 = request.form.get('pin_p12')
-    ambiente = request.form.get('ambiente')
-    ambiente_produccion = True if ambiente in ['true', 'on', True] else False
-    archivo_p12 = request.files.get('archivo_p12')
-    id_empresa_actual = request.form.get('id_empresa', 1)
-
-    if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12:
-        return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
-
-    try:
-        contenido_binario = archivo_p12.read()
-        p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
-
-        existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
-        
-        if existe:
-            db_query("""
-                UPDATE configuracionhacienda 
-                SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, 
-                    ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s
-                WHERE id_empresa = %s
-            """, (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
-        else:
-            db_query("""
-                INSERT INTO configuracionhacienda (
-                    id_empresa, hacienda_usuario_idp, hacienda_password_idp, 
-                    ruta_llave_p12, pin_llave_p12, ambiente_produccion
-                ) VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
-
-        registrar_cambio("Configuró Hacienda", f"Credenciales actualizadas para Empresa ID: {id_empresa_actual}")
-        return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en Neon"})
-    except Exception as e:
-        return jsonify({"success": False, "message": f"Error en procesamiento interno: {str(e)}"}), 500
-
-
-@app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
-def verificar_configuracion_hacienda():
-    if not session.get('rol'):
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    id_empresa = request.args.get('id_empresa', 1)
-    res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
-    
-    if res:
-        return jsonify({
-            "configurado": True,
-            "usuario_idp": res[0][0],
-            "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"
-        })
-    return jsonify({"configurado": False})
-
-
-# ==========================================
-# ENDPOINT TEMPORAL DE DIAGNÓSTICO (Bypass de Sesión)
-# ==========================================
-@app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
-def probar_conexion_hacienda_test():
-    try:
-        resultado = obtener_oauth_token_hacienda(1)
-        if resultado["success"]:
-            return jsonify({
-                "status": "Conexión Exitosa",
-                "mensaje": "Autenticado correctamente con Hacienda.",
-                "token": resultado["access_token"][:15] + "..."
-            })
-        else:
-            return jsonify({
-                "status": "Error de Autenticación",
-                "mensaje": "Hacienda rechazó las credenciales o la tabla está vacía.",
-                "detalles_tecnicos": resultado
-            }), 400
-    except Exception as e:
-        return jsonify({"status": "Error Interno", "error": str(e)}), 500
-
-
-# ==========================================
-# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA
+# FUNCIONES LÓGICAS INTERNAS DE HACIENDA (PRIMERO)
 # ==========================================
 
 def obtener_oauth_token_hacienda(id_empresa):
@@ -232,11 +141,6 @@ def obtener_oauth_token_hacienda(id_empresa):
             "error_detalle": f"No se pudo conectar con el servidor de autenticación de Hacienda: {str(e)}"
         }
 
-
-# ==========================================
-# 📐 FASE 4: GENERACIÓN DE CLAVE DE 50 DÍGITOS Y XML (VERSIÓN 4.4)
-# ==========================================
-
 def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     ahora = datetime.now()
     dia = ahora.strftime("%d")
@@ -251,7 +155,6 @@ def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     if len(clave) != 50:
         raise Exception(f"Error crítico en el cálculo de la clave. Longitud obtenida: {len(clave)} de 50.")
     return clave
-
 
 def generar_xml_factura_44(datos_factura, lineas_detalle):
     NS_FACTURA = "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturelectronica"
@@ -328,11 +231,6 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
 
     return ET.tostring(root, encoding="utf-8").decode("utf-8")
 
-
-# ==========================================
-# 🚀 FASE 5: ENVÍO ASÍNCRONO Y RECEPCIÓN DE COMPROBANTES
-# ==========================================
-
 def enviar_factura_hacienda(id_empresa, datos_factura, xml_string):
     token_data = obtener_oauth_token_hacienda(id_empresa)
     if not token_data["success"]:
@@ -381,6 +279,87 @@ def enviar_factura_hacienda(id_empresa, datos_factura, xml_string):
         return {"success": False, "message": f"Error de conexión con el API de Recepción: {str(e)}"}
 
 
+# ==========================================
+# 🇨🇷 RUTAS CONTROLADORAS DEL BACKEND
+# ==========================================
+
+@app.route('/api/admin/configuracion-hacienda', methods=['POST'])
+def guardar_configuracion_hacienda():
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+
+    usuario_idp = request.form.get('usuario_idp')
+    password_idp = request.form.get('password_idp')
+    pin_p12 = request.form.get('pin_p12')
+    ambiente = request.form.get('ambiente')
+    ambiente_produccion = True if ambiente in ['true', 'on', True] else False
+    archivo_p12 = request.files.get('archivo_p12')
+    id_empresa_actual = request.form.get('id_empresa', 1)
+
+    if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12:
+        return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
+
+    try:
+        contenido_binario = archivo_p12.read()
+        p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
+
+        existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
+        
+        if existe:
+            db_query("""
+                UPDATE configuracionhacienda 
+                SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, 
+                    ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s
+                WHERE id_empresa = %s
+            """, (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
+        else:
+            db_query("""
+                INSERT INTO configuracionhacienda (
+                    id_empresa, hacienda_usuario_idp, hacienda_password_idp, 
+                    ruta_llave_p12, pin_llave_p12, ambiente_produccion
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
+
+        registrar_cambio("Configuró Hacienda", f"Credenciales actualizadas para Empresa ID: {id_empresa_actual}")
+        return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en Neon"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error en procesamiento interno: {str(e)}"}), 500
+
+@app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
+def verificar_configuracion_hacienda():
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    id_empresa = request.args.get('id_empresa', 1)
+    res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    
+    if res:
+        return jsonify({
+            "configurado": True,
+            "usuario_idp": res[0][0],
+            "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"
+        })
+    return jsonify({"configurado": False})
+
+@app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
+def probar_conexion_hacienda_test():
+    try:
+        resultado = obtener_oauth_token_hacienda(1)
+        if resultado["success"]:
+            return jsonify({
+                "status": "Conexión Exitosa",
+                "mensaje": "Autenticado correctamente con Hacienda.",
+                "token": resultado["access_token"][:15] + "..."
+            })
+        else:
+            return jsonify({
+                "status": "Error de Autenticación",
+                "mensaje": "Hacienda rechazó las credenciales o la tabla está vacía.",
+                "detalles_tecnicos": resultado
+            }), 400
+    except Exception as e:
+        return jsonify({"status": "Error Interno", "error": str(e)}), 500
+
 @app.route('/api/admin/facturacion/consultar-estado/<int:id_empresa>/<string:clave>', methods=['GET'])
 def consultar_estado_factura(id_empresa, clave):
     if not session.get('rol'):
@@ -424,14 +403,8 @@ def consultar_estado_factura(id_empresa, clave):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# ==========================================
-# ⚡ RUTA MAESTRA: EMISIÓN COMPLETA DE FACTURA
-# ==========================================
-
 @app.route('/api/facturacion/emitir', methods=['POST'])
 def emitir_factura_electronica_api():
-    # Eliminada protección estricta para pruebas de desarrollo ágil
     d = request.json or {}
     cliente_id = d.get('cliente_id')
     condicion_venta = d.get('condicion_venta', '01')
@@ -683,7 +656,7 @@ def dar_baja_empresa_soporte(id):
 
 
 # ==========================================
-# 🛠️ RUTAS DE CONTENIDO (AUDITADAS AUTOMÁTICAMENTE)
+# 🛠️ RUTAS DE CONTENIDO GENERAL
 # ==========================================
 
 @app.route('/api/todo', methods=['GET'])
@@ -716,32 +689,10 @@ def obtener_todo():
     except Exception as e:
         return jsonify({"error": "Error interno", "detalles": str(e)}), 500
 
-@app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
-def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
-    if tabla in tablas_permitidas:
-        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
-        registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
-        return jsonify({"mensaje": "🗑️"})
-    return jsonify({"error": "No válida"}), 400
-
 
 @app.before_request
 def asegurarse_db():
     init_db()
-    
-# ==========================================
-# 🏠 DESPACHADOR DE ARCHIVOS RAÍZ (SOLUCIÓN DE HERENCIA VERCEL)
-# ==========================================
-@app.route('/')
-def servir_raiz():
-    return send_from_directory('.', 'index.html')
-
-@app.route('/<path:path>')
-def servir_archivos_sueltos(path):
-    if os.path.exists(path):
-        return send_from_directory('.', path)
-    return send_from_directory('.', 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

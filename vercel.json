@@ -12,8 +12,31 @@
       "dest": "app.py"
     },
     {
+      "src": "/servicio",
+      "dest": "servicio.html"
+    },
+    {
+      "src": "/service",
+      "dest": "servicio.html"
+    },
+    {
+      "src": "/config_hacienda",
+      "dest": "config_hacienda.html"
+    },
+    {
+      "src": "/admin",
+      "dest": "admin.html"
+    },
+    {
+      "src": "/tienda",
+      "dest": "tienda.html"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "index.html"
     }
   ]
 }

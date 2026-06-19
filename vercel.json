@@ -24,12 +24,28 @@
       "dest": "config_hacienda.html"
     },
     {
-      "handle": "filesystem"
+      "src": "/admin",
+      "dest": "admin.html"
+    },
+    {
+      "src": "/tienda",
+      "dest": "tienda.html"
+    },
+    {
+      "src": "/index",
+      "dest": "index.html"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "assets/$1"
+    },
+    {
+      "src": "/((?!api).*\\.(png|jpg|jpeg|gif|ico|svg|css|js|db))",
+      "dest": "$1"
     },
     {
       "src": "/(.*)",
       "dest": "index.html"
     }
-    
   ]
 }

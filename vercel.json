@@ -4,10 +4,6 @@
     {
       "src": "app.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -17,15 +13,19 @@
     },
     {
       "src": "/servicio",
-      "dest": "frontend/servicio.html"
+      "dest": "servicio.html"
     },
     {
       "src": "/service",
-      "dest": "frontend/servicio.html"
+      "dest": "servicio.html"
+    },
+    {
+      "src": "/config_hacienda",
+      "dest": "config_hacienda.html"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/$1"
+      "dest": "$1"
     }
   ]
 }

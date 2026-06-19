@@ -72,6 +72,420 @@ def registrar_cambio(accion, detalle):
     except Exception as e:
         print(f"Error guardando log de auditoría: {e}")
 
+
+
+
+# ==========================================
+# 🇨🇷 MÓDULO DE FACTURACIÓN: CONFIGURACIÓN HACIENDA
+# ==========================================
+
+@app.route('/api/admin/configuracion-hacienda', methods=['POST'])
+def guardar_configuracion_hacienda():
+    """Recibe, procesa y almacena en Neon las credenciales de facturación."""
+    # 1. Seguridad: Verificar que el usuario esté autenticado
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+
+    usuario_idp = request.form.get('usuario_idp')
+    password_idp = request.form.get('password_idp')
+    pin_p12 = request.form.get('pin_p12')
+    ambiente = request.form.get('ambiente')
+    ambiente_produccion = True if ambiente in ['true', 'on', True] else False
+    
+    # 2. Manejo de archivos múltiples (.p12)
+    archivo_p12 = request.files.get('archivo_p12')
+    
+    # Vinculamos al ID corporativo por defecto si no viene mapeado en el formulario
+    id_empresa_actual = request.form.get('id_empresa', 1)
+
+    if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12:
+        return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
+
+    try:
+        # 3. Leer los bytes binarios del archivo de llave (.p12) y pasarlos a una cadena Base64
+        contenido_binario = archivo_p12.read()
+        import base64
+        p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
+
+        # 4. Inserción o actualización segura en Neon usando la infraestructura existente
+        # Revisamos si esa empresa ya posee credenciales vinculadas
+        existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
+        
+        if existe:
+            db_query("""
+                UPDATE configuracionhacienda 
+                SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, 
+                    ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s
+                WHERE id_empresa = %s
+            """, (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
+        else:
+            db_query("""
+                INSERT INTO configuracionhacienda (
+                    id_empresa, hacienda_usuario_idp, hacienda_password_idp, 
+                    ruta_llave_p12, pin_llave_p12, ambiente_produccion
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
+
+        registrar_cambio("Configuró Hacienda", f"Credenciales actualizadas para Empresa ID: {id_empresa_actual}")
+        return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en Neon"})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error en procesamiento interno: {str(e)}"}), 500
+
+
+@app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
+def verificar_configuracion_hacienda():
+    """Informa al frontend si la empresa ya completó su registro de llaves."""
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    id_empresa = request.args.get('id_empresa', 1)
+    res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    
+    if res:
+        return jsonify({
+            "configurado": True,
+            "usuario_idp": res[0][0],
+            "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"
+        })
+    return jsonify({"configurado": False})
+
+# ==========================================
+# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA
+# ==========================================
+
+def obtener_oauth_token_hacienda(id_empresa):
+    """
+    Obtiene un token de acceso activo directamente desde los servidores de Hacienda.
+    Desencripta las credenciales de Neon y realiza la petición x-www-form-urlencoded.
+    """
+    # 1. Traer los datos de configuración de la base de datos
+    res = db_query("""
+        SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion 
+        FROM configuracionhacienda WHERE id_empresa = %s
+    """, (id_empresa,), fetch=True)
+    
+    if not res:
+        raise Exception(f"La empresa con ID {id_empresa} no tiene configuradas sus credenciales de Hacienda.")
+    
+    usuario_idp = res[0][0]
+    password_idp = res[0][1]  # Nota: Si en el futuro aplicas cifrado extra, aquí se desencriptaría
+    ambiente_produccion = res[0][2]
+
+    # 2. Definir los endpoints oficiales de Hacienda basados en el ambiente
+    if ambiente_produccion:
+        url_auth = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut/protocol/openid-connect/token"
+    else:
+        url_auth = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"
+
+    # 3. Estructurar el cuerpo de la petición según el estándar de Hacienda (OAuth 2.0)
+    payload = {
+        'grant_type': 'password',
+        'client_id': 'api-stag' if not ambiente_produccion else 'api-prod',
+        'username': usuario_idp,
+        'password': password_idp
+    }
+    
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    try:
+        # 4. Hacer la petición POST al servidor de identidad (IDP) de Hacienda
+        response = requests.post(url_auth, data=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            datos_token = response.json()
+            # Devolvemos el access_token listo para usarse en las cabeceras de las facturas
+            return {
+                "success": True,
+                "access_token": datos_token.get("access_token"),
+                "expires_in": datos_token.get("expires_in"),
+                "refresh_token": datos_token.get("refresh_token")
+            }
+        else:
+            return {
+                "success": False,
+                "status_code": response.status_code,
+                "error_detalle": response.text
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error_detalle": f"No se pudo conectar con el servidor de autenticación de Hacienda: {str(e)}"
+        }
+
+# Endpoint de prueba interna para verificar que tus credenciales de ATV de verdad funcionan
+@app.route('/api/admin/facturacion/probar-conexion/<int:id_empresa>', methods=['GET'])
+def probar_conexion_hacienda(id_empresa):
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    resultado = obtener_oauth_token_hacienda(id_empresa)
+    
+    if resultado["success"]:
+        return jsonify({
+            "status": "Conexión Exitosa",
+            "mensaje": "Tu servidor de iCarTech CR logró autenticarse correctamente con Hacienda.",
+            "token_recibido_recortado": resultado["access_token"][:30] + "..."
+        })
+    else:
+        return jsonify({
+            "status": "Error de Autenticación",
+            "mensaje": "Hacienda rechazó las credenciales ingresadas.",
+            "detalles_tecnicos": resultado
+        }), 400
+    
+
+# ==========================================
+# 📐 FASE 4: GENERACIÓN DE CLAVE DE 50 DÍGITOS Y XML (VERSIÓN 4.4)
+# ==========================================
+import random
+from datetime import datetime
+import xml.etree.ElementTree as ET
+
+def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
+    """
+    Genera la clave de 50 caracteres reglamentaria de Costa Rica.
+    cedula_emisor: string numérico (ej. '3101XXXXXX').
+    consecutivo: string numérico de 20 dígitos.
+    situacion: '1' (Normal), '2' (Contingencia), '3' (Sin internet).
+    """
+    # 1. Obtener la fecha actual costarricense
+    ahora = datetime.now()
+    dia = ahora.strftime("%d")
+    mes = ahora.strftime("%m")
+    ano = ahora.strftime("%y") # Últimos 2 dígitos del año (ej. '26')
+
+    # 2. Limpiar y normalizar la cédula a 12 caracteres (rellena con ceros a la izquierda)
+    cedula_limpia = "".join(filter(str.isdigit, str(cedula_emisor)))
+    cedula_12 = cedula_limpia.zfill(12)
+
+    # 3. Código de seguridad aleatorio de 8 dígitos
+    codigo_seguridad = "".join([str(random.randint(0, 9)) for _ in range(8)])
+
+    # 4. Concatenar según el estándar oficial de Hacienda
+    clave = f"506{dia}{mes}{ano}{cedula_12}{consecutivo}{situacion}{codigo_seguridad}"
+    
+    if len(clave) != 50:
+        raise Exception(f"Error crítico en el cálculo de la clave. Longitud obtenida: {len(clave)} de 50.")
+    return clave
+
+
+def generar_xml_factura_44(datos_factura, lineas_detalle):
+    """
+    Construye la estructura de texto plano XML válida para el Ministerio de Hacienda v4.4.
+    datos_factura: dict con llaves ('clave', 'consecutivo', 'condicion_venta', 'medio_pago', 'emisor_nombre', 'emisor_cedula', 'cliente_nombre', 'cliente_cedula', etc.)
+    lineas_detalle: list de dicts con el desglose de productos/servicios e impuestos.
+    """
+    # Definir los Namespaces reglamentarios de la versión 4.4 de Hacienda
+    NS_FACTURA = "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturelectronica"
+    
+    # Raíz del XML
+    root = ET.Element("FacturaElectronica", {
+        "xmlns": NS_FACTURA,
+        "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "xsi:schemaLocation": f"{NS_FACTURA} https://www.hacienda.go.cr/ATV/ComprobanteElectronico/v4.4/facturelectronica.xsd"
+    })
+
+    # Elementos principales del encabezado
+    ET.SubElement(root, "Clave").text = datos_factura['clave']
+    ET.SubElement(root, "CodigoActividad").text = datos_factura.get('codigo_actividad', '620201') # Código de soporte/IT por defecto
+    ET.SubElement(root, "NumeroConsecutivo").text = datos_factura['consecutivo']
+    ET.SubElement(root, "FechaEmision").text = datetime.now().isoformat()[:-3] + "-06:00" # Formato ISO con zona horaria CR
+    
+    # Nodo Emisor (Tu cliente corporativo o iCarTech CR)
+    emisor = ET.SubElement(root, "Emisor")
+    ET.SubElement(emisor, "Nombre").text = datos_factura['emisor_nombre']
+    id_emisor = ET.SubElement(emisor, "Identificacion")
+    ET.SubElement(id_emisor, "Tipo").text = datos_factura.get('emisor_tipo_cedula', '02') # '02' Jurídica, '01' Física
+    ET.SubElement(id_emisor, "Numero").text = datos_factura['emisor_cedula']
+    ET.SubElement(emisor, "CorreoElectronico").text = datos_factura.get('emisor_correo', 'soporte@icartech.cr')
+
+    # Nodo Receptor (A quién le vendes el servicio)
+    receptor = ET.SubElement(root, "Receptor")
+    ET.SubElement(receptor, "Nombre").text = datos_factura['cliente_nombre']
+    id_receptor = ET.SubElement(receptor, "Identificacion")
+    ET.SubElement(id_receptor, "Tipo").text = datos_factura.get('cliente_tipo_cedula', '01')
+    ET.SubElement(id_receptor, "Numero").text = datos_factura['cliente_cedula']
+    ET.SubElement(receptor, "CorreoElectronico").text = datos_factura.get('cliente_correo')
+
+    ET.SubElement(root, "CondicionVenta").text = datos_factura.get('condicion_venta', '01') # 01 = Contado
+    ET.SubElement(root, "MedioPago").text = datos_factura.get('medio_pago', '04') # 04 = Transferencia
+
+    # Desglose de Líneas de Factura (El detalle físico)
+    detalle_nodo = ET.SubElement(root, "DetalleServicio")
+    
+    total_serv_gravados = 0.0
+    total_iva = 0.0
+
+    for idx, linea in enumerate(lineas_detalle, start=1):
+        linea_nodo = ET.SubElement(detalle_nodo, "LineaDetalle")
+        ET.SubElement(linea_nodo, "NumeroLinea").text = str(idx)
+        ET.SubElement(linea_nodo, "Codigo").text = linea['codigo_cabys'] # Código obligatorio CAByS de 13 dígitos
+        ET.SubElement(linea_nodo, "Cantidad").text = f"{float(linea['cantidad']):.3f}"
+        ET.SubElement(linea_nodo, "UnidadMedida").text = linea.get('unidad_medida', 'Sp') # Sp = Servicios Profesionales
+        ET.SubElement(linea_nodo, "Detalle").text = linea['descripcion']
+        ET.SubElement(linea_nodo, "PrecioUnitario").text = f"{float(linea['precio_unitario']):.5f}"
+        ET.SubElement(linea_nodo, "MontoTotal").text = f"{float(linea['monto_total']):.5f}"
+        ET.SubElement(linea_nodo, "SubTotal").text = f"{float(linea['monto_total']):.5f}"
+
+        # Cálculo interno del IVA de la línea (13% estándar de Costa Rica)
+        monto_impuesto = float(linea['monto_total']) * 0.13
+        total_serv_gravados += float(linea['monto_total'])
+        total_iva += monto_impuesto
+
+        impuesto_nodo = ET.SubElement(linea_nodo, "Impuesto")
+        ET.SubElement(impuesto_nodo, "Codigo").text = "01" # 01 = IVA
+        ET.SubElement(impuesto_nodo, "CodigoTarifa").text = "08" # 08 = Tarifa General 13%
+        ET.SubElement(impuesto_nodo, "Tarifa").text = "13.00"
+        ET.SubElement(impuesto_nodo, "Monto").text = f"{monto_impuesto:.5f}"
+        
+        ET.SubElement(linea_nodo, "MontoTotalLinea").text = f"{(float(linea['monto_total']) + monto_impuesto):.5f}"
+
+    # Resumen de los Totales Finales de la Factura
+    resumen = ET.SubElement(root, "ResumenFactura")
+    ET.SubElement(resumen, "CodigoTipoMoneda").text = datos_factura.get('moneda', 'CRC')
+    ET.SubElement(resumen, "TipoCambio").text = "1.00000"
+    ET.SubElement(resumen, "TotalServGravados").text = f"{total_serv_gravados:.5f}"
+    ET.SubElement(resumen, "TotalServExentos").text = "0.00000"
+    ET.SubElement(resumen, "TotalMercanciasGravadas").text = "0.00000"
+    ET.SubElement(resumen, "TotalMercanciasExentas").text = "0.00000"
+    ET.SubElement(resumen, "TotalGravado").text = f"{total_serv_gravados:.5f}"
+    ET.SubElement(resumen, "TotalExento").text = "0.00000"
+    ET.SubElement(resumen, "TotalVenta").text = f"{total_serv_gravados:.5f}"
+    ET.SubElement(resumen, "TotalDescuentos").text = "0.00000"
+    ET.SubElement(resumen, "TotalVentaNeto").text = f"{total_serv_gravados:.5f}"
+    ET.SubElement(resumen, "TotalImpuesto").text = f"{total_iva:.5f}"
+    ET.SubElement(resumen, "TotalComprobante").text = f"{(total_serv_gravados + total_iva):.5f}"
+
+    # Retornar el string XML limpio decodificado en UTF-8
+    return ET.tostring(root, encoding="utf-8").decode("utf-8")
+
+
+# ==========================================
+# 🚀 FASE 5: ENVÍO ASÍNCRONO Y RECEPCIÓN DE COMPROBANTES
+# ==========================================
+import base64
+import json
+
+def enviar_factura_hacienda(id_empresa, datos_factura, xml_string):
+    """
+    Toma el XML, lo codifica en Base64 y lo envía al API de Recepción de Hacienda.
+    """
+    # 1. Obtener el Token OAuth de la Fase 3 y ver el ambiente
+    token_data = obtener_oauth_token_hacienda(id_empresa)
+    if not token_data["success"]:
+        return {"success": False, "message": "Error de autenticación: " + token_data["error_detalle"]}
+    
+    token = token_data["access_token"]
+    
+    # Revisar ambiente consultando Neon de nuevo
+    res_empresa = db_query("SELECT ambiente_produccion, cedula_juridica FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    ambiente_produccion = res_empresa[0][0]
+    cedula_emisor = res_empresa[0][1]
+
+    # Definir la URL de recepción correcta
+    if ambiente_produccion:
+        url_recepcion = "https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
+    else:
+        url_recepcion = "https://api-sandbox.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
+
+    # 2. Convertir el XML completo a Base64 string (Exigencia estricta de Hacienda)
+    xml_bytes = xml_string.encode('utf-8')
+    xml_base64 = base64.b64encode(xml_bytes).decode('utf-8')
+
+    # 3. Construir el JSON Payload con la estructura legal requerida
+    payload = {
+        "clave": datos_factura["clave"],
+        "fecha": datetime.now().isoformat()[:-3] + "-06:00",
+        "emisor": {
+            "tipoIdentificacion": datos_factura.get("emisor_tipo_cedula", "02"),
+            "numeroIdentificacion": cedula_emisor
+        },
+        "receptor": {
+            "tipoIdentificacion": datos_factura.get("cliente_tipo_cedula", "01"),
+            "numeroIdentificacion": datos_factura["cliente_cedula"]
+        },
+        "comprobanteXml": xml_base64
+    }
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        # 4. Enviar el comprobante (POST)
+        response = requests.post(url_recepcion, data=json.dumps(payload), headers=headers, timeout=10)
+        
+        # Hacienda responde con un 202 Accepted si el XML es recibido correctamente para análisis
+        if response.status_code in [202, 200]:
+            return {"success": True, "message": "Factura recibida por Hacienda en proceso de validación."}
+        else:
+            return {"success": False, "message": f"Hacienda rechazó el paquete inicial ({response.status_code}): {response.text}"}
+            
+    except Exception as e:
+        return {"success": False, "message": f"Error de conexión con el API de Recepción: {str(e)}"}
+
+
+@app.route('/api/admin/facturacion/consultar-estado/<int:id_empresa>/<string:clave>', methods=['GET'])
+def consultar_estado_factura(id_empresa, clave):
+    """
+    Ruta API para consultar si Hacienda finalmente Aceptó o Rechazó una factura específica.
+    """
+    if not session.get('rol'):
+        return jsonify({"message": "Acceso denegado"}), 403
+
+    # Ver el ambiente de la empresa
+    res_empresa = db_query("SELECT ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    if not res_empresa:
+        return jsonify({"error": "Empresa no configurada"}), 400
+        
+    ambiente_produccion = res_empresa[0][0]
+
+    # Conseguir Token activo
+    token_data = obtener_oauth_token_hacienda(id_empresa)
+    if not token_data["success"]:
+        return jsonify({"error": "No se pudo obtener el token de acceso"}), 500
+
+    # URL de consulta (Se le pega la clave de 50 dígitos al final)
+    if ambiente_produccion:
+        url_consulta = f"https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion/{clave}"
+    else:
+        url_consulta = f"https://api-sandbox.comprobanteselectronicos.go.cr/recepcion/v1/recepcion/{clave}"
+
+    headers = {
+        "Authorization": f"Bearer {token_data['access_token']}"
+    }
+
+    try:
+        response = requests.get(url_consulta, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            datos_respuesta = response.json()
+            estado_final = datos_respuesta.get("ind-estado", "Pendiente") # 'aceptado' o 'rechazado'
+            
+            # Actualizamos el estado real en tu base de datos de Neon
+            db_query(
+                "UPDATE Facturas SET Estado_Hacienda = %s, Mensaje_Hacienda = %s WHERE Clave_50_Digitos = %s",
+                (estado_final.capitalize(), datos_respuesta.get("respuesta-xml", "Procesado"), clave)
+            )
+            
+            return jsonify({
+                "clave": clave,
+                "estado_hacienda": estado_final,
+                "detalles": "El documento fue procesado con éxito."
+            })
+        else:
+            return jsonify({"status": "Procesando", "message": "Hacienda aún está analizando el documento."}), 202
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
 # ==========================================
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
 # ==========================================

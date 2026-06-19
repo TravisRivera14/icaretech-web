@@ -4,39 +4,51 @@
     {
       "src": "app.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "app.py"
+      "dest": "/app.py"
     },
     {
       "src": "/servicio",
-      "dest": "servicio.html"
+      "dest": "/servicio.html"
     },
     {
       "src": "/service",
-      "dest": "servicio.html"
+      "dest": "/servicio.html"
     },
     {
       "src": "/config_hacienda",
-      "dest": "config_hacienda.html"
+      "dest": "/config_hacienda.html"
     },
     {
       "src": "/admin",
-      "dest": "admin.html"
+      "dest": "/admin.html"
     },
     {
       "src": "/tienda",
-      "dest": "tienda.html"
+      "dest": "/tienda.html"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "index.html"
+      "dest": "/index.html"
     }
   ]
 }

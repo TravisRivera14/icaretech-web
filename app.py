@@ -483,6 +483,105 @@ def consultar_estado_factura(id_empresa, clave):
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+# ==========================================
+# ⚡ RUTA MAESTRA: EMISIÓN COMPLETA DE FACTURA
+# ==========================================
+
+@app.route('/api/facturacion/emitir', methods=['POST'])
+def emitir_factura_electronica_api():
+    """
+    Controlador principal que une todas las fases: 
+    Recibe el JSON de la interfaz, procesa la clave, arma el XML y lo envía a Hacienda.
+    """
+    # 1. Protección de ruta: Validar inicio de sesión
+    if not session.get('rol'):
+        return jsonify({"success": False, "message": "Acceso denegado. Inicie sesión."}), 403
+
+    d = request.json or {}
+    cliente_id = d.get('cliente_id')
+    condicion_venta = d.get('condicion_venta', '01')
+    medio_pago = d.get('medio_pago', '04')
+    lineas_frontend = d.get('lineas', [])
+
+    # Id de empresa vinculada al usuario (Soporte Multi-tenant)
+    id_empresa_actual = 1 
+
+    if not cliente_id or not lineas_frontend:
+        return jsonify({"success": False, "message": "Faltan datos esenciales (Cliente o Líneas de detalle)"}), 400
+
+    try:
+        # 2. Consultar base de datos en Neon para traer datos del Emisor (Empresa)
+        res_emisor = db_query("SELECT cedula_juridica, nombre_empresa, correo FROM empresa WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
+        if not res_emisor:
+            return jsonify({"success": False, "message": "Empresa emisora no registrada o incompleta en el sistema."}), 400
+        
+        # 3. Consultar Neon para traer los datos del Receptor (Cliente)
+        res_cliente = db_query("SELECT cedula, nombre_completo, correo FROM clientes WHERE id_cliente = %s", (cliente_id,), fetch=True)
+        if not res_cliente:
+            return jsonify({"success": False, "message": "El cliente seleccionado no existe en la base de datos."}), 400
+
+        # Mapeo estructurado para el generador XML
+        emisor_datos = {"cedula": res_emisor[0][0], "nombre": res_emisor[0][1], "correo": res_emisor[0][2]}
+        cliente_datos = {"cedula": res_cliente[0][0], "nombre": res_cliente[0][1], "correo": res_cliente[0][2]}
+
+        # 4. Calcular el Número Consecutivo Interno (Requisito de 20 dígitos de Hacienda)
+        # Para desarrollo, generamos uno correlativo basado en la hora actual
+        consecutivo_sistema = "0010000101" + datetime.now().strftime("%H%M%S").zfill(10)
+
+        # 5. FASE 4: Calcular la Clave País de 50 dígitos
+        clave_50 = calcular_clave_50_digitos(emisor_datos["cedula"], consecutivo_sistema)
+
+        # Totales agregados para persistencia
+        total_serv_gravados = sum(float(l['monto_total']) for l in lineas_frontend)
+        total_iva = total_serv_gravados * 0.13
+        total_comprobante = total_serv_gravados + total_iva
+
+        # 6. PERSISTENCIA EN NEON: Insertar el encabezado de la factura en estado 'Pendiente'
+        # Usamos nombres exactos de columnas como se crearon en tu Neon
+        db_query("""
+            INSERT INTO Facturas (
+                Id_Empresa, Id_Cliente, Consecutivo, Clave_50_Digitos, 
+                Condicion_Venta, Medio_Pago, Total_Servicios_Gravados, Total_Impuesto, Total_Comprobante, Estado_Hacienda
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pendiente')
+        """, (id_empresa_actual, cliente_id, consecutivo_sistema, clave_50, condicion_venta, medio_pago, total_serv_gravados, total_iva, total_comprobante))
+
+        # 7. FASE 4 (XML): Estructurar el diccionario y construir el archivo XML 4.4 plano
+        datos_xml_maestro = {
+            'clave': clave_50,
+            'consecutivo': consecutivo_sistema,
+            'emisor_nombre': emisor_datos["nombre"],
+            'emisor_cedula': emisor_datos["cedula"],
+            'emisor_correo': emisor_datos["correo"],
+            'cliente_nombre': cliente_datos["nombre"],
+            'cliente_cedula': cliente_datos["cedula"],
+            'cliente_correo': cliente_datos["correo"],
+            'condicion_venta': condicion_venta,
+            'medio_pago': medio_pago
+        }
+
+        xml_generado = generar_xml_factura_44(datos_xml_maestro, lineas_frontend)
+
+        # 8. FASE 5 (Envío): Despachar de forma asíncrona hacia los servidores de Hacienda
+        resultado_envio = enviar_factura_hacienda(id_empresa_actual, datos_xml_maestro, xml_generado)
+
+        if resultado_envio["success"]:
+            return jsonify({
+                "success": True,
+                "message": "Factura procesada con éxito",
+                "clave": clave_50,
+                "consecutivo": consecutivo_sistema
+            })
+        else:
+            # Si Hacienda falla al recibir el paquete, cambiamos el estado en Neon a 'Rechazado' con el log
+            db_query("UPDATE Facturas SET Estado_Hacienda = 'Rechazado', Mensaje_Hacienda = %s WHERE Clave_50_Digitos = %s", (resultado_envio["message"], clave_50))
+            return jsonify({"success": False, "message": resultado_envio["message"]}), 400
+
+    except Exception as e:
+        registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
+        return jsonify({"success": False, "message": f"Error interno en el servidor: {str(e)}"}), 500
 
 
 

@@ -3,120 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración de Hacienda | iCarTech CR</title>
-    <link rel="stylesheet" href="assets/css/style.css"> 
+    <title>Nueva Factura Electrónica | iCarTech CR</title>
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         body {
             background-color: #0d1117;
-            color: #ffffff;
+            color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
         }
-        .form-container {
-            max-width: 550px;
-            margin: 60px auto;
-            padding: 40px;
+        .facturador-container {
+            max-width: 1000px;
+            margin: 0 auto;
             background: #161b22;
             border-radius: 16px;
             border: 1px solid #30363d;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            padding: 30px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6);
         }
-        h2 { text-align: center; margin-bottom: 30px; font-weight: 500; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #8b949e; font-size: 14px; }
-        .input-group input[type="text"], .input-group input[type="password"] {
+        h1 { color: #f0f6fc; font-size: 24px; font-weight: 500; margin-bottom: 25px; }
+        .row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 200px; }
+        label { display: block; margin-bottom: 8px; color: #8b949e; font-size: 13px; }
+        select, input {
             width: 100%;
-            padding: 12px;
+            padding: 10px 14px;
             background: #0d1117;
             border: 1px solid #30363d;
             border-radius: 8px;
-            color: white;
-            font-size: 15px;
-            transition: border-color 0.3s;
+            color: #f0f6fc;
+            font-size: 14px;
+            box-sizing: border-box;
         }
-        .input-group input:focus { border-color: #58a6ff; outline: none; }
-        .file-drop-area {
-            border: 2px dashed #30363d;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
+        select:focus, input:focus { border-color: #58a6ff; outline: none; }
+        
+        /* Tabla de líneas */
+        .tabla-detalles {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
             background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
+        .tabla-detalles th { background: #21262d; color: #c9d1d9; text-align: left; padding: 12px; font-size: 13px; font-weight: 500; }
+        .tabla-detalles td { padding: 10px; border-bottom: 1px solid #30363d; }
+        
+        .btn-add {
+            background: #21262d;
+            color: #58a6ff;
+            border: 1px solid #30363d;
+            padding: 10px 16px;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 500;
+            margin-top: 15px;
+            display: inline-block;
         }
-        .file-drop-area:hover { border-color: #58a6ff; }
-        .toggle-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #0d1117;
-            padding: 15px;
-            border-radius: 8px;
+        .btn-add:hover { background: #30363d; }
+        .btn-danger { background: #da3633; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-danger:hover { background: #f85149; }
+
+        /* Panel de Totales */
+        .totales-box {
+            margin-top: 30px;
+            margin-left: auto;
+            max-width: 300px;
+            background: #21262d;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid #30363d;
         }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+        .total-row.final { border-top: 1px solid #30363d; padding-top: 10px; font-size: 18px; color: #58a6ff; font-weight: 600; }
+        
         .btn-submit {
             width: 100%;
             padding: 14px;
-            background: #1f883d;
+            background: #238636;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 25px;
+            box-shadow: 0 4px 12px rgba(35,134,54,0.3);
         }
-        .btn-submit:hover { background: #238636; }
+        .btn-submit:hover { background: #2ea043; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>Configuración de Facturación</h2>
-    <p style="color: #8b949e; text-align: center; font-size: 13px; margin-top: -20px; margin-bottom: 25px;">
-        Ingrese sus credenciales criptográficas obtenidas desde el portal ATV de Hacienda.
-    </p>
-
-    <form action="/guardar-configuracion-hacienda" method="POST" enctype="multipart/form-data">
-        
-        <div class="input-group">
-            <label for="usuario_idp">Usuario API (IDP)</label>
-            <input type="text" id="usuario_idp" name="usuario_idp" placeholder="cpj-3-101-xxxxxx@idp.comprobanteselectronicos.go.cr" required>
-        </div>
-
-        <div class="input-group">
-            <label for="password_idp">Contraseña API (IDP)</label>
-            <input type="password" id="password_idp" name="password_idp" placeholder="••••••••••••••••••••••••" required>
-        </div>
-
-        <div class="input-group">
-            <label>Llave Criptográfica (.p12)</label>
-            <div class="file-drop-area" onclick="document.getElementById('archivo_p12').click()">
-                <span id="file-label">Arrastra o selecciona tu archivo .p12</span>
-                <input type="file" id="archivo_p12" name="archivo_p12" accept=".p12" style="display: none;" onchange="updateLabel(this)" required>
+<div class="facturador-container">
+    <h1>Crear Comprobante Electrónico</h1>
+    
+    <form id="facturaForm">
+        <div class="row">
+            <div class="col">
+                <label for="cliente_id">Cliente Receptor</label>
+                <select id="cliente_id" required>
+                    <option value="">-- Seleccione un cliente --</option>
+                    <option value="1">Cliente de Prueba (Físico)</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="condicion_venta">Condición de Venta</label>
+                <select id="condicion_venta">
+                    <option value="01">Contado</option>
+                    <option value="02">Crédito</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="medio_pago">Medio de Pago</label>
+                <select id="medio_pago">
+                    <option value="04">Transferencia Bancaria</option>
+                    <option value="01">Efectivo</option>
+                    <option value="03">Tarjeta</option>
+                </select>
             </div>
         </div>
 
-        <div class="input-group">
-            <label for="pin_p12">PIN de la Llave (4 dígitos)</label>
-            <input type="password" id="pin_p12" name="pin_p12" maxlength="4" placeholder="1234" required>
+        <table class="tabla-detalles" id="tablaLineas">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Código CAByS</th>
+                    <th style="width: 45%;">Descripción del Servicio / Pieza</th>
+                    <th style="width: 10%;">Cant.</th>
+                    <th style="width: 15%;">Precio Unit. (CRC)</th>
+                    <th style="width: 10%;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" class="linea-cabys" placeholder="Ej. 8311100000100" maxlength="13" required></td>
+                    <td><input type="text" class="linea-desc" placeholder="Mano de obra, reparación, repuesto..." required></td>
+                    <td><input type="number" class="linea-cant" value="1" min="1" step="any" oninput="calcularTotales()" required></td>
+                    <td><input type="number" class="linea-precio" value="0" min="0" step="any" oninput="calcularTotales()" required></td>
+                    <td><button type="button" class="btn-danger" onclick="eliminarLinea(this)">❌</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button type="button" class="btn-add" onclick="agregarLinea()">+ Agregar Línea</button>
+
+        <div class="totales-box">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span id="txtSubtotal">₡0.00</span>
+            </div>
+            <div class="total-row">
+                <span>IVA (13%):</span>
+                <span id="txtIva">₡0.00</span>
+            </div>
+            <div class="total-row final">
+                <span>Total:</span>
+                <span id="txtTotal">₡0.00</span>
+            </div>
         </div>
 
-        <div class="toggle-group">
-            <span style="font-size: 14px; color: #8b949e;">Ambiente de Producción (Legal)</span>
-            <input type="checkbox" id="ambiente" name="ambiente" value="true" style="transform: scale(1.3); cursor: pointer;">
-        </div>
-
-        <button type="submit" class="btn-submit">Guardar Configuración Segura</button>
+        <button type="submit" class="btn-submit">Emitir Factura Electrónica (Hacienda v4.4)</button>
     </form>
 </div>
 
 <script>
-    function updateLabel(input) {
-        const label = document.getElementById('file-label');
-        if (input.files.length > 0) {
-            label.innerText = "Archivo cargado: " + input.files[0].name;
-            label.style.color = "#58a6ff";
+    // Agrega una fila extra a la tabla
+    function agregarLinea() {
+        const tbody = document.querySelector("#tablaLineas tbody");
+        const nuevaFila = document.createElement("tr");
+        nuevaFila.innerHTML = `
+            <td><input type="text" class="linea-cabys" placeholder="Ej. 8311100000100" maxlength="13" required></td>
+            <td><input type="text" class="linea-desc" placeholder="Descripción..." required></td>
+            <td><input type="number" class="linea-cant" value="1" min="1" step="any" oninput="calcularTotales()" required></td>
+            <td><input type="number" class="linea-precio" value="0" min="0" step="any" oninput="calcularTotales()" required></td>
+            <td><button type="button" class="btn-danger" onclick="eliminarLinea(this)">❌</button></td>
+        `;
+        tbody.appendChild(nuevaFila);
+        calcularTotales();
+    }
+
+    // Remueve una fila
+    function eliminarLinea(boton) {
+        const fila = boton.closest("tr");
+        if (document.querySelectorAll("#tablaLineas tbody tr").length > 1) {
+            fila.remove();
+            calcularTotales();
+        } else {
+            alert("La factura debe tener al menos una línea.");
         }
     }
+
+    // Lógica matemática en tiempo real para el cliente
+    function calcularTotales() {
+        let subtotal = 0;
+        const filas = document.querySelectorAll("#tablaLineas tbody tr");
+        
+        filas.forEach(fila => {
+            const cant = parseFloat(fila.querySelector(".linea-cant").value) || 0;
+            const precio = parseFloat(fila.querySelector(".linea-precio").value) || 0;
+            subtotal += (cant * precio);
+        });
+
+        let iva = subtotal * 0.13;
+        let total = subtotal + iva;
+
+        document.getElementById("txtSubtotal").innerText = "₡" + subtotal.toFixed(2);
+        document.getElementById("txtIva").innerText = "₡" + iva.toFixed(2);
+        document.getElementById("txtTotal").innerText = "₡" + total.toFixed(2);
+    }
+
+    // Envío de datos estructurados al API de Python
+    document.getElementById("facturaForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const filas = document.querySelectorAll("#tablaLineas tbody tr");
+        let detalles = [];
+
+        filas.forEach(fila => {
+            const cant = parseFloat(fila.querySelector(".linea-cant").value);
+            const precio = parseFloat(fila.querySelector(".linea-precio").value);
+            detalles.push({
+                codigo_cabys: fila.querySelector(".linea-cabys").value,
+                descripcion: fila.querySelector(".linea-desc").value,
+                cantidad: cant,
+                precio_unitario: precio,
+                monto_total: cant * precio
+            });
+        });
+
+        const payload = {
+            cliente_id: document.getElementById("cliente_id").value,
+            condicion_venta: document.getElementById("condicion_venta").value,
+            medio_pago: document.getElementById("medio_pago").value,
+            lineas: detalles
+        };
+
+        // Loader simulado en el botón estilo Apple
+        const btn = document.querySelector(".btn-submit");
+        btn.innerText = "Procesando con Hacienda...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/facturacion/emitir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                alert("¡Excelente! Factura emitida y enviada a Hacienda.\nClave: " + data.clave);
+                window.location.reload();
+            } else {
+                alert("Error al emitir: " + data.message);
+                btn.innerText = "Emitir Factura Electrónica (Hacienda v4.4)";
+                btn.disabled = false;
+            }
+        } catch (err) {
+            alert("Error de comunicación con el servidor.");
+            btn.innerText = "Emitir Factura Electrónica (Hacienda v4.4)";
+            btn.disabled = false;
+        }
+    });
 </script>
 </body>
 </html>

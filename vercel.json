@@ -8,7 +8,7 @@
     { "src": "/servicio", "dest": "src_frontend/servicio.html" },
     { "src": "/tienda", "dest": "src_frontend/tienda.html" },
     { "src": "/admin", "dest": "src_frontend/admin.html" },
-    { "src": "/config_hacienda", "dest": "src_frontend/config_hacienda.html" },
+    { "src": "/config_hacienda", "dest": "/frontend/config_hacienda.html" },
     { "src": "/(.*)", "dest": "/src_frontend/$1" }
   ]
 }

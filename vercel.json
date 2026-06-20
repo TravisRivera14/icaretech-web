@@ -29,7 +29,7 @@
     {
       "src": "/(.*)",
       "dest": "frontend/index.html"
-    }
+    },
     {
       "src": "/facturacion", 
       "dest": "frontend/facturacion.html" 

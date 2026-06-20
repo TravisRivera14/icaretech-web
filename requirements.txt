@@ -2,3 +2,6 @@ Flask==3.0.2
 Flask-Cors==4.0.0
 psycopg2-binary==2.9.9
 requests==2.31.0
+# Dependencias necesarias para manejo de certificados y parsing
+cryptography==42.0.0
+pyOpenSSL==24.0.0

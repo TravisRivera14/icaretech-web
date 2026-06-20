@@ -5,11 +5,10 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/app.py" },
+    { "source": "/admin", "destination": "/frontend/admin.html" },
     { "source": "/config_hacienda", "destination": "/frontend/config_hacienda.html" },
     { "source": "/servicio", "destination": "/frontend/servicio.html" },
     { "source": "/tienda", "destination": "/frontend/tienda.html" },
-    { "source": "/admin", "destination": "/frontend/admin.html" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
-
 }

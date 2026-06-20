@@ -37,6 +37,23 @@
             box-sizing: border-box;
         }
         select:focus, input:focus { border-color: #58a6ff; outline: none; }
+
+        .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background: #30363d;
+            color: #ffffff;
+        }
         
         /* Tabla de líneas */
         .tabla-detalles {
@@ -126,6 +143,12 @@
             </div>
         </div>
 
+        <div style="margin-bottom: 20px;">
+            <a href="/" style="color: #58a6ff; text-decoration: none; font-size: 14px;">
+                &larr; Volver a la página principal
+            </a>
+        </div>
+
         <table class="tabla-detalles" id="tablaLineas">
             <thead>
                 <tr>
@@ -181,6 +204,10 @@
             <td><button type="button" class="btn-danger" onclick="eliminarLinea(this)">❌</button></td>
         `;
         tbody.appendChild(nuevaFila);
+        
+        // Esta es la línea que enfoca automáticamente el nuevo campo
+        nuevaFila.querySelector(".linea-cabys").focus();
+        
         calcularTotales();
     }
 

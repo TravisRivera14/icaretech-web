@@ -276,9 +276,9 @@
             const response = await fetch('/api/facturacion/emitir', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // <--- AGREGA ESTA LÍNEA ESENCIAL
                 body: JSON.stringify(payload)
             });
-            const data = await response.json();
             
             if (data.success) {
                 alert("¡Excelente! Factura emitida y enviada a Hacienda.\nClave: " + data.clave);

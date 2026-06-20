@@ -3,12 +3,12 @@
   "builds": [
     { "src": "app.py", "use": "@vercel/python" }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "app.py" },
-    { "src": "/servicio", "dest": "src_frontend/servicio.html" },
-    { "src": "/tienda", "dest": "src_frontend/tienda.html" },
-    { "src": "/admin", "dest": "src_frontend/admin.html" },
-    { "src": "/config_hacienda", "dest": "/frontend/config_hacienda.html" },
-    { "src": "/(.*)", "dest": "/src_frontend/$1" }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/app.py" },
+    { "source": "/config_hacienda", "destination": "/frontend/config_hacienda.html" },
+    { "source": "/servicio", "destination": "/frontend/servicio.html" },
+    { "source": "/tienda", "destination": "/frontend/tienda.html" },
+    { "source": "/admin", "destination": "/frontend/admin.html" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }

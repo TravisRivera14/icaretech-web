@@ -142,6 +142,48 @@ def obtener_oauth_token_hacienda(id_empresa):
             "success": False,
             "error_detalle": f"No se pudo conectar con el servidor de autenticación de Hacienda: {str(e)}"
         }
+        
+        
+        
+def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
+    # 1. Obtener Token
+    token_data = obtener_oauth_token_hacienda(id_empresa)
+    if not token_data["success"]:
+        return {"success": False, "message": "Error autenticando con Hacienda: " + token_data.get("error_detalle", "")}
+    
+    token = token_data["access_token"]
+    
+    # 2. Aquí deberías insertar la Lógica de Firma XML 
+    # (Usualmente usando librerías como 'signxml' o un servicio externo)
+    # Para efectos del ejemplo, asumimos que el XML ya está firmado.
+    
+    # 3. Preparar JSON para el API de Hacienda
+    payload = {
+        "clave": datos_xml['clave'],
+        "fecha": datetime.now().isoformat(),
+        "emisor": {
+            "tipoIdentificacion": "02",
+            "numeroIdentificacion": datos_xml['emisor_cedula']
+        },
+        "receptor": {
+            "tipoIdentificacion": "01",
+            "numeroIdentificacion": datos_xml['cliente_cedula']
+        },
+        "comprobanteXml": base64.b64encode(xml_firmado_o_raw.encode()).decode()
+    }
+    
+    # 4. Enviar a Hacienda (Recepción)
+    url_recepcion = "https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    
+    try:
+        resp = requests.post(url_recepcion, json=payload, headers=headers)
+        if resp.status_code == 202: # 202 significa recibido correctamente
+            return {"success": True}
+        else:
+            return {"success": False, "message": f"Hacienda respondió: {resp.status_code} - {resp.text}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
 
 
 # ==========================================
@@ -405,7 +447,6 @@ def emitir_factura_electronica_api():
     except Exception as e:
         registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
         return jsonify({"success": False, "message": f"Error interno en el servidor: {str(e)}"}), 500
-
 
 # ==========================================
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA

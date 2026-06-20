@@ -447,6 +447,13 @@ def emitir_factura_electronica_api():
     except Exception as e:
         registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
         return jsonify({"success": False, "message": f"Error interno en el servidor: {str(e)}"}), 500
+    
+# Agregar en app.py: Ruta para verificar sesión
+@app.route('/api/verificar-sesion', methods=['GET'])
+def verificar_sesion():
+    if session.get('user_id'):
+        return jsonify({"autenticado": True, "rol": session.get('rol')})
+    return jsonify({"autenticado": False}), 401
 
 # ==========================================
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA

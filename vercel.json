@@ -10,6 +10,7 @@
     { "src": "/service", "dest": "frontend/servicio.html" },
     { "src": "/config_hacienda", "dest": "frontend/config_hacienda.html" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "frontend/index.html" }
+    { "src": "/(.*)", "dest": "frontend/index.html" },
+    { "src": "/login","dest": "frontend/login.html"}
   ]
 }

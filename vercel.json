@@ -1,38 +1,15 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "app.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
-    }
+    { "src": "app.py", "use": "@vercel/python" },
+    { "src": "frontend/**", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "app.py"
-    },
-    {
-      "src": "/servicio",
-      "dest": "frontend/servicio.html"
-    },
-    {
-      "src": "/service",
-      "dest": "frontend/servicio.html"
-    },
-    {
-      "src": "/facturacion",
-      "dest": "frontend/facturacion.html"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/index.html"
-    }
+    { "src": "/api/(.*)", "dest": "app.py" },
+    { "src": "/servicio", "dest": "frontend/servicio.html" },
+    { "src": "/service", "dest": "frontend/servicio.html" },
+    { "src": "/config_hacienda", "dest": "frontend/config_hacienda.html" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "frontend/index.html" }
   ]
 }

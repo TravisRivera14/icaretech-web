@@ -19,19 +19,25 @@
         <p><a href="#" style="color: #58a6ff; font-size: 12px;">¿Olvidaste tu contraseña?</a></p>
     </div>
 
-    <script>
+<script>
         async function login() {
             const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                // --- AGREGA ESTA LÍNEA ---
+                credentials: 'include', 
+                // -------------------------
                 body: JSON.stringify({
                     usuario: document.getElementById('usuario').value,
                     password: document.getElementById('password').value
                 })
             });
+            
             const data = await res.json();
+            
             if (data.success) {
-                window.location.href = '/dashboard'; // Lo enviaremos al panel
+                // Asegúrate de tener una ruta /dashboard en tu vercel.json
+                window.location.href = '/admin'; 
             } else {
                 alert("Usuario o contraseña incorrectos");
             }

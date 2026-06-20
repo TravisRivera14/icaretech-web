@@ -19,8 +19,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_SAMESITE='none',
+    SESSION_COOKIE_SECURE=False,
+    SESSION_COOKIE_SAMESITE='lax',
     SESSION_COOKIE_HTTPONLY=True
 )
 

@@ -24,15 +24,15 @@
       "dest": "frontend/servicio.html"
     },
     {
+      "src": "/facturacion",
+      "dest": "frontend/facturacion.html"
+    },
+    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
       "dest": "frontend/index.html"
-    },
-    {
-      "src": "/facturacion", 
-      "dest": "frontend/facturacion.html" 
     }
   ]
 }

@@ -11,4 +11,5 @@
     { "source": "/admin", "destination": "/frontend/admin.html" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
+  
 }

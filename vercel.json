@@ -1,11 +1,31 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/servicio", "destination": "/servicio.html" },
-    { "source": "/tienda", "destination": "/tienda.html" },
-    { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/config_hacienda", "destination": "/config_hacienda.html" },
-    { "source": "/", "destination": "/index.html" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "app.py"
+    },
+    {
+      "src": "/servicio",
+      "dest": "frontend/servicio.html"
+    },
+    {
+      "src": "/service",
+      "dest": "frontend/servicio.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1"
+    }
   ]
 }

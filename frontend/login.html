@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Acceso iCarTech CR</title>
+    <title>Acceso iCareTech CR</title>
     <style>
         body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .login-box { background: #161b22; padding: 40px; border-radius: 12px; border: 1px solid #30363d; width: 300px; }
@@ -16,33 +16,33 @@
         <input type="text" id="usuario" placeholder="Usuario">
         <input type="password" id="password" placeholder="Contraseña">
         <button onclick="login()">Ingresar</button>
-        <p><a href="#" style="color: #58a6ff; font-size: 12px;">¿Olvidaste tu contraseña?</a></p>
+        <p><a href="/recuperar" style="color: #58a6ff; font-size: 12px;">¿Olvidaste tu contraseña?</a></p>
     </div>
 
-<script>
-    async function login() {
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'include',
-            body: JSON.stringify({
-                usuario: document.getElementById('usuario').value,
-                password: document.getElementById('password').value
-            })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            // REDIRECCIÓN INTELIGENTE
-            if (data.rol === 'admin') {
-                window.location.href = '/admin';
+    <script>
+        async function login() {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include', 
+                body: JSON.stringify({
+                    usuario: document.getElementById('usuario').value,
+                    password: document.getElementById('password').value
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                // REDIRECCIÓN INTELIGENTE BASADA EN ROL
+                if (data.rol === 'admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/dashboard_cliente';
+                }
             } else {
-                window.location.href = '/dashboard_cliente';
+                alert("Usuario o contraseña incorrectos");
             }
-        } else {
-            alert("Credenciales incorrectas");
         }
-    }
-</script>
+    </script>
 </body>
 </html>

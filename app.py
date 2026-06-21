@@ -19,8 +19,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
 app.config.update(
-    SESSION_COOKIE_SECURE=False, 
-    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=False,     # Obligatorio para desarrollo/Vercel sin HTTPS estricto
+    SESSION_COOKIE_SAMESITE='Lax',   # 'Lax' permite que la cookie viaje correctamente
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -33,13 +33,13 @@ DATABASE_URL = os.environ.get(
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
 def db_query(query, params=(), fetch=False):
-    conn = db_pool.getconn()
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
     c.execute(query, params)
     res = c.fetchall() if fetch else None
     conn.commit()
     c.close()
-    db_pool.putconn(conn) # Devuelve la conexión al pool
+    conn.close()
     return res
 
 def db_query(query, params=(), fetch=False):
@@ -482,7 +482,7 @@ def manejar_login():
             return jsonify({"success": True, "rol": res[0][3], "nombre": res[0][4]})
         return jsonify({"success": False}), 401
     
-    # GET: Verificar si ya tiene sesión
+    # GET: Verificar si ya tiene sesión activa
     if 'user_id' in session:
         return jsonify({"success": True, "rol": session.get('rol'), "nombre": session.get('nombre')})
     return jsonify({"success": False}), 401

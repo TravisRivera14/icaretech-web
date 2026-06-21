@@ -19,8 +19,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=False, 
+    SESSION_COOKIE_SAMESITE='Lax',
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -471,15 +471,18 @@ def verificar_sesion():
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
 # ==========================================
 
+# RUTA DE LOGIN ÚNICA (POST para loguear, GET para verificar)
 @app.route('/api/login', methods=['POST', 'GET'])
 def manejar_login():
     if request.method == 'POST':
         d = request.json or {}
-        # ... tu lógica de autenticación (POST) ...
-        # (Asegúrate de guardar el 'rol' en la sesión)
-        return jsonify({"success": True, "rol": res[0][3], "nombre": res[0][4]})
-        
-    # Método GET (Verificar sesión)
+        res = db_query("SELECT id, usuario, password_hash, rol, nombre FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
+        if res and check_password_hash(res[0][2], d.get('password')):
+            session.update({'user_id': res[0][0], 'rol': res[0][3], 'nombre': res[0][4]})
+            return jsonify({"success": True, "rol": res[0][3], "nombre": res[0][4]})
+        return jsonify({"success": False}), 401
+    
+    # GET: Verificar si ya tiene sesión
     if 'user_id' in session:
         return jsonify({"success": True, "rol": session.get('rol'), "nombre": session.get('nombre')})
     return jsonify({"success": False}), 401
@@ -492,6 +495,12 @@ def listar_usuarios():
     users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
     resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
     return jsonify(resultado)
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({"success": True})
+
 
 @app.route('/api/admin/crear-usuario', methods=['POST'])
 def crear_usuario():

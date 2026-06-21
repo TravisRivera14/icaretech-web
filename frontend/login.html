@@ -19,29 +19,28 @@
         <p><a href="#" style="color: #58a6ff; font-size: 12px;">¿Olvidaste tu contraseña?</a></p>
     </div>
 
-<<script>
+<script>
     async function login() {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            credentials: 'include', 
+            credentials: 'include',
             body: JSON.stringify({
                 usuario: document.getElementById('usuario').value,
                 password: document.getElementById('password').value
             })
         });
-        
         const data = await res.json();
         
         if (data.success) {
-            // AQUÍ ESTÁ EL CAMBIO: Redirección según el rol que devuelve tu backend
+            // REDIRECCIÓN INTELIGENTE
             if (data.rol === 'admin') {
-                window.location.href = '/admin'; // Solo entra el admin
+                window.location.href = '/admin';
             } else {
-                window.location.href = '/dashboard_cliente'; // El cliente va a su panel
+                window.location.href = '/dashboard_cliente';
             }
         } else {
-            alert("Usuario o contraseña incorrectos");
+            alert("Credenciales incorrectas");
         }
     }
 </script>

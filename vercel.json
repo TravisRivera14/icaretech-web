@@ -1,4 +1,5 @@
-{
+
+ {
   "version": 2,
   "builds": [
     { "src": "app.py", "use": "@vercel/python" },
@@ -8,8 +9,7 @@
     { "src": "/api/(.*)", "dest": "app.py" },
     { "src": "/login", "dest": "frontend/login.html" },
     { "src": "/admin", "dest": "frontend/admin.html" },
-    { "src": "/config_hacienda", "dest": "frontend/config_hacienda.html" },
-    { "src": "/servicio", "dest": "frontend/servicio.html" },
+    { "src": "/dashboard_cliente", "dest": "frontend/dashboard_cliente.html" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "frontend/index.html" }
   ]

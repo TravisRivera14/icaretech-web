@@ -693,6 +693,20 @@
 </div>
 
 <script>
+    // 1. VERIFICACIÓN DE SEGURIDAD AL CARGAR
+    window.onload = async function() {
+        const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        // Si hay sesión, cargar todo
+        loadContent();
+        cargarTicketsAdmin();
+        cargarListaTrabajadores();
+        cargarHistorialLogs();
+    };
+
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", imgSupportEmp="", editId=null, editType=null;
     let editSupportEmpId = null; 

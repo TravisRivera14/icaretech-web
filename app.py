@@ -20,7 +20,7 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026
 
 app.config.update(
     SESSION_COOKIE_SECURE=False,
-    SESSION_COOKIE_SAMESITE='lax',
+    SESSION_COOKIE_SAMESITE='Lax',
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -29,6 +29,18 @@ DATABASE_URL = os.environ.get(
     'CONEXION_DIRECTA_NEON', 
     'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
 )
+
+db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
+
+def db_query(query, params=(), fetch=False):
+    conn = db_pool.getconn()
+    c = conn.cursor()
+    c.execute(query, params)
+    res = c.fetchall() if fetch else None
+    conn.commit()
+    c.close()
+    db_pool.putconn(conn) # Devuelve la conexión al pool
+    return res
 
 def db_query(query, params=(), fetch=False):
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -459,23 +471,18 @@ def verificar_sesion():
 # 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
 # ==========================================
 
-@app.route('/api/login', methods=['POST'])
-def login():
-    d = request.json or {}
-    res = db_query("SELECT id, usuario, password_hash, rol, nombre FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
-    if res and check_password_hash(res[0][2], d.get('password')):
-        session.update({'user_id': res[0][0], 'rol': res[0][3], 'nombre': res[0][4], 'modified': True})
-        return jsonify({"success": True, "usuario": res[0][1], "rol": res[0][3], "nombre": res[0][4]})
-    return jsonify({"success": False}), 401
-
-@app.route('/api/admin/logs', methods=['GET'])
-def obtener_logs():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
+@app.route('/api/login', methods=['POST', 'GET'])
+def manejar_login():
+    if request.method == 'POST':
+        d = request.json or {}
+        # ... tu lógica de autenticación (POST) ...
+        # (Asegúrate de guardar el 'rol' en la sesión)
+        return jsonify({"success": True, "rol": res[0][3], "nombre": res[0][4]})
         
-    logs_raw = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC", fetch=True) or []
-    resultado = [{"fecha": r[0].isoformat() if hasattr(r[0], 'isoformat') else str(r[0]), "usuario": r[1], "accion": r[2], "detalle": r[3]} for r in logs_raw]
-    return jsonify(resultado)
+    # Método GET (Verificar sesión)
+    if 'user_id' in session:
+        return jsonify({"success": True, "rol": session.get('rol'), "nombre": session.get('nombre')})
+    return jsonify({"success": False}), 401
 
 @app.route('/api/admin/usuarios', methods=['GET'])
 def listar_usuarios():
@@ -841,7 +848,6 @@ def eliminar_item(tabla, id):
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
-
 # ==========================================
 # INICIO DE LA APLICACIÓN
 # ==========================================
@@ -849,6 +855,7 @@ def eliminar_item(tabla, id):
 @app.before_request
 def asegurarse_db():
     init_db()
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

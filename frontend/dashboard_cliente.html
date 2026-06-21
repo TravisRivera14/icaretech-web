@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Panel | iCarTech CR</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Panel del Cliente</h1>
+        <button onclick="logout()">Cerrar Sesión</button>
+    </header>
+
+    <main class="dashboard-container">
+        <section>
+            <h2>Mis Facturas Emitidas</h2>
+            <div id="lista-facturas">Cargando facturas...</div>
+        </section>
+        
+        <section>
+            <h2>Emitir Nueva Proforma</h2>
+            <button onclick="window.location.href='/config_hacienda'">Ir al Facturador</button>
+        </section>
+    </main>
+
+    <script>
+        // 1. Verificación de Seguridad al cargar
+        window.onload = async () => {
+            const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
+            if (res.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            cargarDatosCliente();
+        };
+
+        // 2. Cargar datos específicos de este cliente
+        async function cargarDatosCliente() {
+            const res = await fetch('/api/cliente/mis-datos', { credentials: 'include' });
+            const data = await res.json();
+            document.getElementById('lista-facturas').innerHTML = 
+                data.facturas.map(f => `<p>Factura #${f.id} - ₡${f.monto}</p>`).join('');
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { credentials: 'include' });
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

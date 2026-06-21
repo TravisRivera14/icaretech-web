@@ -1,16 +1,10 @@
 {
   "version": 2,
   "builds": [
-    { "src": "app.py", "use": "@vercel/python" },
-    { "src": "frontend/**", "use": "@vercel/static" }
+    { "src": "app.py", "use": "@vercel/python" }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "app.py" },
-    { "src": "/login", "dest": "frontend/login.html" },
-    { "src": "/admin", "dest": "frontend/admin.html" },
-    { "src": "/config_hacienda", "dest": "frontend/config_hacienda.html" },
-    { "src": "/servicio", "dest": "frontend/servicio.html" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "frontend/index.html" }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/app.py" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }

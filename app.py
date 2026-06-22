@@ -33,25 +33,18 @@ DATABASE_URL = os.environ.get(
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
+# --- REEMPLAZA ESTO EN app.py ---
 def db_query(query, params=(), fetch=False):
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    c = conn.cursor()
-    c.execute(query, params)
-    res = c.fetchall() if fetch else None
-    conn.commit()
-    c.close()
-    conn.close()
-    return res
-
-def db_query(query, params=(), fetch=False):
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    c = conn.cursor()
-    c.execute(query, params)
-    res = c.fetchall() if fetch else None
-    conn.commit()
-    c.close()
-    conn.close()
-    return res
+    conn = db_pool.getconn()
+    try:
+        c = conn.cursor()
+        c.execute(query, params)
+        res = c.fetchall() if fetch else None
+        conn.commit()
+        c.close()
+        return res
+    finally:
+        db_pool.putconn(conn)
 
 def init_db():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -503,27 +496,33 @@ def logout():
     return jsonify({"success": True})
 
 
+# --- REEMPLAZA TU RUTA /admin/crear-usuario EN app.py ---
 @app.route('/admin/crear-usuario', methods=['POST'])
 def crear_usuario():
     if session.get('rol') != 'admin':
         return jsonify({"message": "Acceso denegado"}), 403
         
     d = request.json or {}
-    # Recibimos los nuevos campos
     nombre = d.get('nombre')
     usuario = d.get('usuario')
-    password = generate_password_hash(d.get('password'))
+    password_plana = d.get('password')
     rol = d.get('rol')
-    empresa_id = d.get('empresa_id')
-    email = d.get('email')     # NUEVO
-    telefono = d.get('telefono') # NUEVO
+    empresa_id = d.get('empresa_id') # Viene del select
+    email = d.get('email')
+    telefono = d.get('telefono')
+    
+    if not nombre or not usuario or not password_plana:
+        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+        
+    password_encriptada = generate_password_hash(password_plana)
     
     try:
         db_query(
-            """INSERT INTO usuarios (usuario, password, rol, nombre, empresa_id, email, telefono) 
+            """INSERT INTO usuarios (nombre, usuario, password, rol, empresa_id, email, telefono) 
                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (usuario, password, rol, nombre, empresa_id, email, telefono)
+            (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
         )
+        registrar_cambio("Creó Usuario", f"Registró a: {nombre} ({usuario})")
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 400

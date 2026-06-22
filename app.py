@@ -506,6 +506,7 @@ def crear_usuario():
         return jsonify({"message": "Acceso denegado"}), 403
         
     d = request.json or {}
+    # Asegúrate de que estos nombres coincidan con el JS
     nombre = d.get('nombre')
     usuario = d.get('usuario')
     password_plana = d.get('password')
@@ -517,21 +518,16 @@ def crear_usuario():
     password_encriptada = generate_password_hash(password_plana)
     
     try:
-        # AQUI ESTABA EL ERROR: usamos 'password_hash' en lugar de 'password'
         db_query(
             """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
         )
-        registrar_cambio("Creó Usuario", f"Registró a: {nombre}")
+        registrar_cambio("Creó Usuario", f"Se registró a: {nombre}")
         return jsonify({"success": True})
     except Exception as e:
+        print(f"ERROR EN INSERT: {e}") # Mira esto en los logs de Vercel
         return jsonify({"success": False, "message": str(e)}), 400
-
-@app.route('/api/admin/editar-usuario', methods=['POST'])
-def editar_usuario():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
         
     d = request.json or {}
     usuario_id = d.get('id')

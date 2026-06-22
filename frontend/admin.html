@@ -897,38 +897,37 @@
     });
 
     document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const rol = document.getElementById('new-emp-role').value;
+        e.preventDefault();
     
-    // Captura de datos
-    const payload = {
-        nombre: document.getElementById('new-emp-name').value,
-        usuario: document.getElementById('new-emp-user').value,
-        password: document.getElementById('new-emp-pass').value,
-        email: document.getElementById('new-emp-email').value,
-        telefono: document.getElementById('new-emp-phone').value,
-        rol: rol
-    };
+        // Obtenemos los valores
+        const datos = {
+            nombre: document.getElementById('new-emp-name').value,
+            usuario: document.getElementById('new-emp-user').value,
+            password: document.getElementById('new-emp-pass').value,
+            rol: document.getElementById('new-emp-role').value,
+            email: document.getElementById('new-emp-email').value,
+            telefono: document.getElementById('new-emp-phone').value,
+            empresa_id: document.getElementById('select-empresa-alta') ? document.getElementById('select-empresa-alta').value : null
+        };
 
-    fetch(`${API}/admin/crear-usuario`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
-            alert('Usuario registrado con éxito.');
-            document.getElementById('form-alta-trabajador').reset();
-            // --- AQUÍ ESTÁ EL TRUCO: Forzamos la recarga de la lista ---
-            cargarListaTrabajadores(); 
-        } else {
-            alert("Error: " + (data.message || "No se pudo registrar"));
-        }
-    })
-    .catch(err => console.error("Error al registrar:", err));
-});
+        fetch(`${API}/admin/crear-usuario`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                alert('Usuario registrado con éxito.');
+                document.getElementById('form-alta-trabajador').reset();
+                cargarListaTrabajadores(); // Esto refrescará la tabla automáticamente
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => console.error("Error en el envío:", err));
+    });
     function cargarTicketsAdmin() {
         fetch(`${API}/admin/tickets`, { credentials: 'include' })
         .then(r => r.json())

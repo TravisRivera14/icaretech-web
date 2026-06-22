@@ -900,33 +900,35 @@
     e.preventDefault();
     const rol = document.getElementById('new-emp-role').value;
     
-    // Captura de los nuevos campos
-    const datosUsuario = {
+    // Captura de datos
+    const payload = {
         nombre: document.getElementById('new-emp-name').value,
         usuario: document.getElementById('new-emp-user').value,
         password: document.getElementById('new-emp-pass').value,
-        email: document.getElementById('new-emp-email').value, // NUEVO
-        telefono: document.getElementById('new-emp-phone').value, // NUEVO
-        rol: rol,
-        empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-alta').value : null
+        email: document.getElementById('new-emp-email').value,
+        telefono: document.getElementById('new-emp-phone').value,
+        rol: rol
     };
 
     fetch(`${API}/admin/crear-usuario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(datosUsuario)
+        body: JSON.stringify(payload)
     })
     .then(res => res.json())
     .then(data => {
         if(data.success) {
             alert('Usuario registrado con éxito.');
             document.getElementById('form-alta-trabajador').reset();
-            cargarListaTrabajadores();
-        } else { alert(data.message); }
-    });
+            // --- AQUÍ ESTÁ EL TRUCO: Forzamos la recarga de la lista ---
+            cargarListaTrabajadores(); 
+        } else {
+            alert("Error: " + (data.message || "No se pudo registrar"));
+        }
+    })
+    .catch(err => console.error("Error al registrar:", err));
 });
-
     function cargarTicketsAdmin() {
         fetch(`${API}/admin/tickets`, { credentials: 'include' })
         .then(r => r.json())

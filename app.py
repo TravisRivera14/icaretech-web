@@ -499,6 +499,7 @@ def logout():
 # --- REEMPLAZA TU RUTA /admin/crear-usuario EN app.py ---
 @app.route('/admin/crear-usuario', methods=['POST'])
 def crear_usuario():
+    # 1. Validación de seguridad
     if session.get('rol') != 'admin':
         return jsonify({"message": "Acceso denegado"}), 403
         
@@ -507,25 +508,33 @@ def crear_usuario():
     usuario = d.get('usuario')
     password_plana = d.get('password')
     rol = d.get('rol')
-    empresa_id = d.get('empresa_id') # Viene del select
+    # Si empresa_id es vacío, forzamos a None para que SQL lo acepte como NULL
+    empresa_id = d.get('empresa_id') if d.get('empresa_id') and d.get('empresa_id') != "" else None
     email = d.get('email')
     telefono = d.get('telefono')
     
-    if not nombre or not usuario or not password_plana:
-        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+    # 2. Validación de datos mínimos
+    if not nombre or not usuario or not password_plana or not rol:
+        return jsonify({"success": False, "message": "Datos obligatorios incompletos"}), 400
         
     password_encriptada = generate_password_hash(password_plana)
     
     try:
+        # 3. VERIFICA ESTA QUERY:
+        # Si tu base de datos tiene la columna "password_hash", debes usar ese nombre.
+        # Si tu base de datos tiene "password", entonces el código está bien.
         db_query(
-            """INSERT INTO usuarios (nombre, usuario, password, rol, empresa_id, email, telefono) 
+            """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
         )
+        
         registrar_cambio("Creó Usuario", f"Registró a: {nombre} ({usuario})")
         return jsonify({"success": True})
+        
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+        print(f"DEBUG ERROR SQL: {str(e)}") # Esto saldrá en los logs de Vercel
+        return jsonify({"success": False, "message": "Error al guardar en BD: " + str(e)}), 400
 
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 def editar_usuario():

@@ -11,6 +11,8 @@
     { "src": "/config_hacienda", "dest": "frontend/config_hacienda.html" },
     { "src": "/servicio", "dest": "frontend/servicio.html" },
     { "src": "/tienda", "dest": "frontend/tienda.html" },
+    { "src": "/assets/(.*)", "dest": "frontend/assets/$1" },
+    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "frontend/index.html" }
   ]

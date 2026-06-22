@@ -20,7 +20,7 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026
 
 app.config.update(
     SESSION_COOKIE_SECURE=True,     # Obligatorio para desarrollo/Vercel sin HTTPS estricto
-    SESSION_COOKIE_SAMESITE='Lax',   # 'Lax' permite que la cookie viaje correctamente
+    SESSION_COOKIE_SAMESITE='None',   # 'Lax' permite que la cookie viaje correctamente
     SESSION_COOKIE_HTTPONLY=True
 )
 

@@ -694,18 +694,39 @@
 
 <script>
     // 1. VERIFICACIÓN DE SEGURIDAD AL CARGAR
-    window.onload = async function() {
-        const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
-        if (res.status === 401) {
+    window.onload = function() {
+    // 1. Verificación estricta de sesión antes de cargar cualquier dato
+    fetch(`${API}/admin/tickets`, { 
+        method: 'GET', 
+        credentials: 'include' 
+    })
+    .then(res => {
+        if (!res.ok) {
+            // Si la respuesta no es 200 OK, redirigir al login inmediatamente
             window.location.href = '/login';
-            return;
+            return null;
         }
-        // Si hay sesión, cargar todo
-        loadContent();
-        cargarTicketsAdmin();
-        cargarListaTrabajadores();
-        cargarHistorialLogs();
-    };
+        return res.json();
+    })
+    .then(tickets => {
+        if(tickets) {
+            // 2. Solo si la sesión es válida, habilitar el panel
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('seccion-usuarios-admin').style.display = 'grid';
+            document.getElementById('seccion-logs-admin').style.display = 'block';
+            
+            cacheTickets = tickets;
+            renderTablaTickets(tickets);
+            loadContent(); // Cargar el resto de secciones
+            cargarListaTrabajadores();
+            cargarHistorialLogs();
+        }
+    })
+    .catch(err => {
+        console.error("Error crítico de autenticación:", err);
+        window.location.href = '/login';
+    });
+};
 
     const API = '/api';
     let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", imgSupportEmp="", editId=null, editType=null;

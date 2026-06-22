@@ -860,7 +860,9 @@
     }
 
     document.getElementById('form-editar-trabajador').addEventListener('submit', function(e) {
-        e.preventDefault();
+    e.preventDefault();
+        const rol = document.getElementById('edit-emp-role').value;
+    
         fetch(`${API}/admin/editar-usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -870,12 +872,18 @@
                 nombre: document.getElementById('edit-emp-name').value,
                 usuario: document.getElementById('edit-emp-user').value,
                 password: document.getElementById('edit-emp-pass').value,
-                rol: document.getElementById('edit-emp-role').value
+                rol: rol,
+                // Igual aquí: enviamos la empresa si es cliente
+                empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-edit').value : null
             })
         })
         .then(res => res.json())
         .then(data => {
-            if(data.success) { alert('Credenciales y nivel de acceso actualizados!'); cancelarEdicion(); cargarListaTrabajadores(); }
+            if(data.success) { 
+                alert('Credenciales actualizadas!'); 
+                cancelarEdicion(); 
+                cargarListaTrabajadores(); 
+            }
         });
     });
 

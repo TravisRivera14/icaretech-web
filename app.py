@@ -503,30 +503,31 @@ def logout():
     return jsonify({"success": True})
 
 
-@app.route('/api/admin/crear-usuario', methods=['POST'])
+@app.route('/admin/crear-usuario', methods=['POST'])
 def crear_usuario():
+    # 1. Aseguramos que solo el admin pueda crear usuarios
     if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    d = request.json or {}
-    nuevo_usuario = d.get('usuario')
-    password_plana = d.get('password')
-    nombre_completo = d.get('nombre')
+        return jsonify({"success": False, "message": "Acceso denegado"}), 403
+
+    data = request.json
+    nombre = data.get('nombre')
+    usuario = data.get('usuario')
+    password = generate_password_hash(data.get('password')) # ¡Recuerda siempre hashear!
+    rol = data.get('rol')
     
-    if not nuevo_usuario or not password_plana or not nombre_completo:
-        return jsonify({"success": False, "message": "Datos incompletos"}), 400
-        
-    password_encriptada = generate_password_hash(password_plana)
+    # 2. Capturamos el empresa_id. Si no viene (porque es técnico/admin), será None
+    empresa_id = data.get('empresa_id') 
     
     try:
-        db_query(
-            "INSERT INTO usuarios (usuario, password_hash, rol, nombre) VALUES (%s, %s, 'personal', %s)",
-            (nuevo_usuario, password_encriptada, nombre_completo)
-        )
-        registrar_cambio("Creó Usuario", f"Se registró al trabajador: {nombre_completo} ({nuevo_usuario})")
+        # 3. La query debe manejar el NULL si empresa_id es None
+        db_query("""
+            INSERT INTO usuarios (nombre, usuario, password, rol, empresa_id) 
+            VALUES (%s, %s, %s, %s, %s)
+        """, (nombre, usuario, password, rol, empresa_id))
+        
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "message": "El usuario ya existe o es inválido"}), 400
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 def editar_usuario():

@@ -505,29 +505,28 @@ def logout():
 
 @app.route('/admin/crear-usuario', methods=['POST'])
 def crear_usuario():
-    # 1. Aseguramos que solo el admin pueda crear usuarios
     if session.get('rol') != 'admin':
-        return jsonify({"success": False, "message": "Acceso denegado"}), 403
-
-    data = request.json
-    nombre = data.get('nombre')
-    usuario = data.get('usuario')
-    password = generate_password_hash(data.get('password')) # ¡Recuerda siempre hashear!
-    rol = data.get('rol')
-    
-    # 2. Capturamos el empresa_id. Si no viene (porque es técnico/admin), será None
-    empresa_id = data.get('empresa_id') 
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    d = request.json or {}
+    # Recibimos los nuevos campos
+    nombre = d.get('nombre')
+    usuario = d.get('usuario')
+    password = generate_password_hash(d.get('password'))
+    rol = d.get('rol')
+    empresa_id = d.get('empresa_id')
+    email = d.get('email')     # NUEVO
+    telefono = d.get('telefono') # NUEVO
     
     try:
-        # 3. La query debe manejar el NULL si empresa_id es None
-        db_query("""
-            INSERT INTO usuarios (nombre, usuario, password, rol, empresa_id) 
-            VALUES (%s, %s, %s, %s, %s)
-        """, (nombre, usuario, password, rol, empresa_id))
-        
+        db_query(
+            """INSERT INTO usuarios (usuario, password, rol, nombre, empresa_id, email, telefono) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (usuario, password, rol, nombre, empresa_id, email, telefono)
+        )
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": str(e)}), 400
 
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 def editar_usuario():

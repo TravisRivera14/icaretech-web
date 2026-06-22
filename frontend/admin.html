@@ -607,6 +607,8 @@
                 <input type="text" id="new-emp-name" placeholder="Nombre completo" required>
                 <input type="text" id="new-emp-user" placeholder="Usuario" required>
                 <input type="password" id="new-emp-pass" placeholder="Clave inicial" required>
+                <input type="email" id="new-emp-email" placeholder="Correo electrónico" required>
+                <input type="tel" id="new-emp-phone" placeholder="Número telefónico" required>
                 
                 <label for="new-emp-role">Nivel de Acceso:</label>
                 <select id="new-emp-role" onchange="toggleEmpresa(this.value, 'div-empresa-alta', 'select-empresa-alta')" required>
@@ -889,30 +891,34 @@
 
     document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
     e.preventDefault();
-        const rol = document.getElementById('new-emp-role').value;
+    const rol = document.getElementById('new-emp-role').value;
     
-        fetch(`${API}/admin/crear-usuario`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                nombre: document.getElementById('new-emp-name').value,
-                usuario: document.getElementById('new-emp-user').value,
-                password: document.getElementById('new-emp-pass').value,
-                rol: rol,
-                // AQUÍ LA CLAVE: Enviamos el ID de empresa si es cliente
-                empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-alta').value : null
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                alert('Usuario registrado con éxito.');
-                document.getElementById('form-alta-trabajador').reset();
-                cargarListaTrabajadores();
-            } else { alert(data.message); }
-        });
+    // Captura de los nuevos campos
+    const datosUsuario = {
+        nombre: document.getElementById('new-emp-name').value,
+        usuario: document.getElementById('new-emp-user').value,
+        password: document.getElementById('new-emp-pass').value,
+        email: document.getElementById('new-emp-email').value, // NUEVO
+        telefono: document.getElementById('new-emp-phone').value, // NUEVO
+        rol: rol,
+        empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-alta').value : null
+    };
+
+    fetch(`${API}/admin/crear-usuario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(datosUsuario)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert('Usuario registrado con éxito.');
+            document.getElementById('form-alta-trabajador').reset();
+            cargarListaTrabajadores();
+        } else { alert(data.message); }
     });
+});
 
     function cargarTicketsAdmin() {
         fetch(`${API}/admin/tickets`, { credentials: 'include' })

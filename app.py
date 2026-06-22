@@ -3,6 +3,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
+from psycopg2 import pool
 import requests
 import random
 from datetime import datetime

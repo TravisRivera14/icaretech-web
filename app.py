@@ -861,11 +861,6 @@ def eliminar_item(tabla, id):
 # INICIO DE LA APLICACIÓN
 # ==========================================
 
-@app.before_request
-def asegurarse_db():
-    init_db()
-
-
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
     

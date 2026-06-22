@@ -43,6 +43,9 @@ def db_query(query, params=(), fetch=False):
         conn.commit()
         c.close()
         return res
+    except Exception as e:
+        print(f"DEBUG ERROR DB: {str(e)}")
+        raise e
     finally:
         db_pool.putconn(conn)
 
@@ -507,27 +510,23 @@ def crear_usuario():
     usuario = d.get('usuario')
     password_plana = d.get('password')
     rol = d.get('rol')
-    empresa_id = d.get('empresa_id') if d.get('empresa_id') and d.get('empresa_id') != "" else None
+    empresa_id = d.get('empresa_id') if d.get('empresa_id') else None
     email = d.get('email')
     telefono = d.get('telefono')
     
-    if not nombre or not usuario or not password_plana or not rol:
-        return jsonify({"success": False, "message": "Datos obligatorios incompletos"}), 400
-        
     password_encriptada = generate_password_hash(password_plana)
     
     try:
-        # Asegúrate que la tabla tenga las columnas: password_hash, email, telefono, empresa_id
+        # AQUI ESTABA EL ERROR: usamos 'password_hash' en lugar de 'password'
         db_query(
             """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
         )
-        registrar_cambio("Creó Usuario", f"Se registró a: {nombre} ({usuario}) con rol {rol}")
+        registrar_cambio("Creó Usuario", f"Registró a: {nombre}")
         return jsonify({"success": True})
     except Exception as e:
-        print(f"DEBUG ERROR SQL: {str(e)}")
-        return jsonify({"success": False, "message": "Error al guardar en BD: " + str(e)}), 400
+        return jsonify({"success": False, "message": str(e)}), 400
 
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 def editar_usuario():

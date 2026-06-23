@@ -499,14 +499,13 @@ def logout():
     return jsonify({"success": True})
 
 
-# --- RUTA DE CREACIÓN DE USUARIO (CORREGIDA Y COMPLETA) ---
+# --- RUTAS DE GESTIÓN DE USUARIOS ---
 @app.route('/admin/crear-usuario', methods=['POST'])
 def crear_usuario():
     if session.get('rol') != 'admin':
         return jsonify({"message": "Acceso denegado"}), 403
         
     d = request.json or {}
-    # Asegúrate de que estos nombres coincidan con el JS
     nombre = d.get('nombre')
     usuario = d.get('usuario')
     password_plana = d.get('password')
@@ -515,6 +514,10 @@ def crear_usuario():
     email = d.get('email')
     telefono = d.get('telefono')
     
+    # PROTECCIÓN CONTRA ERROR 500: Validar datos antes de encriptar
+    if not nombre or not usuario or not password_plana or not rol:
+        return jsonify({"success": False, "message": "Faltan campos obligatorios (nombre, usuario, contraseña o rol)."}), 400
+        
     password_encriptada = generate_password_hash(password_plana)
     
     try:
@@ -526,8 +529,13 @@ def crear_usuario():
         registrar_cambio("Creó Usuario", f"Se registró a: {nombre}")
         return jsonify({"success": True})
     except Exception as e:
-        print(f"ERROR EN INSERT: {e}") # Mira esto en los logs de Vercel
+        print(f"ERROR EN BD: {e}") 
         return jsonify({"success": False, "message": str(e)}), 400
+
+@app.route('/api/admin/editar-usuario', methods=['POST'])
+def editar_usuario():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
         
     d = request.json or {}
     usuario_id = d.get('id')
@@ -550,7 +558,7 @@ def crear_usuario():
             (nuevo_usuario, nuevo_nombre, usuario_id)
         )
         
-    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id} ({nuevo_usuario})")
+    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id}")
     return jsonify({"success": True, "message": "Usuario modificado correctamente"})
 
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])

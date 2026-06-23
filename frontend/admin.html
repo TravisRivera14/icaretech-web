@@ -1,12 +1,20 @@
+<!-- DEFINE EL DOCUMENTO COMO HTML5 -->
 <!DOCTYPE html>
+<!-- INICIA EL HTML Y DEFINE EL IDIOMA EN ESPAÑOL -->
 <html lang="es">
 <head>
+    <!-- ESTABLECE LA CODIFICACIÓN DE CARACTERES PARA TILDES Y Ñ -->
     <meta charset="UTF-8">
+    <!-- ASEGURA QUE LA PÁGINA SE ADAPTE A DISPOSITIVOS MÓVILES -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- TÍTULO DE LA PESTAÑA EN EL NAVEGADOR -->
     <title>Admin iCare | Control Maestro Premium</title>
+    <!-- CARGA EL LOGO (FAVICON) DE LA PESTAÑA -->
     <link rel="icon" href="Logo_Admin_v2.png">
     
+    <!-- IMPORTA LOS ICONOS DE FONT-AWESOME -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- PRECONECTA Y DESCARGA LA FUENTE 'PLUS JAKARTA SANS' DESDE GOOGLE -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -37,6 +45,7 @@
             }
         }
         
+        /* DEFINE LAS VARIABLES GLOBALES DE COLOR, SOMBRAS Y ANIMACIONES */
         :root { 
             --dark-bg: #0b0c10;
             --card-bg: #1f2833;
@@ -52,6 +61,7 @@
             --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         
+        /* RESETEA MARGENES Y APLICA LA FUENTE PRINCIPAL AL PANEL */
         * { 
             margin: 0; 
             padding: 0; 
@@ -60,6 +70,7 @@
             letter-spacing: -0.2px;
         }
         
+        /* ESTILOS BASE DEL CUERPO DE LA PÁGINA (PANTALLA OSCURA) */
         body { 
             background: var(--dark-bg); 
             color: var(--text-light); 
@@ -68,7 +79,7 @@
             min-height: 100vh;
         }
 
-        /* OVERLAY DE LOGIN ESTILO GLASS NEÓN OSCURO */
+        /* OVERLAY DE LOGIN ESTILO GLASS NEÓN OSCURO (BLOQUEA LA PANTALLA) */
         #login-overlay {
             position: fixed; 
             top: 0; left: 0; 
@@ -82,6 +93,7 @@
             -webkit-backdrop-filter: blur(20px);
         }
         
+        /* DISEÑO DE LA CAJA CENTRAL DE INICIO DE SESIÓN */
         .login-card {
             background: var(--card-bg); 
             padding: 45px 35px; 
@@ -93,7 +105,7 @@
             border: 1px solid var(--border-smooth);
         }
 
-        /* COMPONENTE INTERACTIVO SIDEBAR OSCURO */
+        /* COMPONENTE INTERACTIVO SIDEBAR OSCURO (MENÚ LATERAL) */
         .sidebar {
             width: 280px;
             background: #11141a;
@@ -107,6 +119,7 @@
             z-index: 100;
         }
 
+        /* TÍTULO Y LOGO EN LA PARTE SUPERIOR DEL MENÚ LATERAL */
         .sidebar-brand {
             font-size: 18px;
             font-weight: 800;
@@ -118,10 +131,12 @@
             gap: 10px;
         }
 
+        /* DA COLOR TURQUESA AL PUNTO FINAL DEL TÍTULO EN LA BARRA LATERAL */
         .sidebar-brand span {
             color: var(--turquoise-main);
         }
 
+        /* CONTENEDOR DE LA LISTA DE ENLACES DEL MENÚ */
         .sidebar-menu {
             list-style: none;
             display: flex;
@@ -129,6 +144,7 @@
             gap: 6px;
         }
 
+        /* ESTILO PARA CADA BOTÓN/ENLACE DEL MENÚ LATERAL */
         .sidebar-item {
             padding: 12px 16px;
             border-radius: 10px;
@@ -142,16 +158,18 @@
             transition: var(--transition-smooth);
         }
 
+        /* CAMBIA EL FONDO Y COLOR AL PASAR EL MOUSE O ESTAR ACTIVO */
         .sidebar-item:hover, .sidebar-item.active {
             background: var(--card-bg);
             color: #ffffff;
         }
         
+        /* PINTA DE TURQUESA EL ICONO EXCLUSIVAMENTE DEL BOTÓN SELECCIONADO */
         .sidebar-item.active i {
             color: var(--turquoise-main);
         }
 
-        /* CONTENEDOR PRINCIPAL DE CONTENIDO */
+        /* CONTENEDOR PRINCIPAL DE CONTENIDO (DEJA ESPACIO PARA EL MENÚ) */
         .main-content {
             margin-left: 280px;
             flex: 1;
@@ -159,10 +177,12 @@
             max-width: 1200px;
         }
 
+        /* ÁREA DEL TÍTULO PRINCIPAL EN LA PARTE SUPERIOR */
         .header-area {
             margin-bottom: 35px;
         }
 
+        /* TÍTULO PRINCIPAL (H1) DEL DASHBOARD */
         .header-area h1 {
             font-size: 28px;
             font-weight: 800;
@@ -170,39 +190,44 @@
             letter-spacing: -0.8px;
         }
 
+        /* PÁRRAFO DESCRIPTIVO DEBAJO DEL TÍTULO PRINCIPAL */
         .header-area p {
             font-size: 14px;
             color: var(--text-secondary);
             margin-top: 4px;
         }
 
-        /* SECCIONES DINÁMICAS (TAB CONTENT) */
+        /* SECCIONES DINÁMICAS (TAB CONTENT) - OCULTAS POR DEFECTO */
         .tab-section {
             display: none;
             animation: techFadeIn 0.5s ease forwards;
         }
 
+        /* HACE VISIBLE ÚNICAMENTE LA PESTAÑA QUE TIENE LA CLASE 'ACTIVE' */
         .tab-section.active {
             display: grid;
             grid-template-columns: 1fr;
             gap: 25px;
         }
 
+        /* ANIMACIÓN DE DESVANECIMIENTO HACIA ARRIBA */
         @keyframes techFadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* CREA UNA ESTRUCTURA DE CUADRÍCULA (GRID) PARA FORMULARIOS */
         .grid-two-columns {
             display: grid;
             grid-template-columns: 1fr;
             gap: 25px;
         }
+        /* DOS COLUMNAS SOLAMENTE EN PANTALLAS GRANDES */
         @media (min-width: 901px) {
             .grid-two-columns { grid-template-columns: 1fr 1fr; }
         }
 
-        /* TARJETAS ESTILO CYBERPUNK CARD */
+        /* TARJETAS ESTILO CYBERPUNK CARD (CONTENEDORES GRISES) */
         .card { 
             background: var(--card-bg); 
             padding: 30px; 
@@ -212,6 +237,7 @@
             box-sizing: border-box; 
         }
         
+        /* TÍTULOS SECUNDARIOS DENTRO DE LAS TARJETAS */
         .card h2 {
             font-size: 16px;
             font-weight: 700;
@@ -237,12 +263,14 @@
             transition: var(--transition-smooth);
         }
         
+        /* BORDE TURQUESA AL ESCRIBIR DENTRO DE UN CAMPO */
         input:focus, textarea:focus, select:focus {
             background: #11141a;
             border-color: var(--turquoise-main);
             box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
         }
         
+        /* ETIQUETAS PEQUEÑAS DE TEXTO ARRIBA DE LOS CAMPOS */
         label {
             font-size: 12px;
             font-weight: 600;
@@ -264,12 +292,14 @@
             box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15);
         }
         
+        /* EFECTO HOVER DE BOTONES */
         button:hover { 
             background: var(--turquoise-light);
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
         }
 
+        /* VARIANTE DE BOTÓN TURQUESA OSCURO */
         .btn-brand-accent {
             background: var(--turquoise-dark);
             color: white;
@@ -279,7 +309,7 @@
             color: black;
         }
 
-        /* TABLAS Y LISTADOS MINIMALISTAS OSCUROS */
+        /* TABLAS Y LISTADOS MINIMALISTAS OSCUROS (CON SCROLL) */
         .list-container {
             max-height: 400px; 
             overflow-y: auto; 
@@ -289,6 +319,7 @@
             padding: 8px;
         }
 
+        /* FILAS DENTRO DE LAS LISTAS */
         .list-item { 
             display: flex; 
             justify-content: space-between; 
@@ -298,15 +329,18 @@
             font-size: 13.5px; 
         }
         
+        /* QUITA EL BORDE A LA ÚLTIMA FILA */
         .list-item:last-child {
             border-bottom: none;
         }
         
+        /* TEXTO PRINCIPAL DE LA FILA EN NEGRITA */
         .list-item span {
             font-weight: 600;
             color: var(--text-light);
         }
         
+        /* BOTÓN PEQUEÑO ESTILO PÍLDORA TURQUESA PARA EDITAR */
         .btn-edit { 
             background: rgba(0, 180, 216, 0.15); 
             color: var(--turquoise-main);
@@ -315,6 +349,7 @@
         }
         .btn-edit:hover { background: var(--turquoise-main); color: #000; }
 
+        /* BOTÓN PEQUEÑO ESTILO PÍLDORA ROJO PARA ELIMINAR */
         .btn-del { 
             background: rgba(255, 59, 48, 0.15); 
             color: var(--del);
@@ -323,7 +358,7 @@
         }
         .btn-del:hover { background: var(--del); color: #fff; }
         
-        /* TABLA DE TICKETS INTERACTIVA */
+        /* TABLA DE TICKETS INTERACTIVA (ENVOLTORIO PARA SCROLL HORIZONTAL) */
         .ticket-table-wrapper {
             overflow-x: auto;
             border: 1px solid var(--border-smooth);
@@ -331,28 +366,33 @@
             background: #11141a;
         }
 
+        /* ESTRUCTURA DE LA TABLA DE INCIDENCIAS */
         .ticket-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13.5px;
         }
         
+        /* ESPACIADO Y BORDES DE CELDAS DE TABLA */
         .ticket-table th, .ticket-table td {
             text-align: left;
             padding: 14px 16px;
             border-bottom: 1px solid var(--border-smooth);
         }
         
+        /* ESTILO DE LOS TÍTULOS DE COLUMNAS DE LA TABLA */
         .ticket-table th {
             background: #161a22;
             font-weight: 700;
             color: #ffffff;
         }
 
+        /* HOVER DE FILAS DE LA TABLA */
         .ticket-table tbody tr:hover {
             background: rgba(255, 255, 255, 0.02);
         }
         
+        /* ETIQUETAS REDONDEADAS DE URGENCIA (BADGES) */
         .badge {
             padding: 4px 10px;
             border-radius: 6px;
@@ -364,7 +404,7 @@
         .badge-media { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
         .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 
-        /* 🤖 MODAL DE DETALLE MAESTRO INTELIGENTE */
+        /* 🤖 MODAL DE DETALLE MAESTRO INTELIGENTE (FONDO BORROSO APPLE) */
         .apple-modal {
             position: fixed;
             top: 0; left: 0;
@@ -379,6 +419,7 @@
             padding: 20px;
         }
 
+        /* CAJA PRINCIPAL DE LA VENTANA EMERGENTE (MODAL) */
         .apple-modal-content {
             background: var(--card-bg);
             width: 100%;
@@ -392,11 +433,13 @@
             overflow-y: auto;
         }
 
+        /* ANIMACIÓN POP DEL MODAL */
         @keyframes modalPop {
             from { transform: scale(0.95); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
+        /* PARTE SUPERIOR DEL MODAL CON LÍNEA SEPARADORA */
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -406,6 +449,7 @@
             margin-bottom: 20px;
         }
 
+        /* BOTÓN DE CERRAR EL MODAL */
         .modal-close-btn {
             background: var(--dark-bg);
             color: var(--text-light);
@@ -419,6 +463,7 @@
         }
         .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
 
+        /* CAJA PARA LA SOLUCIÓN DE INTELIGENCIA ARTIFICIAL */
         .ai-bulletin-box {
             background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02));
             border: 1px dashed var(--turquoise-main);
@@ -428,6 +473,7 @@
             display: none;
         }
         
+        /* ADAPTA LA ESTRUCTURA PARA PANTALLAS PEQUEÑAS (TABLETS/MÓVILES) */
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: auto; position: relative; padding: 20px; }
@@ -437,6 +483,7 @@
 </head>
 <body>
 
+<!-- PANTALLA DE INICIO DE SESIÓN (LOGIN OVERLAY) -->
 <div id="login-overlay">
     <div class="login-card">
         <h2 style="margin-bottom:6px; font-weight:800; color:var(--turquoise-main); font-size: 24px;">Control Maestro</h2>
@@ -450,6 +497,7 @@
     </div>
 </div>
 
+<!-- BARRA LATERAL (SIDEBAR) CON MENÚ DE NAVEGACIÓN -->
 <aside class="sidebar">
     <div class="sidebar-brand">
         <i class="fas fa-shield-halved" style="color: var(--turquoise-main);"></i> iCare Admin <span>•</span>
@@ -463,13 +511,16 @@
     </ul>
 </aside>
 
+<!-- CONTENEDOR PRINCIPAL DEL PANEL -->
 <main class="main-content">
     
+    <!-- ENCABEZADO DEL PANEL -->
     <div class="header-area">
         <h1 id="main-panel-title">Módulo Maestro de Gestión</h1>
         <p>Centro unificado de operaciones y alta disponibilidad para iCare Tech CR.</p>
     </div>
 
+    <!-- PESTAÑA 1: GESTIÓN DE TICKETS DE SOPORTE -->
     <section id="tab-tickets" class="tab-section active">
         <div class="card">
             <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
@@ -500,6 +551,7 @@
         </div>
     </section>
 
+    <!-- PESTAÑA 2: CLIENTES CORPORATIVOS (ALTA DE EMPRESAS Y LISTADO) -->
     <section id="tab-empresas" class="tab-section">
         <div class="grid-two-columns">
             <div class="card">
@@ -516,6 +568,7 @@
         </div>
     </section>
 
+    <!-- PESTAÑA 3: LANDING & CONTENIDOS (MÓDULOS, PRODUCTOS, TEXTOS, SOCIOS, TESTIMONIOS) -->
     <section id="tab-contenidos" class="tab-section">
         <div class="grid-two-columns">
             <div>
@@ -599,6 +652,7 @@
         </div>
     </section>
 
+    <!-- PESTAÑA 4: PERSONAL TÉCNICO Y USUARIOS (CREAR, EDITAR Y LISTAR CUENTAS) -->
     <section id="tab-personal" class="tab-section">
     <div id="seccion-usuarios-admin" class="grid-two-columns">
         <div class="card">
@@ -660,6 +714,7 @@
     </div>
 </section>
 
+    <!-- PESTAÑA 5: AUDITORÍA Y REGISTRO DE EVENTOS (LOGS) -->
     <section id="tab-auditoria" class="tab-section">
         <div class="card" id="seccion-logs-admin">
             <h2><i class="fas fa-history" style="color: var(--turquoise-main);"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
@@ -670,6 +725,7 @@
     </section>
 </main>
 
+<!-- MODAL POPUP PARA VER EL DETALLE COMPLETO DEL TICKET SELECCIONADO -->
 <div id="modalTicketGrande" class="apple-modal">
     <div class="apple-modal-content">
         <div class="modal-header">
@@ -709,14 +765,15 @@
 </div>
 
 <script>
-    // 1. VERIFICACIÓN DE SEGURIDAD Y CARGA INICIAL
+    // 1. VERIFICACIÓN DE SEGURIDAD Y CARGA INICIAL AL ABRIR LA PÁGINA
     window.onload = function() {
-        // Primero, verificamos que el admin esté realmente logueado
+        // Primero, verificamos que el admin esté realmente logueado consultando la API
         fetch(`${API}/admin/tickets`, { 
             method: 'GET', 
             credentials: 'include' 
         })
         .then(res => {
+            // Si el servidor rechaza la petición (no logueado), expulsa al usuario al login
             if (!res.ok) {
                 window.location.href = '/login';
                 return null;
@@ -725,22 +782,21 @@
         })
         .then(tickets => {
             if(tickets) {
-                // Si el servidor responde, ocultamos el overlay
+                // Si el servidor responde con éxito, ocultamos el fondo negro de login
                 document.getElementById('login-overlay').style.display = 'none';
                 
-                // Habilitamos secciones
+                // Habilitamos y mostramos las secciones ocultas de administración
                 document.getElementById('seccion-usuarios-admin').style.display = 'grid';
                 document.getElementById('seccion-logs-admin').style.display = 'block';
                 
-                // Cargamos datos principales
+                // Cargamos y guardamos en memoria los tickets obtenidos
                 cacheTickets = tickets;
-                renderTablaTickets(tickets);
-                loadContent(); 
-                cargarListaTrabajadores();
-                cargarHistorialLogs();
+                renderTablaTickets(tickets); // Dibuja la tabla con los tickets
+                loadContent(); // Llama a la función que descarga el resto de la web
+                cargarListaTrabajadores(); // Descarga la lista del personal
+                cargarHistorialLogs(); // Descarga el registro de eventos
 
-                // CARGA AUTOMÁTICA DE SELECTORES DE EMPRESAS
-                // Esto llena los menús desplegables apenas entra el admin
+                // CARGA AUTOMÁTICA DE SELECTORES DE EMPRESAS (Llena los desplegables)
                 cargarEmpresasParaSelector('select-empresa-alta');
                 cargarEmpresasParaSelector('select-empresa-edit');
             }
@@ -751,20 +807,27 @@
         });
     };
 
+    // VARIABLE CONSTANTE QUE DEFINE LA RUTA BASE DE LA API
     const API = '/api';
+    
+    // VARIABLES GLOBALES PARA ALMACENAR IMÁGENES TEMPORALMENTE Y DATOS DE EDICIÓN EN MEMORIA
     let imgS="", imgP="", imgRev="", imgPartner="", imgEmp="", imgSupportEmp="", editId=null, editType=null;
     let editSupportEmpId = null; 
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
     let currentOpenTicket = null; 
 
+    // FUNCIÓN PARA ALTERNAR ENTRE LAS DISTINTAS PESTAÑAS DEL PANEL LATERAL
     function switchTab(tabId) {
+        // Remueve la clase 'active' de todas las secciones y botones
         document.querySelectorAll('.tab-section').forEach(section => section.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
         
+        // Activa solo la sección y botón seleccionados
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
 
+        // Cambia dinámicamente el título principal de la cabecera según la pestaña elegida
         const titles = {
             'tab-tickets': 'Monitoreo de Tickets de Soporte',
             'tab-empresas': 'Vínculos Comerciales Corporativos',
@@ -775,9 +838,9 @@
         document.getElementById('main-panel-title').innerText = titles[tabId];
     }
 
+    // FUNCIÓN REUTILIZABLE PARA LEER ARCHIVOS DE IMAGEN SUBIDOS POR EL USUARIO Y CONVERTIRLOS A BASE64
     const handleFile = (id, cb) => {
-        
-
+        const el = document.getElementById(id);
         if(!el) return;
         el.onchange = (e) => {
             const r = new FileReader(); 
@@ -785,6 +848,8 @@
             if(e.target.files[0]) r.readAsDataURL(e.target.files[0]);
         };
     };
+    
+    // ASIGNACIÓN DE LA FUNCIÓN DE ARCHIVOS A CADA UNO DE LOS INPUTS TIPO FILE
     handleFile('sImgFile', res => imgS = res);
     handleFile('pImgFile', res => imgP = res);
     handleFile('revImgFile', res => imgRev = res);
@@ -792,10 +857,13 @@
     handleFile('empImgFile', res => imgEmp = res);
     handleFile('newSupportEmpImg', res => imgSupportEmp = res);
 
+    // FUNCIÓN QUE MANEJA EL ENVÍO DEL FORMULARIO DE INICIO DE SESIÓN MAESTRO
     document.getElementById('form-login-master').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('login-user').value;
         const pass = document.getElementById('login-pass').value;
+        
+        // Envía las credenciales introducidas a la API de validación
         fetch(`${API}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -804,6 +872,7 @@
         })
         .then(res => res.json())
         .then(data => {
+            // Si la clave es correcta, abre el panel y carga las métricas
             if (data.success) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('seccion-usuarios-admin').style.display = 'grid';
@@ -812,25 +881,30 @@
                 cargarHistorialLogs();
                 cargarTicketsAdmin();
             } else {
+                // Si falla, muestra el mensaje rojo de error
                 document.getElementById('login-error').style.display = 'block';
             }
         });
     });
 
+    // FUNCIÓN QUE DESCARGA Y PINTA EL HISTORIAL DE ACCIONES (LOGS DE AUDITORÍA)
     function cargarHistorialLogs() {
         fetch(`${API}/admin/logs`, { credentials: 'include' })
         .then(res => res.json())
         .then(logs => {
             const container = document.getElementById('lista-logs-auditoria');
+            // Mapea la información de la base de datos a formato HTML tipo consola
             container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid var(--border-smooth);">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--turquoise-main);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
         });
     }
 
+    // FUNCIÓN QUE SOLICITA LA LISTA DE PERSONAL Y USUARIOS AL SERVIDOR
     function cargarListaTrabajadores() {
         fetch(`${API}/admin/usuarios`, { credentials: 'include' })
         .then(res => res.json())
         .then(usuarios => {
             const div = document.getElementById('lista-usuarios-tecnicos');
+            // Dibuja un ítem de lista por cada usuario encontrado con sus respectivos botones de borrar y editar
             div.innerHTML = usuarios.map(u => `
                 <div class="list-item">
                     <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
@@ -843,6 +917,7 @@
         });
     }
 
+    // FUNCIÓN PARA ELIMINAR A UN USUARIO DEL SISTEMA CONFIRMANDO PREVIAMENTE
     function eliminarUsuario(id, nombre) {
         if(confirm(`¿Eliminar de forma permanente al usuario ${nombre}?`)) {
             fetch(`${API}/admin/eliminar-usuario/${id}`, { method: 'DELETE', credentials: 'include' })
@@ -850,12 +925,13 @@
             .then(data => {
                 if(data.success) {
                     alert('Usuario removido del servidor maestro.');
-                    cargarListaTrabajadores();
+                    cargarListaTrabajadores(); // Refresca la lista al borrar
                 } else { alert(data.message); }
             });
         }
     }
 
+    // FUNCIÓN QUE ABRE EL BLOQUE DE EDICIÓN Y PRECARGA LOS DATOS DE UN USUARIO EXISTENTE
     function activarEdicionUsuario(id, nombre, usuario, rol) {
         document.getElementById('bloque-editar-usuario').style.display = 'block';
         document.getElementById('edit-emp-id').value = id;
@@ -864,14 +940,17 @@
         document.getElementById('edit-emp-role').value = rol;
     }
 
+    // FUNCIÓN QUE DESCARTA LA EDICIÓN Y OCULTA EL FORMULARIO
     function cancelarEdicion() {
         document.getElementById('bloque-editar-usuario').style.display = 'none';
     }
 
+    // LISTENER QUE MANEJA EL EVENTO DE GUARDAR UNA EDICIÓN DE USUARIO
     document.getElementById('form-editar-trabajador').addEventListener('submit', function(e) {
     e.preventDefault();
         const rol = document.getElementById('edit-emp-role').value;
     
+        // Construye el payload (datos a enviar a la API)
         fetch(`${API}/admin/editar-usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -882,7 +961,7 @@
                 usuario: document.getElementById('edit-emp-user').value,
                 password: document.getElementById('edit-emp-pass').value,
                 rol: rol,
-                // Igual aquí: enviamos la empresa si es cliente
+                // Si es un cliente, se le envía el ID de la empresa a la que pertenece
                 empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-edit').value : null
             })
         })
@@ -891,15 +970,16 @@
             if(data.success) { 
                 alert('Credenciales actualizadas!'); 
                 cancelarEdicion(); 
-                cargarListaTrabajadores(); 
+                cargarListaTrabajadores(); // Refresca la lista
             }
         });
     });
 
+    // LISTENER QUE MANEJA LA CREACIÓN (ALTA) DE UN USUARIO TOTALMENTE NUEVO
     document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
     e.preventDefault();
     
-        // Capturamos los datos
+        // Capturamos todos los datos escritos en el formulario
         const datos = {
             nombre: document.getElementById('new-emp-name').value,
             usuario: document.getElementById('new-emp-user').value,
@@ -910,6 +990,7 @@
             empresa_id: document.getElementById('select-empresa-alta') ? document.getElementById('select-empresa-alta').value : null
         };
 
+        // Petición a la API para insertarlo en Base de Datos
         fetch(`${API}/admin/crear-usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -920,8 +1001,8 @@
         .then(data => {
             if(data.success) {
                 alert('Usuario registrado con éxito.');
-                document.getElementById('form-alta-trabajador').reset();
-                // ESTO ES LO QUE HACE QUE APAREZCA EN LA LISTA:
+                document.getElementById('form-alta-trabajador').reset(); // Limpia los inputs
+                // ESTO ES LO QUE HACE QUE APAREZCA EN LA LISTA INMEDIATAMENTE:
                 cargarListaTrabajadores(); 
             } else {
                 alert("Error: " + (data.message || "No se pudo registrar"));
@@ -933,12 +1014,15 @@
         });
     });
 
+    // FUNCIÓN QUE DIBUJA FILA POR FILA LA TABLA DE TICKETS DE SOPORTE TÉCNICO
     function renderTablaTickets(lista) {
         const tbody = document.getElementById('tabla-tickets-soporte');
+        // Si no hay reportes, muestra un mensaje centralizado
         if(lista.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding: 30px;">No hay reportes levantados en esta partición.</td></tr>`;
             return;
         }
+        // Itera la lista construyendo el HTML de las celdas y añadiendo el evento onClick a toda la fila
         tbody.innerHTML = lista.map(t => {
             const fechaStr = new Date(t.fecha).toLocaleDateString('es-CR', {hour: '2-digit', minute:'2-digit'});
             return `
@@ -958,20 +1042,25 @@
         }).join('');
     }
 
+    // FUNCIÓN QUE LLENA Y ABRE EL MODAL FLOTANTE (POPUP) AL CLICAR SOBRE UN TICKET
     function abrirModalTicketGrande(ticketId) {
+        // Busca el ticket exacto en la memoria cache
         const ticket = cacheTickets.find(t => t.id === ticketId);
         if(!ticket) return;
         currentOpenTicket = ticket;
 
+        // Rellena el HTML del modal con la información del ticket
         document.getElementById('modalEmpresa').innerText = ticket.empresa_nombre;
         document.getElementById('modalContacto').innerText = ticket.contacto;
         document.getElementById('modalFecha').innerText = new Date(ticket.fecha).toLocaleString('es-CR');
         document.getElementById('modalAsunto').innerText = ticket.asunto;
         document.getElementById('modalDescripcion').innerText = ticket.descripcion;
         
+        // Pinta la insignia del color correcto según la urgencia
         const prioBox = document.getElementById('modalPrioridad');
         prioBox.innerHTML = `<span class="badge badge-${ticket.prioridad.toLowerCase()}">${ticket.prioridad}</span>`;
         
+        // Condiciona el botón 'Resolver'. Si ya está cerrado el ticket, oculta el botón
         const btnResolver = document.getElementById('btnModalResolver');
         if(ticket.estado === 'Abierto') {
             btnResolver.style.display = "inline-block";
@@ -983,34 +1072,41 @@
             btnResolver.style.display = "none";
         }
 
+        // Resetea la caja de la IA por si tenía info del ticket anterior
         document.getElementById('boxSolucionIA').style.display = "none";
         document.getElementById('textSolucionIA').innerHTML = "";
 
+        // Hace visible el modal final
         document.getElementById('modalTicketGrande').style.display = "flex";
     }
 
+    // FUNCIÓN PARA CERRAR EL POPUP MODAL DEL TICKET
     function cerrarModalTicket() {
         document.getElementById('modalTicketGrande').style.display = "none";
         currentOpenTicket = null;
     }
 
+    // FUNCIÓN QUE SIMULA O PROCESA UNA PREDICCIÓN DE INTELIGENCIA ARTIFICIAL SEGÚN PALABRAS CLAVE DEL TICKET
     function generarSolucionIA() {
         if(!currentOpenTicket) return;
         
         const textContainer = document.getElementById('textSolucionIA');
         const boxContainer = document.getElementById('boxSolucionIA');
         
+        // Muestra la caja y pone un loader giratorio temporal
         boxContainer.style.display = "block";
         textContainer.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);">
                 <i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...
             </div>`;
 
+        // Timeout simulando el procesamiento de la IA
         setTimeout(() => {
             const lowerAsunto = currentOpenTicket.asunto.toLowerCase();
             const lowerDesc = currentOpenTicket.descripcion.toLowerCase();
             let solucionSugerida = "";
 
+            // Lógica predictiva sencilla: Busca palabras clave en el texto y arroja una plantilla de resolución
             if(lowerAsunto.includes('servidor') || lowerDesc.includes('servidor') || lowerDesc.includes('server')) {
                 solucionSugerida = `
                     <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
@@ -1035,30 +1131,35 @@
             }
 
             textContainer.innerHTML = solucionSugerida;
-        }, 1200);
+        }, 1200); // Demora de 1.2 segundos
     }
 
+    // FUNCIÓN PARA PREPARAR EL FORMULARIO DE 'DAR DE ALTA EMPRESA' PARA EDITAR UNA EXISTENTE
     function ajustarEdicionEmpresaSoporte(id, nombre, imagenActual) {
         editSupportEmpId = id;
         document.getElementById('newSupportEmpName').value = nombre;
-        // Magia: Si ya hay imagen, la guardamos en memoria para no borrarla
+        // Magia: Si ya hay imagen, la guardamos en memoria para no borrarla al hacer update
         imgSupportEmp = (imagenActual && imagenActual !== 'undefined' && imagenActual !== 'null') ? imagenActual : "";
         
+        // Cambia visualmente el formulario para indicar que ahora está en 'Modo Edición'
         document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
         document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Empresa y Logo";
         document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
         document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
     }
 
+    // FUNCIÓN DEL SELECTOR PARA FILTRAR LA TABLA PRINCIPAL DE TICKETS POR UNA EMPRESA
     function filtrarTicketsPorEmpresa(empresaId) {
         if(empresaId === "Todos") {
-            renderTablaTickets(cacheTickets);
+            renderTablaTickets(cacheTickets); // Si se selecciona Todos, carga array completo
         } else {
+            // Filtra el arreglo y re-dibuja la tabla
             const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId);
             renderTablaTickets(filtrados);
         }
     }
 
+    // FUNCIÓN PARA CAMBIAR EL ESTADO EN BASE DE DATOS DE UN TICKET Y CERRARLO
     function cambiarEstadoTicket(id, nuevoEstado) {
         fetch(`${API}/admin/tickets/${id}/estado`, {
             method: 'POST',
@@ -1069,15 +1170,16 @@
         .then(r => r.json())
         .then(() => {
             alert("Incidencia cerrada en servidor de alta disponibilidad.");
-            cargarTicketsAdmin();
+            cargarTicketsAdmin(); // (Esta función parece faltar en el script original, pero asume recarga global)
         });
     }
 
+    // FUNCIÓN QUE GUARDA UNA NUEVA EMPRESA O ACTUALIZA UNA EXISTENTE EN EL MÓDULO DE SOPORTE
     function agregarEmpresaSoporte() {
         const nombre = document.getElementById('newSupportEmpName').value;
         if(!nombre) return alert("Especifica el nombre corporativo.");
         
-        // Usamos la ruta inteligente de tu backend que soporta imágenes
+        // Usamos la ruta inteligente del backend que soporta imágenes
         const method = editSupportEmpId ? 'PUT' : 'POST';
         const url = editSupportEmpId ? `${API}/recomiendan/${editSupportEmpId}` : `${API}/recomiendan`;
 
@@ -1092,32 +1194,36 @@
             alert(editSupportEmpId ? "Empresa corporativa actualizada con éxito." : "Vínculo corporativo completado.");
             editSupportEmpId = null;
             document.getElementById('newSupportEmpName').value = "";
-            document.getElementById('newSupportEmpImg').value = ""; // Limpiamos el input
-            imgSupportEmp = ""; // Limpiamos memoria
+            document.getElementById('newSupportEmpImg').value = ""; // Limpiamos el input file
+            imgSupportEmp = ""; // Limpiamos la memoria de la variable global
             
+            // Restaura el formulario a su estado normal de '+ Vincular'
             document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
             document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
             document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
             document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
-            loadContent();
+            loadContent(); // Recarga la info de la pantalla
         });
     }
 
+    // FUNCIÓN PARA BORRAR UNA EMPRESA DE SOPORTE
     function eliminarEmpresaSoporte(id) {
         if(confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
             fetch(`${API}/admin/empresas-soporte/${id}`, { method: 'DELETE', credentials: 'include' })
             .then(r => r.json())
             .then(() => {
                 alert("Empresa removida del sistema.");
-                loadContent();
+                loadContent(); // Refresca lista tras borrado
             });
         }
     }
 
+    // SÚPER FUNCIÓN MAESTRA QUE CARGA ABSOLUTAMENTE TODOS LOS CONTENIDOS DE LA PÁGINA PÚBLICA EN UN SOLO FETCH
     function loadContent() {
         fetch(`${API}/todo`)
         .then(r => r.json())
         .then(data => {
+            // Guarda los arreglos traídos de la API en el objeto caché global
             cacheData.servicios = data.servicios || [];
             cacheData.productos = data.productos || [];
             cacheData.resenas = data.resenas || [];
@@ -1126,6 +1232,7 @@
             cacheData.objetivos = data.objetivos || [];
             cacheData.empresas = data.empresas || [];
             
+            // Si hay textos maestros, los inyecta en los campos de texto
             if(data.config) {
                 document.getElementById('h_titulo').value = data.config.hero_titulo || "";
                 document.getElementById('mision').value = data.config.mision || "";
@@ -1133,18 +1240,20 @@
                 document.getElementById('compromiso').value = data.config.compromiso || "";
             }
 
+            // Llena el selector (dropdown) del filtro de empresas de la primera pestaña
             const selectFiltro = document.getElementById('filtroEmpresaTickets');
             selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
             cacheData.empresas.forEach(e => {
                 selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
             });
 
+            // Pinta la lista inferior de la pestaña 'Clientes Corporativos' (Las empresas dadas de alta)
             const divBajas = document.getElementById('lista-empresas-soporte-bajas');
             if(cacheData.empresas.length === 0) {
                 divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
             } else {
                 divBajas.innerHTML = cacheData.empresas.map(e => {
-                    // Si la empresa tiene imagen, crea el <img>, si no, pon el emoji 🏢
+                    // Si la empresa tiene imagen, crea el <img> miniatura, si no, pon un emoji genérico 🏢
                     const imgTag = e.imagen ? `<img src="${e.imagen}" alt="Logo" style="height:25px; width:auto; border-radius:4px; margin-right:10px; vertical-align:middle;">` : `🏢 `;
                     return `
                     <div class="list-item">
@@ -1157,8 +1266,10 @@
                 `}).join('');
             }
             
+            // INICIA LA CONSTRUCCIÓN DE LA SÚPER LISTA INFERIOR DE CONTENIDOS ('ÁRBOL ACTUAL DE CONTENIDOS')
             let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
             
+            // Pinta primero la sección de servicios en esa súper lista
             cacheData.servicios.forEach((s, idx) => {
                 h += `
                     <div class="list-item">
@@ -1172,6 +1283,7 @@
             
             h += "<br><b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
             
+            // Pinta después la sección de productos en la misma súper lista
             cacheData.productos.forEach((p, idx) => {
                 h += `
                     <div class="list-item">
@@ -1183,69 +1295,90 @@
                     </div>`;
             });
             
+            // Inyecta el gran bloque HTML generado en el div contenedor correspondiente
             document.getElementById('master-list').innerHTML = h;
         });
     }
 
+    // FUNCIÓN PREVIA ANTES DE EDITAR. LLENA LOS FORMULARIOS SEGÚN LO QUE QUIERAS MODIFICAR Y HACE SCROLL HACIA ARRIBA
     function prepararEdicion(tipo, index) {
+        // Validación técnica por la forma en que se llamaba una tabla u otra
         const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
         const item = cacheData[datosReales][index];
+        // Setea variables globales informando qué se está editando
         editId = item.id; editType = tipo;
         
+        // Si el usuario le dio a editar servicio, rellena el formulario de servicios
         if(tipo === 'servicios') {
             document.getElementById('sTitle').value = item.titulo;
             document.getElementById('sDesc').value = item.descripcion;
             document.getElementById('sIcon').value = item.icono;
             document.getElementById('sProcess').value = item.proceso;
             document.getElementById('sBenefits').value = item.beneficios;
+        // Si fue producto, rellena el catálogo
         } else if(tipo === 'productos') {
             document.getElementById('pName').value = item.nombre;
             document.getElementById('pPrice').value = item.precio;
             document.getElementById('pCat').value = item.categoria;
         }
+        // Transporta visualmente al administrador hacia arriba de la pantalla para ver el formulario lleno
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // FUNCIÓN MAESTRA QUE DETERMINA SI DEBE CREAR O ACTUALIZAR (POST VS PUT) DEPENDIENDO DE SI HAY ALGO EN EDICIÓN O NO
     function saveItem(path, data) {
+        // Concatena el ID en la URL si estamos en modo edición
         const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
         fetch(url, { method: (editId && editType === path) ? 'PUT' : 'POST', headers:{'Content-Type':'application/json'}, credentials: 'include', body:JSON.stringify(data) })
         .then(() => { 
             alert("Operación completada con éxito."); 
-            loadContent(); 
-            editId = null; editType = null;
+            loadContent(); // Refresca todo
+            editId = null; editType = null; // Resetea el modo edición
         });
     }
 
+    // CONJUNTO DE FUNCIONES "ATAJO" (WRAPPERS) PARA EJECUTAR SAVEITEM() SEGÚN EL FORMULARIO PRESIONADO
+    // Guardar Servicios
     function subirServicio() { saveItem('servicios', {titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS}); }
+    // Guardar Productos
     function subirProducto() { saveItem('productos', {nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP}); }
+    // Guardar Reseñas
     function subirResena() { saveItem('resenas', {cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev}); }
+    // Guardar Marcas Socias
     function subirSocio() { saveItem('socios', {nombre: document.getElementById('partnerName').value, imagen: imgPartner}); }
+    // Guardar Beneficios / Cards Informativas
     function subirBeneficio() { saveItem('beneficios', {icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value}); }
+    // Guardar Clientes Objetivo
     function subirObjetivo() { saveItem('objetivos', {icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value}); }
+    // Guardar Empresas para el carrusel de Landing Page
     function subirEmpresa() { saveItem('recomiendan', {nombre: document.getElementById('empName').value, imagen: imgEmp}); }
 
+    // FUNCIÓN ÚNICA PARA MANDAR ACTUALIZAR LA CONFIGURACIÓN GLOBAL (TEXTOS DE MISIÓN/VISIÓN/HERO)
     function updateConfig() { 
         fetch(`${API}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials: 'include', body:JSON.stringify({hero_titulo:document.getElementById('h_titulo').value, mision:document.getElementById('mision').value, vision:document.getElementById('vision').value, compromiso:document.getElementById('compromiso').value}) })
         .then(() => alert("Estructura de contenidos actualizada con éxito en producción."));
     }
 
+    // FUNCIÓN GLOBAL GENÉRICA PARA BORRAR CUALQUIER ÍTEM DEL ÁRBOL DE CONTENIDOS
     function del(t, id) { 
         if(confirm("¿Seguro que deseas eliminar este registro de la base de datos de Neon?")) {
             fetch(`${API}/eliminar/${t}/${id}`, { method:'DELETE', credentials: 'include' }).then(() => loadContent());
         }
     }
     
-    // 1. Mostrar/Ocultar selector de empresa
+    // 1. Mostrar/Ocultar selector de empresa (Dentro de la Pestaña Personal)
     function toggleEmpresa(rol, divId, selectId) {
         const div = document.getElementById(divId);
+        // Si eligen 'cliente', despliega el bloque, si no, lo oculta
         div.style.display = (rol === 'cliente') ? 'block' : 'none';
     
+        // Si es cliente, manda a llamar a la API para traer la lista de empresas disponibles
         if (rol === 'cliente') {
             cargarEmpresasParaSelector(selectId);
         }
     }
 
-    // 2. Cargar empresas desde el API
+    // 2. Cargar empresas desde el API y llenar un "SELECT" <option> específico (Utilidad para los formularios de Alta y Edición)
     function cargarEmpresasParaSelector(selectId) {
         fetch(`${API}/recomiendan`, { credentials: 'include' })
         .then(r => r.json())
@@ -1256,6 +1389,7 @@
     }
 
     // 3. Ajustar el formulario de edición cuando se quiera editar un usuario existente
+    // NOTA: Esta función está declarada dos veces en el código original que enviaste (alrededor de la línea 680 y aquí al final). Respeta el flujo original.
     function activarEdicionUsuario(id, nombre, usuario, rol, empresa_id) {
         document.getElementById('bloque-editar-usuario').style.display = 'block';
         document.getElementById('edit-emp-id').value = id;
@@ -1266,12 +1400,15 @@
         // Si es cliente, mostramos su empresa actual
         if(rol === 'cliente') {
             toggleEmpresa('cliente', 'div-empresa-edit', 'select-empresa-edit');
+            // Timeout para darle tiempo al DOM de procesar el toggleEmpresa antes de forzar el valor asignado
             setTimeout(() => { document.getElementById('select-empresa-edit').value = empresa_id; }, 500);
         }
     }
 
+    // CARGA DE RUTINA SECUNDARIA DE WINDOW.ONLOAD (Para redundancia en tu código original)
     window.onload = function() {
-        loadContent();
+        loadContent(); // Arranca descargando los listados maestros
+        // Vuelve a hacer validación de sesión (Este bloque repetía el del inicio en tu código, se mantiene intacto)
         fetch(`${API}/admin/tickets`, { credentials: 'include' })
         .then(res => { if(res.ok) return res.json(); })
         .then(tickets => { 

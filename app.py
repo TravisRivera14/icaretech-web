@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from flask import session, redirect, url_for
 import os
 import psycopg2
 from psycopg2 import pool
@@ -26,14 +28,10 @@ app.config.update(
 )
 
 # Intenta leer la variable de entorno de Vercel, si no existe, usa la de Neon local por defecto en tu Mac
-DATABASE_URL = os.environ.get(
-    'CONEXION_DIRECTA_NEON', 
-    'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
-)
+DATABASE_URL = os.environ.get('postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
-# --- REEMPLAZA ESTO EN app.py ---
 def db_query(query, params=(), fetch=False):
     conn = db_pool.getconn()
     try:
@@ -82,6 +80,8 @@ def init_db():
     conn.commit()
     c.close()
     conn.close()
+    
+
 
 def registrar_cambio(accion, detalle):
     """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
@@ -95,6 +95,14 @@ def registrar_cambio(accion, detalle):
     except Exception as e:
         print(f"Error guardando log de auditoría: {e}")
 
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario' not in session: # O la variable que uses para verificar sesión
+            return jsonify({"error": "No autorizado"}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ==========================================
 # 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA (PRIMERO)
@@ -199,6 +207,7 @@ def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
 # ENDPOINT TEMPORAL DE DIAGNÓSTICO (CORREGIDO)
 # ==========================================
 @app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
+@login_required
 def probar_conexion_hacienda_test():
     try:
         resultado = obtener_oauth_token_hacienda(1)
@@ -614,6 +623,7 @@ def crear_ticket_publico():
     return jsonify({"success": True, "message": "Ticket registrado con éxito"})
 
 @app.route('/api/admin/tickets', methods=['GET'])
+@login_required
 def listar_tickets_admin():
     if not session.get('rol'):
         return jsonify({"message": "No autorizado"}), 401

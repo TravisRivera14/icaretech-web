@@ -478,20 +478,121 @@ def verificar_sesion():
 # ==========================================
 
 # RUTA DE LOGIN ÚNICA (POST para loguear, GET para verificar)
-@app.route('/api/login', methods=['POST', 'GET'])
-def manejar_login():
-    if request.method == 'POST':
-        d = request.json or {}
-        res = db_query("SELECT id, usuario, password_hash, rol, nombre FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
-        if res and check_password_hash(res[0][2], d.get('password')):
-            session.update({'user_id': res[0][0], 'rol': res[0][3], 'nombre': res[0][4]})
-            return jsonify({"success": True, "rol": res[0][3], "nombre": res[0][4]})
-        return jsonify({"success": False}), 401
+@app.route('/api/login', methods=['GET', 'POST'])
+def login():
+    # Si es GET, el frontend (dashboard) está preguntando si hay una sesión activa
+    if request.method == 'GET':
+        if 'usuario_id' in session:
+            return jsonify({
+                "usuario": session.get('usuario'),
+                "empresa": session.get('empresa'),
+                "rol": session.get('rol')
+            }), 200
+        return jsonify({"error": "No autorizado"}), 401
+
+    # Si es POST, el usuario está intentando iniciar sesión
+    data = request.json
+    usuario_input = data.get('usuario')
+    password_input = data.get('password')
+
+    try:
+        conn = get_db_connection() # Asegúrate de que esta función coincida con la tuya para conectar a Neon
+        cur = conn.cursor()
+        
+        # Buscamos al usuario por correo o nombre de usuario
+        cur.execute("SELECT id, nombre, password, rol, empresa, debe_cambiar_pass FROM usuarios WHERE correo = %s OR usuario = %s", (usuario_input, usuario_input))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        # Verificamos si el usuario existe y si la contraseña coincide
+        # (Asumiendo que guardas las contraseñas encriptadas con generate_password_hash)
+        if user and check_password_hash(user['password'], password_input):
+            # Guardamos datos básicos en la sesión de Flask
+            session['usuario_id'] = user['id']
+            session['usuario'] = user['nombre']
+            session['rol'] = user['rol']
+            session['empresa'] = user['empresa']
+
+            return jsonify({
+                "success": True,
+                "usuario_id": user['id'],
+                "rol": user['rol'],
+                "debe_cambiar_pass": user['debe_cambiar_pass']
+            }), 200
+        else:
+            return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
+
+    except Exception as e:
+        print(f"Error en login: {e}")
+        return jsonify({"success": False, "message": "Error interno del servidor"}), 500
+
+@app.route('/api/logout', methods=['GET', 'POST'])
+def logout():
+    session.clear() # Borramos la sesión
+    return jsonify({"success": True, "message": "Sesión cerrada"}), 200
+
+@app.route('/api/cambiar_password_provisional', methods=['POST'])
+def cambiar_password_provisional():
+    data = request.json
+    usuario_id = data.get('usuario_id')
+    nueva_password = data.get('nueva_password')
+
+    if not usuario_id or not nueva_password:
+        return jsonify({"success": False, "message": "Faltan datos"}), 400
+
+    try:
+        # Encriptamos la nueva contraseña
+        hash_password = generate_password_hash(nueva_password)
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Actualizamos la contraseña y quitamos la bandera de "debe_cambiar_pass"
+        cur.execute("""
+            UPDATE usuarios 
+            SET password = %s, debe_cambiar_pass = FALSE 
+            WHERE id = %s
+        """, (hash_password, usuario_id))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return jsonify({"success": True, "message": "Contraseña actualizada exitosamente"}), 200
+
+    except Exception as e:
+        print(f"Error al cambiar password: {e}")
+        return jsonify({"success": False, "message": "Error al actualizar la contraseña"}), 500
+
+@app.route('/api/registro_corporativo', methods=['POST'])
+def registro_corporativo():
+    data = request.json
     
-    # GET: Verificar si ya tiene sesión activa
-    if 'user_id' in session:
-        return jsonify({"success": True, "rol": session.get('rol'), "nombre": session.get('nombre')})
-    return jsonify({"success": False}), 401
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            data.get('empresa'), 
+            data.get('nombre'), 
+            data.get('puesto'), 
+            data.get('telefono'), 
+            data.get('correo')
+        ))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return jsonify({"success": True, "message": "Solicitud recibida"}), 201
+
+    except Exception as e:
+        print(f"Error en registro: {e}")
+        return jsonify({"success": False, "message": "Error al procesar la solicitud, es posible que el correo ya esté registrado."}), 500
 
 @app.route('/api/admin/usuarios', methods=['GET'])
 def listar_usuarios():

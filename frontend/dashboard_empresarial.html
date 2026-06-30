@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Corporativo | iCare Tech CR</title>
+    <link rel="icon" href="Logo_Pestana_v2.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0c10;
+            --sidebar-bg: #11141a;
+            --card-bg: #1f2833;
+            --card-hover: #2a3645;
+            --text-light: #f5f5f7;
+            --text-muted: #8a99ad;
+            --neon-blue: #00b4d8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* BARRA LATERAL (SIDEBAR) */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 30px 25px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-header img {
+            max-width: 140px;
+            margin-bottom: 15px;
+        }
+        
+        .empresa-badge {
+            background: rgba(0, 180, 216, 0.1);
+            color: var(--neon-blue);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        
+        .nav-menu {
+            padding: 20px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* ELEMENTOS DEL MENÚ Y BURBUJAS (DROPDOWNS) */
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: var(--neon-blue);
+            background: rgba(255,255,255,0.02);
+            border-left: 4px solid var(--neon-blue);
+        }
+        
+        .nav-item i.main-icon {
+            width: 25px;
+            font-size: 18px;
+        }
+
+        .dropdown-container {
+            display: none;
+            background: #0d0f14;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .dropdown-container a {
+            padding: 12px 25px 12px 55px;
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .dropdown-container a:hover {
+            color: var(--text-light);
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .logout-btn {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .logout-btn a {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .logout-btn a:hover {
+            background: #ff3b30;
+            color: white;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+        }
+        
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        
+        .user-info h1 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .user-info p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* TARJETAS DE DASHBOARD ESTÁNDAR */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .dash-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .dash-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 10px 30px rgba(0, 180, 216, 0.1);
+        }
+
+        .dash-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: rgba(0, 180, 216, 0.1);
+            color: var(--neon-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .dash-info h3 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .dash-info p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="Logo.png" alt="iCare Tech">
+            <div><span class="empresa-badge" id="nombre-empresa-badge">Cargando Empresa...</span></div>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="#" class="nav-item active" onclick="cargarVista('inicio')">
+                <div><i class="fas fa-home main-icon"></i> Panel Principal</div>
+            </a>
+            
+            <div class="nav-item" onclick="toggleDropdown('menu-tickets')">
+                <div><i class="fas fa-ticket-alt main-icon"></i> Soporte y Tickets</div>
+                <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+            </div>
+            <div class="dropdown-container" id="menu-tickets">
+                <a href="#" onclick="cargarVista('gt')"><i class="fas fa-plus-circle"></i> Generar Ticket (GT)</a>
+                <a href="#" onclick="cargarVista('vt')"><i class="fas fa-list"></i> Ver Tickets (VT)</a>
+                <a href="#" onclick="cargarVista('sc')"><i class="fas fa-file-invoice-dollar"></i> Solicitar Cotización (SC)</a>
+                <a href="#" onclick="cargarVista('vc')"><i class="fas fa-file-alt"></i> Ver Cotizaciones (VC)</a>
+                <a href="#" onclick="cargarVista('inv')"><i class="fas fa-boxes"></i> Inventario de Equipos</a>
+            </div>
+
+            <div class="nav-item" onclick="toggleDropdown('menu-facturacion')">
+                <div><i class="fas fa-file-invoice main-icon"></i> Facturación Hacienda</div>
+                <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+            </div>
+            <div class="dropdown-container" id="menu-facturacion">
+                <a href="#" onclick="window.location.href='/config_hacienda.html'"><i class="fas fa-plus"></i> Crear Factura Electrónica</a>
+                <a href="#" onclick="cargarVista('ver_facturas')"><i class="fas fa-search-dollar"></i> Ver Facturas</a>
+                <a href="#" onclick="cargarVista('crear_proforma')"><i class="fas fa-file-signature"></i> Crear Proforma</a>
+                <a href="#" onclick="cargarVista('ver_proformas')"><i class="fas fa-folder-open"></i> Ver Proformas</a>
+            </div>
+
+            <a href="#" class="nav-item" onclick="cargarVista('db')">
+                <div><i class="fas fa-database main-icon"></i> Base de Datos (Almacenamiento)</div>
+            </a>
+        </div>
+        
+        <div class="logout-btn">
+            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="user-info">
+                <h1 id="bienvenida-usuario">Bienvenido, Usuario</h1>
+                <p>Resumen de actividad corporativa</p>
+            </div>
+            <div style="color: var(--neon-blue); font-size: 24px;">
+                <i class="fas fa-bell"></i>
+            </div>
+        </div>
+
+        <div id="vista-principal" class="dashboard-grid">
+            <div class="dash-card" onclick="toggleDropdown('menu-tickets')">
+                <div class="dash-icon"><i class="fas fa-ticket-alt"></i></div>
+                <div class="dash-info">
+                    <h3>Centro de Soporte</h3>
+                    <p>Gestiona tickets y reporta averías.</p>
+                </div>
+            </div>
+            
+            <div class="dash-card" onclick="toggleDropdown('menu-facturacion')">
+                <div class="dash-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="dash-info">
+                    <h3>Módulo Contable</h3>
+                    <p>Facturación electrónica y proformas.</p>
+                </div>
+            </div>
+            
+            <div class="dash-card" onclick="cargarVista('db')">
+                <div class="dash-icon"><i class="fas fa-server"></i></div>
+                <div class="dash-info">
+                    <h3>Almacenamiento</h3>
+                    <p>Accede a la base de datos de tu empresa.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Lógica para abrir/cerrar las burbujas (dropdowns)
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            if (menu.style.display === "block") {
+                menu.style.display = "none";
+            } else {
+                // Opcional: Cerrar los demás antes de abrir este
+                document.querySelectorAll('.dropdown-container').forEach(el => el.style.display = "none");
+                menu.style.display = "block";
+            }
+        }
+
+        // Lógica para cambiar el contenido de la pantalla sin recargar la página
+        function cargarVista(vista) {
+            const contenedor = document.getElementById('vista-principal');
+            
+            // Removemos el formato de grid si no es el inicio para mostrar listas o tablas a pantalla completa
+            if(vista !== 'inicio') {
+                contenedor.classList.remove('dashboard-grid');
+            } else {
+                contenedor.classList.add('dashboard-grid');
+            }
+
+            switch(vista) {
+                case 'inicio':
+                    location.reload(); // Recarga para volver al grid original
+                    break;
+                case 'gt':
+                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Generar Nuevo Ticket</h2><p style="color:#8a99ad; margin-top:10px;">Formulario para reportar una nueva avería o requerimiento.</p></div>`;
+                    break;
+                case 'vt':
+                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Mis Tickets Activos</h2><p style="color:#8a99ad; margin-top:10px;">Lista de tickets y su estado actual de resolución.</p></div>`;
+                    break;
+                case 'db':
+                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Almacenamiento Corporativo</h2><p style="color:#8a99ad; margin-top:10px;">Aquí podrás subir o descargar archivos confidenciales de tu empresa.</p></div>`;
+                    break;
+                // Puedes agregar el resto de los "cases" aquí para cada opción
+                default:
+                    contenedor.innerHTML = `<div class="dash-card"><h2>Sección en construcción</h2></div>`;
+            }
+        }
+
+        // Simulación de carga de datos al iniciar la página
+        window.onload = async () => {
+            try {
+                // Aquí se verificaría la sesión real con el backend
+                const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
+                
+                if (res.status === 401) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await res.json();
+                if(data.usuario) {
+                    document.getElementById('bienvenida-usuario').innerText = `Bienvenido, ${data.usuario}`;
+                    document.getElementById('nombre-empresa-badge').innerText = data.empresa || "Cliente Corporativo";
+                }
+            } catch (e) {
+                console.warn("Modo desarrollo o sin conexión al backend");
+            }
+        };
+
+        // Función para cerrar sesión
+        async function logout() {
+            try {
+                await fetch('/api/logout', { credentials: 'include' });
+                window.location.href = '/login.html';
+            } catch (e) {
+                window.location.href = '/login.html';
+            }
+        }
+    </script>
+</body>
+</html>

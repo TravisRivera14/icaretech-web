@@ -6,16 +6,12 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "app.py" },
-    { "src": "/login(?:\\.html)?", "dest": "frontend/login.html" },
-    { "src": "/admin(?:\\.html)?", "dest": "frontend/admin.html" },
-    { "src": "/config_hacienda(?:\\.html)?", "dest": "frontend/config_hacienda.html" },
-    { "src": "/servicio(?:\\.html)?", "dest": "frontend/servicio.html" },
-    { "src": "/tienda(?:\\.html)?", "dest": "frontend/tienda.html" },
-    { "src": "/dashboard(?:\\.html)?", "dest": "frontend/dashboard.html" },
-    { "src": "/dashboard_cliente(?:\\.html)?", "dest": "frontend/dashboard_cliente.html" },
-    { "src": "/assets/(.*)", "dest": "frontend/assets/$1" },
-    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" },
+    { "src": "/login", "dest": "/frontend/login.html" },
+    { "src": "/registro", "dest": "/frontend/registro.html" },
+    { "src": "/recuperar", "dest": "/frontend/recuperar.html" },
+    { "src": "/dashboard_empresarial", "dest": "/frontend/dashboard_empresarial.html" },
+    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp|css|js))", "dest": "/frontend/$1" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "frontend/index.html" }
+    { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }

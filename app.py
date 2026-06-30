@@ -89,37 +89,22 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        
-        # LOG DE DEBUG: Ver qué usuario estamos buscando
-        print(f"DEBUG LOGIN: Buscando usuario -> {usr}")
-        
-        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usr, usr))
+        # Seleccionamos las columnas fijas que sabemos que existen
+        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s", (usr,))
         user = cur.fetchone()
-        
         cur.close()
         db_pool.putconn(conn)
 
-        if user:
-            # LOG DE DEBUG: Ver qué tenemos en la BD
-            print(f"DEBUG LOGIN: Usuario encontrado en BD -> {user[1]}")
-            print(f"DEBUG LOGIN: Hash en BD -> {user[2]}")
-            coincide = check_password_hash(user[2], pwd)
-            print(f"DEBUG LOGIN: ¿La contraseña coincide?: {coincide}")
-            
-            if coincide:
-                session['usuario_id'] = user[0]
-                session['usuario'] = user[1]
-                session['rol'] = user[3]
-                return jsonify({"success": True, "rol": user[3]}), 200
-            else:
-                return jsonify({"success": False, "message": "Contraseña incorrecta"}), 401
-        else:
-            print("DEBUG LOGIN: Usuario NO encontrado en la BD")
-            return jsonify({"success": False, "message": "Usuario no encontrado"}), 401
-
+        if user and check_password_hash(user[2], pwd):
+            session['usuario_id'] = user[0]
+            session['usuario'] = user[1]
+            session['rol'] = user[3]
+            return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4]}), 200
+        
+        return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
     except Exception as e:
-        print(f"Error crítico: {e}")
-        return jsonify({"success": False, "message": "Error interno"}), 500
+        print(f"Error técnico: {e}")
+        return jsonify({"success": False, "message": "Error interno del servidor"}), 500
 
 @app.route('/api/setup-admin', methods=['GET'])
 def setup_admin():

@@ -205,6 +205,23 @@
             const btn = document.getElementById('btn-login');
             const usr = document.getElementById('usuario').value;
             const pwd = document.getElementById('password').value;
+
+            if (data.success) {
+                    // 1. PRIORIDAD ABSOLUTA: Si es Super Usuario, va directo al Control Maestro
+                    if (data.rol === 'admin') {
+                        window.location.href = '/admin.html';
+                    } 
+                    // 2. Si es un usuario corporativo con clave temporal
+                    else if (data.debe_cambiar_pass === true) {
+                        tempUsuarioId = data.usuario_id;
+                        document.getElementById('login-box').style.display = 'none';
+                        document.getElementById('modal-cambio-pass').style.display = 'flex';
+                    } 
+                    // 3. Si es un usuario corporativo normal
+                    else {
+                        window.location.href = '/dashboard_empresarial.html';
+                    }
+                }
             
             if(!usr || !pwd) {
                 alert("Por favor ingresa usuario y contraseña.");

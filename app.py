@@ -27,13 +27,19 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True
 )
 
-# Intenta leer la variable de entorno de Vercel, si no existe, usa la de Neon local por defecto en tu Mac
-DATABASE_URL = os.environ.get('postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
+# CORRECCIÓN: Lee correctamente la variable de entorno de Vercel o usa Neon por defecto
+DATABASE_URL = os.environ.get(
+    'CONEXION_DIRECTA_NEON', 
+    'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
+)
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
+def get_db_connection():
+    return db_pool.getconn()
+
 def db_query(query, params=(), fetch=False):
-    conn = db_pool.getconn()
+    conn = get_db_connection()
     try:
         c = conn.cursor()
         c.execute(query, params)
@@ -53,11 +59,11 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'personal', 'cliente')), nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, empresa VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), debe_cambiar_pass BOOLEAN DEFAULT FALSE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
     
-    # 🇨🇷 NUEVA TABLA ESENCIAL: Guarda las llaves de Hacienda amarradas a la empresa corporativa
+    # 🇨🇷 TABLA ESENCIAL: Guarda las llaves de Hacienda amarradas a la empresa corporativa
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (
                     id_configuracion SERIAL PRIMARY KEY,
                     id_empresa INT NOT NULL,
@@ -77,16 +83,23 @@ def init_db():
                     prioridad VARCHAR(20) NOT NULL, 
                     estado VARCHAR(20) DEFAULT 'Abierto', 
                     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+                    
+    # NUEVA TABLA: Para las solicitudes de registro corporativo
+    c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (
+                    id SERIAL PRIMARY KEY, 
+                    empresa VARCHAR(150), 
+                    nombre_completo VARCHAR(150), 
+                    puesto VARCHAR(100), 
+                    telefono VARCHAR(20), 
+                    correo VARCHAR(150) UNIQUE)''')
     conn.commit()
     c.close()
     conn.close()
-    
-
 
 def registrar_cambio(accion, detalle):
     """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
-    usuario_id = session.get('user_id')
-    usuario_nombre = session.get('nombre', 'Sistema / Web')
+    usuario_id = session.get('usuario_id') # Corregido a usuario_id para mantener consistencia
+    usuario_nombre = session.get('usuario', 'Sistema / Web')
     try:
         db_query(
             "INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)",
@@ -95,21 +108,184 @@ def registrar_cambio(accion, detalle):
     except Exception as e:
         print(f"Error guardando log de auditoría: {e}")
 
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'usuario' not in session: # O la variable que uses para verificar sesión
+        if 'usuario_id' not in session: 
             return jsonify({"error": "No autorizado"}), 401
         return f(*args, **kwargs)
     return decorated_function
 
 # ==========================================
-# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA (PRIMERO)
+# 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
+# ==========================================
+
+@app.route('/api/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        if 'usuario_id' in session:
+            return jsonify({
+                "usuario": session.get('usuario'),
+                "empresa": session.get('empresa'),
+                "rol": session.get('rol')
+            }), 200
+        return jsonify({"error": "No autorizado"}), 401
+
+    data = request.json
+    usuario_input = data.get('usuario')
+    password_input = data.get('password')
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, nombre, password_hash, rol, empresa, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usuario_input, usuario_input))
+        user = cur.fetchone()
+        cur.close()
+        db_pool.putconn(conn)
+
+        if user and check_password_hash(user[2], password_input):
+            session['usuario_id'] = user[0]
+            session['usuario'] = user[1]
+            session['rol'] = user[3]
+            session['empresa'] = user[4]
+
+            return jsonify({
+                "success": True,
+                "usuario_id": user[0],
+                "rol": user[3],
+                "debe_cambiar_pass": user[5]
+            }), 200
+        else:
+            return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
+
+    except Exception as e:
+        print(f"Error en login: {e}")
+        return jsonify({"success": False, "message": "Error interno del servidor"}), 500
+
+@app.route('/api/logout', methods=['GET', 'POST'])
+def logout():
+    session.clear()
+    return jsonify({"success": True, "message": "Sesión cerrada"}), 200
+
+@app.route('/api/verificar-sesion', methods=['GET'])
+def verificar_sesion():
+    if session.get('usuario_id'):
+        return jsonify({"autenticado": True, "rol": session.get('rol')})
+    return jsonify({"autenticado": False}), 401
+
+@app.route('/api/cambiar_password_provisional', methods=['POST'])
+@login_required
+def cambiar_password_provisional():
+    data = request.json
+    usuario_id = data.get('usuario_id')
+    nueva_password = data.get('nueva_password')
+
+    if not usuario_id or not nueva_password:
+        return jsonify({"success": False, "message": "Faltan datos"}), 400
+
+    try:
+        hash_password = generate_password_hash(nueva_password)
+        db_query("UPDATE usuarios SET password_hash = %s, debe_cambiar_pass = FALSE WHERE id = %s", (hash_password, usuario_id))
+        return jsonify({"success": True, "message": "Contraseña actualizada exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": "Error al actualizar la contraseña"}), 500
+
+@app.route('/api/registro_corporativo', methods=['POST'])
+def registro_corporativo():
+    data = request.json
+    try:
+        db_query("""
+            INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (data.get('empresa'), data.get('nombre'), data.get('puesto'), data.get('telefono'), data.get('correo')))
+        return jsonify({"success": True, "message": "Solicitud recibida"}), 201
+    except Exception as e:
+        return jsonify({"success": False, "message": "Error al procesar la solicitud."}), 500
+
+@app.route('/api/admin/usuarios', methods=['GET'])
+@login_required
+def listar_usuarios():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
+    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
+    return jsonify(resultado)
+
+@app.route('/admin/crear-usuario', methods=['POST'])
+@login_required
+def crear_usuario():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    d = request.json or {}
+    nombre = d.get('nombre')
+    usuario = d.get('usuario')
+    password_plana = d.get('password')
+    rol = d.get('rol')
+    empresa_id = d.get('empresa_id') if d.get('empresa_id') else None
+    email = d.get('email')
+    telefono = d.get('telefono')
+    
+    if not nombre or not usuario or not password_plana or not rol:
+        return jsonify({"success": False, "message": "Faltan campos obligatorios."}), 400
+        
+    password_encriptada = generate_password_hash(password_plana)
+    
+    try:
+        db_query(
+            """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
+        )
+        registrar_cambio("Creó Usuario", f"Se registró a: {nombre}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+@app.route('/api/admin/editar-usuario', methods=['POST'])
+@login_required
+def editar_usuario():
+    if session.get('rol') != 'admin':
+        return jsonify({"message": "Acceso denegado"}), 403
+        
+    d = request.json or {}
+    usuario_id = d.get('id')
+    nuevo_usuario = d.get('usuario')
+    nueva_password = d.get('password')
+    nuevo_nombre = d.get('nombre')
+    
+    if not usuario_id or not nuevo_usuario or not nuevo_nombre:
+        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+
+    if nueva_password and nueva_password.strip() != "":
+        password_encriptada = generate_password_hash(nueva_password)
+        db_query("UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s WHERE id = %s", (nuevo_usuario, password_encriptada, nuevo_nombre, usuario_id))
+    else:
+        db_query("UPDATE usuarios SET usuario = %s, nombre = %s WHERE id = %s", (nuevo_usuario, nuevo_nombre, usuario_id))
+        
+    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id}")
+    return jsonify({"success": True, "message": "Usuario modificado correctamente"})
+
+@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
+@login_required
+def eliminar_usuario(id):
+    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
+    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+    registrar_cambio("Eliminó Usuario", f"ID {id}")
+    return jsonify({"success": True})
+
+@app.route('/api/setup-admin', methods=['GET'])
+def setup_admin():
+    password_encriptada = generate_password_hash('AdminiCare2026')
+    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
+    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
+
+# ==========================================
+# 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA 
 # ==========================================
 
 def obtener_oauth_token_hacienda(id_empresa):
-    """Obtiene un token de acceso activo directamente desde los servidores de Hacienda."""
     res = db_query("""
         SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion 
         FROM configuracionhacienda WHERE id_empresa = %s
@@ -157,24 +333,16 @@ def obtener_oauth_token_hacienda(id_empresa):
     except Exception as e:
         return {
             "success": False,
-            "error_detalle": f"No se pudo conectar con el servidor de autenticación de Hacienda: {str(e)}"
+            "error_detalle": f"No se pudo conectar con Hacienda: {str(e)}"
         }
-        
-        
-        
+
 def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
-    # 1. Obtener Token
     token_data = obtener_oauth_token_hacienda(id_empresa)
     if not token_data["success"]:
         return {"success": False, "message": "Error autenticando con Hacienda: " + token_data.get("error_detalle", "")}
     
     token = token_data["access_token"]
     
-    # 2. Aquí deberías insertar la Lógica de Firma XML 
-    # (Usualmente usando librerías como 'signxml' o un servicio externo)
-    # Para efectos del ejemplo, asumimos que el XML ya está firmado.
-    
-    # 3. Preparar JSON para el API de Hacienda
     payload = {
         "clave": datos_xml['clave'],
         "fecha": datetime.now().isoformat(),
@@ -189,23 +357,18 @@ def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
         "comprobanteXml": base64.b64encode(xml_firmado_o_raw.encode()).decode()
     }
     
-    # 4. Enviar a Hacienda (Recepción)
     url_recepcion = "https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     
     try:
         resp = requests.post(url_recepcion, json=payload, headers=headers)
-        if resp.status_code == 202: # 202 significa recibido correctamente
+        if resp.status_code == 202: 
             return {"success": True}
         else:
             return {"success": False, "message": f"Hacienda respondió: {resp.status_code} - {resp.text}"}
     except Exception as e:
         return {"success": False, "message": str(e)}
 
-
-# ==========================================
-# ENDPOINT TEMPORAL DE DIAGNÓSTICO (CORREGIDO)
-# ==========================================
 @app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
 @login_required
 def probar_conexion_hacienda_test():
@@ -220,20 +383,15 @@ def probar_conexion_hacienda_test():
         else:
             return jsonify({
                 "status": "Error de Autenticación",
-                "mensaje": "Hacienda rechazó las credenciales o la tabla está vacía.",
+                "mensaje": "Hacienda rechazó las credenciales.",
                 "detalles_tecnicos": resultado
             }), 400
     except Exception as e:
         return jsonify({"status": "Error Interno", "error": str(e)}), 500
 
-
-# ==========================================
-# 🇨🇷 MÓDULO DE FACTURACIÓN: CONFIGURACIÓN HACIENDA
-# ==========================================
-
 @app.route('/api/admin/configuracion-hacienda', methods=['POST'])
+@login_required
 def guardar_configuracion_hacienda():
-    """Recibe, procesa y almacena en Neon las credenciales de facturación."""
     if not session.get('rol'):
         return jsonify({"message": "Acceso denegado"}), 403
 
@@ -273,12 +431,11 @@ def guardar_configuracion_hacienda():
         return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en Neon"})
 
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error en procesamiento interno: {str(e)}"}), 500
-
+        return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
 
 @app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
+@login_required
 def verificar_configuracion_hacienda():
-    """Informa al frontend si la empresa ya completó su registro de llaves."""
     if not session.get('rol'):
         return jsonify({"message": "Acceso denegado"}), 403
         
@@ -293,16 +450,15 @@ def verificar_configuracion_hacienda():
         })
     return jsonify({"configurado": False})
 
-
 # ==========================================
-# 📐 FASE 4: GENERACIÓN DE CLAVE DE 50 DÍGITOS Y XML (VERSIÓN 4.4)
+# 📐 FASE 4: GENERACIÓN DE CLAVE Y XML 
 # ==========================================
 
 def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     ahora = datetime.now()
     dia = ahora.strftime("%d")
     mes = ahora.strftime("%m")
-    ano = Generic = ahora.strftime("%y")
+    ano = ahora.strftime("%y")
 
     cedula_limpia = "".join(filter(str.isdigit, str(cedula_emisor)))
     cedula_12 = cedula_limpia.zfill(12)
@@ -312,7 +468,6 @@ def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     if len(clave) != 50:
         raise Exception(f"Error crítico en el cálculo de la clave. Longitud obtenida: {len(clave)} de 50.")
     return clave
-
 
 def generar_xml_factura_44(datos_factura, lineas_detalle):
     NS_FACTURA = "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturelectronica"
@@ -389,16 +544,9 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
 
     return ET.tostring(root, encoding="utf-8").decode("utf-8")
 
-
-# ==========================================
-# ⚡ RUTA MAESTRA: EMISIÓN COMPLETA DE FACTURA
-# ==========================================
-
 @app.route('/api/facturacion/emitir', methods=['POST'])
+@login_required
 def emitir_factura_electronica_api():
-    if not session.get('rol'):
-        return jsonify({"success": False, "message": "Acceso denegado. Inicie sesión."}), 403
-
     d = request.json or {}
     cliente_id = d.get('cliente_id')
     condicion_venta = d.get('condicion_venta', '01')
@@ -410,6 +558,7 @@ def emitir_factura_electronica_api():
         return jsonify({"success": False, "message": "Faltan datos esenciales (Cliente o Líneas de detalle)"}), 400
 
     try:
+        # Asegurarse de que la tabla empresa y clientes existan (esto podría requerir crear las tablas si no las tienes)
         res_emisor = db_query("SELECT cedula_juridica, nombre_empresa, correo FROM empresa WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
         if not res_emisor:
             return jsonify({"success": False, "message": "Empresa emisora no registrada o incompleta."}), 400
@@ -465,225 +614,6 @@ def emitir_factura_electronica_api():
     except Exception as e:
         registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
         return jsonify({"success": False, "message": f"Error interno en el servidor: {str(e)}"}), 500
-    
-# Agregar en app.py: Ruta para verificar sesión
-@app.route('/api/verificar-sesion', methods=['GET'])
-def verificar_sesion():
-    if session.get('user_id'):
-        return jsonify({"autenticado": True, "rol": session.get('rol')})
-    return jsonify({"autenticado": False}), 401
-
-# ==========================================
-# 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
-# ==========================================
-
-# RUTA DE LOGIN ÚNICA (POST para loguear, GET para verificar)
-@app.route('/api/login', methods=['GET', 'POST'])
-def login():
-    # Si es GET, el frontend (dashboard) está preguntando si hay una sesión activa
-    if request.method == 'GET':
-        if 'usuario_id' in session:
-            return jsonify({
-                "usuario": session.get('usuario'),
-                "empresa": session.get('empresa'),
-                "rol": session.get('rol')
-            }), 200
-        return jsonify({"error": "No autorizado"}), 401
-
-    # Si es POST, el usuario está intentando iniciar sesión
-    data = request.json
-    usuario_input = data.get('usuario')
-    password_input = data.get('password')
-
-    try:
-        conn = get_db_connection() # Asegúrate de que esta función coincida con la tuya para conectar a Neon
-        cur = conn.cursor()
-        
-        # Buscamos al usuario por correo o nombre de usuario
-        cur.execute("SELECT id, nombre, password, rol, empresa, debe_cambiar_pass FROM usuarios WHERE correo = %s OR usuario = %s", (usuario_input, usuario_input))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        # Verificamos si el usuario existe y si la contraseña coincide
-        # (Asumiendo que guardas las contraseñas encriptadas con generate_password_hash)
-        if user and check_password_hash(user['password'], password_input):
-            # Guardamos datos básicos en la sesión de Flask
-            session['usuario_id'] = user['id']
-            session['usuario'] = user['nombre']
-            session['rol'] = user['rol']
-            session['empresa'] = user['empresa']
-
-            return jsonify({
-                "success": True,
-                "usuario_id": user['id'],
-                "rol": user['rol'],
-                "debe_cambiar_pass": user['debe_cambiar_pass']
-            }), 200
-        else:
-            return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
-
-    except Exception as e:
-        print(f"Error en login: {e}")
-        return jsonify({"success": False, "message": "Error interno del servidor"}), 500
-
-@app.route('/api/logout', methods=['GET', 'POST'])
-def logout():
-    session.clear() # Borramos la sesión
-    return jsonify({"success": True, "message": "Sesión cerrada"}), 200
-
-@app.route('/api/cambiar_password_provisional', methods=['POST'])
-def cambiar_password_provisional():
-    data = request.json
-    usuario_id = data.get('usuario_id')
-    nueva_password = data.get('nueva_password')
-
-    if not usuario_id or not nueva_password:
-        return jsonify({"success": False, "message": "Faltan datos"}), 400
-
-    try:
-        # Encriptamos la nueva contraseña
-        hash_password = generate_password_hash(nueva_password)
-        
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        # Actualizamos la contraseña y quitamos la bandera de "debe_cambiar_pass"
-        cur.execute("""
-            UPDATE usuarios 
-            SET password = %s, debe_cambiar_pass = FALSE 
-            WHERE id = %s
-        """, (hash_password, usuario_id))
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        return jsonify({"success": True, "message": "Contraseña actualizada exitosamente"}), 200
-
-    except Exception as e:
-        print(f"Error al cambiar password: {e}")
-        return jsonify({"success": False, "message": "Error al actualizar la contraseña"}), 500
-
-@app.route('/api/registro_corporativo', methods=['POST'])
-def registro_corporativo():
-    data = request.json
-    
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        cur.execute("""
-            INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            data.get('empresa'), 
-            data.get('nombre'), 
-            data.get('puesto'), 
-            data.get('telefono'), 
-            data.get('correo')
-        ))
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        return jsonify({"success": True, "message": "Solicitud recibida"}), 201
-
-    except Exception as e:
-        print(f"Error en registro: {e}")
-        return jsonify({"success": False, "message": "Error al procesar la solicitud, es posible que el correo ya esté registrado."}), 500
-
-@app.route('/api/admin/usuarios', methods=['GET'])
-def listar_usuarios():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
-    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
-    return jsonify(resultado)
-
-@app.route('/api/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({"success": True})
-
-
-# --- RUTAS DE GESTIÓN DE USUARIOS ---
-@app.route('/admin/crear-usuario', methods=['POST'])
-def crear_usuario():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    d = request.json or {}
-    nombre = d.get('nombre')
-    usuario = d.get('usuario')
-    password_plana = d.get('password')
-    rol = d.get('rol')
-    empresa_id = d.get('empresa_id') if d.get('empresa_id') else None
-    email = d.get('email')
-    telefono = d.get('telefono')
-    
-    # PROTECCIÓN CONTRA ERROR 500: Validar datos antes de encriptar
-    if not nombre or not usuario or not password_plana or not rol:
-        return jsonify({"success": False, "message": "Faltan campos obligatorios (nombre, usuario, contraseña o rol)."}), 400
-        
-    password_encriptada = generate_password_hash(password_plana)
-    
-    try:
-        db_query(
-            """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
-        )
-        registrar_cambio("Creó Usuario", f"Se registró a: {nombre}")
-        return jsonify({"success": True})
-    except Exception as e:
-        print(f"ERROR EN BD: {e}") 
-        return jsonify({"success": False, "message": str(e)}), 400
-
-@app.route('/api/admin/editar-usuario', methods=['POST'])
-def editar_usuario():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    d = request.json or {}
-    usuario_id = d.get('id')
-    nuevo_usuario = d.get('usuario')
-    nueva_password = d.get('password')
-    nuevo_nombre = d.get('nombre')
-    
-    if not usuario_id or not nuevo_usuario or not nuevo_nombre:
-        return jsonify({"success": False, "message": "Datos incompletos"}), 400
-
-    if nueva_password and nueva_password.strip() != "":
-        password_encriptada = generate_password_hash(nueva_password)
-        db_query(
-            "UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s WHERE id = %s",
-            (nuevo_usuario, password_encriptada, nuevo_nombre, usuario_id)
-        )
-    else:
-        db_query(
-            "UPDATE usuarios SET usuario = %s, nombre = %s WHERE id = %s",
-            (nuevo_usuario, nuevo_nombre, usuario_id)
-        )
-        
-    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id}")
-    return jsonify({"success": True, "message": "Usuario modificado correctamente"})
-
-@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
-def eliminar_usuario(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
-
-@app.route('/api/setup-admin', methods=['GET'])
-def setup_admin():
-    password_encriptada = generate_password_hash('AdminiCare2026')
-    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
-    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
-
 
 # ==========================================
 # 🎫 CONTROLADORES MAESTROS DE SOPORTE Y TICKETS
@@ -692,8 +622,6 @@ def setup_admin():
 @app.route('/api/tickets', methods=['POST'])
 def crear_ticket_publico():
     d = request.json or {}
-    print(f"DATOS_RECIBIDOS_EN_BACKEND: {d}")
-
     empresa_id = d.get('empresa_id')
     contacto = d.get('contacto')
     whatsapp = d.get('whatsapp') 
@@ -726,9 +654,6 @@ def crear_ticket_publico():
 @app.route('/api/admin/tickets', methods=['GET'])
 @login_required
 def listar_tickets_admin():
-    if not session.get('rol'):
-        return jsonify({"message": "No autorizado"}), 401
-
     query = '''SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, t.descripcion, t.prioridad, t.estado, t.fecha 
                FROM tickets_soporte t
                JOIN empresas_recomiendan e ON t.empresa_id = e.id
@@ -743,43 +668,36 @@ def listar_tickets_admin():
     return jsonify(resultado)
 
 @app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
+@login_required
 def cambiar_estado_ticket(id):
-    if not session.get('rol'):
-        return jsonify({"message": "No autorizado"}), 401
-
     d = request.json or {}
     nuevo_estado = d.get('estado', 'Resuelto')
-
     db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (nuevo_estado, id))
     registrar_cambio("Resolvió Ticket", f"Ticket ID {id} cambiado a estado: {nuevo_estado}")
     return jsonify({"success": True})
 
 @app.route('/api/admin/empresas-soporte', methods=['POST'])
+@login_required
 def dar_alta_empresa_soporte():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
     d = request.json or {}
     nombre = d.get('nombre')
-    if not nombre:
-        return jsonify({"error": "Nombre requerido"}), 400
+    if not nombre: return jsonify({"error": "Nombre requerido"}), 400
 
     db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre,))
     registrar_cambio("Alta Empresa", f"Se dio de alta a la empresa cliente: {nombre}")
     return jsonify({"success": True})
 
 @app.route('/api/admin/empresas-soporte/<int:id>', methods=['DELETE'])
+@login_required
 def dar_baja_empresa_soporte(id):
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
     db_query("DELETE FROM empresas_recomiendan WHERE id = %s", (id,))
     registrar_cambio("Baja Empresa", f"Removida la empresa cliente ID {id}")
     return jsonify({"success": True})
 
-
 # ==========================================
-# 🛠️ RUTAS DE CONTENIDO GENERAL
+# 🛠️ RUTAS DE CONTENIDO GENERAL (PROTEGIDAS)
 # ==========================================
 
 @app.route('/api/todo', methods=['GET'])
@@ -858,6 +776,7 @@ def obtener_servicio_individual(id):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/beneficios', methods=['POST'])
+@login_required
 def guardar_beneficio():
     d = request.json or {}
     db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
@@ -865,6 +784,7 @@ def guardar_beneficio():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/beneficios/<int:id>', methods=['PUT'])
+@login_required
 def editar_beneficio(id):
     d = request.json or {}
     db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
@@ -872,6 +792,7 @@ def editar_beneficio(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos', methods=['POST'])
+@login_required
 def guardar_objetivo():
     d = request.json or {}
     db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
@@ -879,6 +800,7 @@ def guardar_objetivo():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos/<int:id>', methods=['PUT'])
+@login_required
 def editar_objective(id):
     d = request.json or {}
     db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
@@ -886,6 +808,7 @@ def editar_objective(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan', methods=['POST'])
+@login_required
 def guardar_empresa():
     d = request.json or {}
     db_query("INSERT INTO empresas_recomiendan (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Empresa'), d.get('imagen', '')))
@@ -893,6 +816,7 @@ def guardar_empresa():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan/<int:id>', methods=['PUT'])
+@login_required
 def editar_empresa(id):
     d = request.json or {}
     db_query("UPDATE empresas_recomiendan SET nombre=%s, imagen=%s WHERE id=%s", (d.get('nombre', 'Empresa'), d.get('imagen', ''), id))
@@ -900,6 +824,7 @@ def editar_empresa(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/config', methods=['POST'])
+@login_required
 def guardar_config():
     d = request.json or {}
     claves_permitidas = ['hero_titulo', 'mision', 'vision', 'compromiso']
@@ -909,14 +834,16 @@ def guardar_config():
             registrar_cambio("Actualizó Texto Maestro", f"Modificó la clave principal de contenido: {k}")
     return jsonify({"mensaje": "✅"})
 
+# NOTA: Guardar reseña no lleva @login_required porque se usa desde el formulario público del index.html
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json or {}
     db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente', '')))
-    registrar_cambio("Recibió Resaña Pública", f"El cliente {d.get('cliente', 'Anónimo')} publicó un comentario.")
+    registrar_cambio("Recibió Reseña Pública", f"El cliente {d.get('cliente', 'Anónimo')} publicó un comentario.")
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas/<int:id>', methods=['PUT'])
+@login_required
 def editar_resena(id):
     d = request.json or {}
     db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente',''), id))
@@ -924,6 +851,7 @@ def editar_resena(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/socios', methods=['POST'])
+@login_required
 def guardar_socio():
     d = request.json or {}
     db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
@@ -931,6 +859,7 @@ def guardar_socio():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios', methods=['POST'])
+@login_required
 def guardar_servicio():
     d = request.json or {}
     db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
@@ -938,6 +867,7 @@ def guardar_servicio():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos', methods=['POST'])
+@login_required
 def guardar_producto():
     d = request.json or {}
     precio = d.get('precio', 0)
@@ -948,6 +878,7 @@ def guardar_producto():
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
+@login_required
 def editar_servicio(id):
     d = request.json or {}
     db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
@@ -955,6 +886,7 @@ def editar_servicio(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
+@login_required
 def editar_producto(id):
     d = request.json or {}
     precio = d.get('precio', 0)
@@ -965,6 +897,7 @@ def editar_producto(id):
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
+@login_required
 def eliminar_item(tabla, id):
     tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
     if tabla in tablas_permitidas:
@@ -978,5 +911,5 @@ def eliminar_item(tabla, id):
 # ==========================================
 
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True, port=5001)
-    

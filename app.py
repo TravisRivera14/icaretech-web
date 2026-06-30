@@ -80,13 +80,8 @@ def login_required(f):
 # RUTAS DE AUTENTICACIÓN (CORREGIDAS)
 # ==========================================
 
-@app.route('/api/login', methods=['GET', 'POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
-    if request.method == 'GET':
-        if 'usuario_id' in session:
-            return jsonify({"usuario": session.get('usuario'), "rol": session.get('rol')}), 200
-        return jsonify({"error": "No autorizado"}), 401
-
     data = request.json
     usr = data.get('usuario')
     pwd = data.get('password')
@@ -94,26 +89,36 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        # Accedemos por índice: 0:id, 1:nombre, 2:password_hash, 3:rol, 4:empresa, 5:debe_cambiar_pass
-        cur.execute("SELECT id, nombre, password_hash, rol, empresa, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usr, usr))
+        
+        # LOG DE DEBUG: Ver qué usuario estamos buscando
+        print(f"DEBUG LOGIN: Buscando usuario -> {usr}")
+        
+        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usr, usr))
         user = cur.fetchone()
+        
         cur.close()
         db_pool.putconn(conn)
 
-        if user and check_password_hash(user[2], pwd):
-            session['usuario_id'] = user[0]
-            session['usuario'] = user[1]
-            session['rol'] = user[3]
-            session['empresa'] = user[4]
-            return jsonify({
-                "success": True, 
-                "usuario_id": user[0], 
-                "rol": user[3], 
-                "debe_cambiar_pass": user[5]
-            }), 200
-        return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
+        if user:
+            # LOG DE DEBUG: Ver qué tenemos en la BD
+            print(f"DEBUG LOGIN: Usuario encontrado en BD -> {user[1]}")
+            print(f"DEBUG LOGIN: Hash en BD -> {user[2]}")
+            coincide = check_password_hash(user[2], pwd)
+            print(f"DEBUG LOGIN: ¿La contraseña coincide?: {coincide}")
+            
+            if coincide:
+                session['usuario_id'] = user[0]
+                session['usuario'] = user[1]
+                session['rol'] = user[3]
+                return jsonify({"success": True, "rol": user[3]}), 200
+            else:
+                return jsonify({"success": False, "message": "Contraseña incorrecta"}), 401
+        else:
+            print("DEBUG LOGIN: Usuario NO encontrado en la BD")
+            return jsonify({"success": False, "message": "Usuario no encontrado"}), 401
+
     except Exception as e:
-        print(f"Error login: {e}")
+        print(f"Error crítico: {e}")
         return jsonify({"success": False, "message": "Error interno"}), 500
 
 @app.route('/api/setup-admin', methods=['GET'])

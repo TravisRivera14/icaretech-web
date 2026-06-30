@@ -2,16 +2,16 @@
   "version": 2,
   "builds": [
     { "src": "app.py", "use": "@vercel/python" },
-    { "src": "frontend/**", "use": "@vercel/static" }
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "app.py" },
-    { "src": "/login", "dest": "/frontend/login.html" },
-    { "src": "/registro", "dest": "/frontend/registro.html" },
-    { "src": "/recuperar", "dest": "/frontend/recuperar.html" },
-    { "src": "/dashboard_empresarial", "dest": "/frontend/dashboard_empresarial.html" },
-    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp|css|js))", "dest": "/frontend/$1" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/registro", "dest": "/registro.html" },
+    { "src": "/recuperar", "dest": "/recuperar.html" },
+    { "src": "/dashboard_empresarial", "dest": "/dashboard_empresarial.html" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/frontend/index.html" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

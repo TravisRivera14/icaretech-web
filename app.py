@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from flask import session, redirect, url_for
 import os
 import psycopg2
 from psycopg2 import pool
@@ -14,25 +13,18 @@ import base64
 import json
 
 app = Flask(__name__)
-
-# Configuración de CORS con soporte estricto para credenciales
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
 app.config.update(
-    SESSION_COOKIE_SECURE=True,     # Obligatorio para desarrollo/Vercel sin HTTPS estricto
-    SESSION_COOKIE_SAMESITE='None',   # 'Lax' permite que la cookie viaje correctamente
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE='None',
     SESSION_COOKIE_HTTPONLY=True
 )
 
-# CORRECCIÓN: Lee correctamente la variable de entorno de Vercel o usa Neon por defecto
-DATABASE_URL = os.environ.get(
-    'CONEXION_DIRECTA_NEON', 
-    'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
-)
-
+DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
 def get_db_connection():
@@ -56,46 +48,36 @@ def db_query(query, params=(), fetch=False):
 def init_db():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
-    # Aseguramos que la tabla usuarios tenga EXACTAMENTE las columnas que el código consulta
-    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (
-                    id SERIAL PRIMARY KEY, 
-                    usuario VARCHAR(50) UNIQUE NOT NULL, 
-                    password_hash VARCHAR(255) NOT NULL, 
-                    rol VARCHAR(20) NOT NULL DEFAULT 'cliente', 
-                    nombre VARCHAR(100) NOT NULL, 
-                    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-                    empresa VARCHAR(150), 
-                    puesto VARCHAR(100), 
-                    telefono VARCHAR(20), 
-                    debe_cambiar_pass BOOLEAN DEFAULT FALSE,
-                    correo VARCHAR(150))''') # Agregué correo por si acaso
-    # ... (resto de tus tablas)
+    c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL DEFAULT 'cliente', nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, empresa VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), debe_cambiar_pass BOOLEAN DEFAULT FALSE, correo VARCHAR(150))''')
+    c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     conn.commit()
     c.close()
     conn.close()
-    
+
 def registrar_cambio(accion, detalle):
-    """Función auxiliar interna que almacena automáticamente quién modificó la landing iCare."""
-    usuario_id = session.get('usuario_id') # Corregido a usuario_id para mantener consistencia
+    usuario_id = session.get('usuario_id')
     usuario_nombre = session.get('usuario', 'Sistema / Web')
     try:
-        db_query(
-            "INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)",
-            (usuario_id, usuario_nombre, accion, detalle)
-        )
+        db_query("INSERT INTO historial_cambios (usuario_id, usuario_nombre, accion, detalle) VALUES (%s, %s, %s, %s)", (usuario_id, usuario_nombre, accion, detalle))
     except Exception as e:
-        print(f"Error guardando log de auditoría: {e}")
+        print(f"Error log: {e}")
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'usuario_id' not in session: 
-            return jsonify({"error": "No autorizado"}), 401
+        if 'usuario_id' not in session: return jsonify({"error": "No autorizado"}), 401
         return f(*args, **kwargs)
     return decorated_function
 
 # ==========================================
-# 🔐 RUTAS DE AUTENTICACIÓN Y AUDITORÍA
+# RUTAS DE AUTENTICACIÓN (CORREGIDAS)
 # ==========================================
 
 @app.route('/api/login', methods=['GET', 'POST'])
@@ -112,150 +94,33 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usr, usr))
+        # Accedemos por índice: 0:id, 1:nombre, 2:password_hash, 3:rol, 4:empresa, 5:debe_cambiar_pass
+        cur.execute("SELECT id, nombre, password_hash, rol, empresa, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usr, usr))
         user = cur.fetchone()
         cur.close()
         db_pool.putconn(conn)
-
-        # --- DEBUGGING: ESTO APARECERÁ EN LOS LOGS DE VERCEL ---
-        print(f"DEBUG LOGIN: Intentando login con usuario: {usr}")
-        print(f"DEBUG LOGIN: ¿Usuario encontrado en BD?: {user is not None}")
-        if user:
-            print(f"DEBUG LOGIN: Hash de BD: {user[2]}")
-            es_valido = check_password_hash(user[2], pwd)
-            print(f"DEBUG LOGIN: ¿Contraseña válida?: {es_valido}")
-        # --------------------------------------------------------
 
         if user and check_password_hash(user[2], pwd):
             session['usuario_id'] = user[0]
             session['usuario'] = user[1]
             session['rol'] = user[3]
-            return jsonify({"success": True, "usuario_id": user[0], "rol": user[3], "debe_cambiar_pass": user[4]}), 200
-        
+            session['empresa'] = user[4]
+            return jsonify({
+                "success": True, 
+                "usuario_id": user[0], 
+                "rol": user[3], 
+                "debe_cambiar_pass": user[5]
+            }), 200
         return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
-
     except Exception as e:
-        print(f"Error técnico en login: {e}")
+        print(f"Error login: {e}")
         return jsonify({"success": False, "message": "Error interno"}), 500
-
-@app.route('/api/logout', methods=['GET', 'POST'])
-def logout():
-    session.clear()
-    return jsonify({"success": True, "message": "Sesión cerrada"}), 200
-
-@app.route('/api/verificar-sesion', methods=['GET'])
-def verificar_sesion():
-    if session.get('usuario_id'):
-        return jsonify({"autenticado": True, "rol": session.get('rol')})
-    return jsonify({"autenticado": False}), 401
-
-@app.route('/api/cambiar_password_provisional', methods=['POST'])
-@login_required
-def cambiar_password_provisional():
-    data = request.json
-    usuario_id = data.get('usuario_id')
-    nueva_password = data.get('nueva_password')
-
-    if not usuario_id or not nueva_password:
-        return jsonify({"success": False, "message": "Faltan datos"}), 400
-
-    try:
-        hash_password = generate_password_hash(nueva_password)
-        db_query("UPDATE usuarios SET password_hash = %s, debe_cambiar_pass = FALSE WHERE id = %s", (hash_password, usuario_id))
-        return jsonify({"success": True, "message": "Contraseña actualizada exitosamente"}), 200
-    except Exception as e:
-        return jsonify({"success": False, "message": "Error al actualizar la contraseña"}), 500
-
-@app.route('/api/registro_corporativo', methods=['POST'])
-def registro_corporativo():
-    data = request.json
-    try:
-        db_query("""
-            INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (data.get('empresa'), data.get('nombre'), data.get('puesto'), data.get('telefono'), data.get('correo')))
-        return jsonify({"success": True, "message": "Solicitud recibida"}), 201
-    except Exception as e:
-        return jsonify({"success": False, "message": "Error al procesar la solicitud."}), 500
-
-@app.route('/api/admin/usuarios', methods=['GET'])
-@login_required
-def listar_usuarios():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
-    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
-    return jsonify(resultado)
-
-@app.route('/admin/crear-usuario', methods=['POST'])
-@login_required
-def crear_usuario():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    d = request.json or {}
-    nombre = d.get('nombre')
-    usuario = d.get('usuario')
-    password_plana = d.get('password')
-    rol = d.get('rol')
-    empresa_id = d.get('empresa_id') if d.get('empresa_id') else None
-    email = d.get('email')
-    telefono = d.get('telefono')
-    
-    if not nombre or not usuario or not password_plana or not rol:
-        return jsonify({"success": False, "message": "Faltan campos obligatorios."}), 400
-        
-    password_encriptada = generate_password_hash(password_plana)
-    
-    try:
-        db_query(
-            """INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa_id, email, telefono) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (nombre, usuario, password_encriptada, rol, empresa_id, email, telefono)
-        )
-        registrar_cambio("Creó Usuario", f"Se registró a: {nombre}")
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
-
-@app.route('/api/admin/editar-usuario', methods=['POST'])
-@login_required
-def editar_usuario():
-    if session.get('rol') != 'admin':
-        return jsonify({"message": "Acceso denegado"}), 403
-        
-    d = request.json or {}
-    usuario_id = d.get('id')
-    nuevo_usuario = d.get('usuario')
-    nueva_password = d.get('password')
-    nuevo_nombre = d.get('nombre')
-    
-    if not usuario_id or not nuevo_usuario or not nuevo_nombre:
-        return jsonify({"success": False, "message": "Datos incompletos"}), 400
-
-    if nueva_password and nueva_password.strip() != "":
-        password_encriptada = generate_password_hash(nueva_password)
-        db_query("UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s WHERE id = %s", (nuevo_usuario, password_encriptada, nuevo_nombre, usuario_id))
-    else:
-        db_query("UPDATE usuarios SET usuario = %s, nombre = %s WHERE id = %s", (nuevo_usuario, nuevo_nombre, usuario_id))
-        
-    registrar_cambio("Modificó Usuario", f"Se actualizaron las credenciales del usuario ID {usuario_id}")
-    return jsonify({"success": True, "message": "Usuario modificado correctamente"})
-
-@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
-@login_required
-def eliminar_usuario(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
 
 @app.route('/api/setup-admin', methods=['GET'])
 def setup_admin():
     password_encriptada = generate_password_hash('AdminiCare2026')
     db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
-    return jsonify({"mensaje": "¡Contraseña de administrador actualizada y encriptada correctamente!"})
+    return jsonify({"mensaje": "¡Contraseña actualizada a AdminiCare2026!"})
 
 # ==========================================
 # 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA 

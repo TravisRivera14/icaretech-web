@@ -96,7 +96,7 @@
         }
 
         .nav-link-corporate {
-            color: var(--turquoise-main); /* O el color de acento de tu menú */
+            color: var(--turquoise-main);
             text-decoration: none;
             font-size: 15px;
             font-weight: 600;
@@ -141,7 +141,7 @@
             top: 100%;
             left: 0;
             background-color: var(--card-bg);
-            min-width: 260px;
+            min-width: 200px;
             box-shadow: var(--card-shadow);
             border-radius: 10px;
             padding: 12px 0;
@@ -179,31 +179,6 @@
             align-items: center; 
         }
         
-        .search-bar { 
-            background: var(--dark-bg); 
-            padding: 10px 20px; 
-            border-radius: 30px; 
-            display: flex; 
-            align-items: center; 
-            width: 250px; 
-            border: 1px solid var(--border-smooth);
-            transition: var(--transition-smooth);
-        }
-        
-        .search-bar:focus-within {
-            border-color: var(--icon-blue);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
-        }
-        
-        .search-bar input { 
-            border: none; 
-            outline: none; 
-            width: 100%; 
-            font-size: 14px; 
-            background: transparent;
-            color: var(--text-light);
-        }
-        
         .btn-neon { 
             background: var(--neon-green); 
             color: #000000; 
@@ -222,6 +197,11 @@
             background: var(--neon-green-hover); 
             transform: scale(1.05); 
             box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
+        }
+
+        /* CLASES DE UTILIDAD PARA RESPONSIVIDAD */
+        .show-mobile-only {
+            display: none !important;
         }
 
         /* HERO BANNER DINÁMICO */
@@ -1215,14 +1195,51 @@
             transform: scale(1.1); 
         }
 
+        /* ========================================================= */
         /* 📱 CONSULTAS MULTIMEDIA (MEDIA QUERIES) ADAPTATIVAS CELULARES */
+        /* ========================================================= */
+
         @media (max-width: 900px) {
             header { padding: 10px 20px; }
-            .nav-links, .search-bar { display: none; }
-            .nav-bar { justify-content: space-between; }
-            .logo-img { height: 55px; }
-            .btn-neon { padding: 10px 20px; font-size: 14px; }
             
+            /* Ocultar botones e interfaces no móviles de forma limpia */
+            .hide-mobile, .nav-actions { display: none !important; }
+            .show-mobile-only { display: inline-block !important; }
+            .hide-mobile-text { display: none !important; }
+            
+            /* Estructura Nav en Móvil */
+            .nav-bar { justify-content: space-between; }
+            .nav-links { 
+                display: flex !important; 
+                gap: 20px !important; 
+                align-items: center !important; 
+            }
+            .logo-img { height: 45px; }
+            
+            /* Iconos Táctiles (Corporativo y Hacienda) */
+            .icon-only-mobile { 
+                font-size: 22px !important; 
+                padding: 5px !important; 
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .icon-only-mobile i { margin: 0 !important; font-size: 22px !important; }
+
+            /* Estilo del Botón Desplegable en Móvil */
+            .btn-mobile-categorias {
+                background: var(--card-bg);
+                border: 1px solid var(--border-smooth);
+                padding: 10px 16px !important;
+                border-radius: 8px !important;
+                font-size: 14px !important;
+                color: var(--text-light) !important;
+                font-weight: 600 !important;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
             .features-grid, .process-grid, .timeline-grid, .footer-grid, .form-row, .expanded-grid { 
                 grid-template-columns: 1fr !important; 
                 gap: 25px; 
@@ -1242,10 +1259,7 @@
         }
 
         @media (max-width: 768px) {
-            /* ========================================================= */
             /* 1. OPTIMIZACIÓN HEADER Y COMPONENTES EN DISPOSITIVOS MÓVILES */
-            /* ========================================================= */
-            
             .nav-bar, header nav, .header-container {
                 display: flex !important;
                 flex-direction: row !important;
@@ -1253,50 +1267,17 @@
                 align-items: center !important;
                 flex-wrap: nowrap !important;
                 width: 100% !important;
-                padding: 8px 4px !important;
-            }
-
-            .nav-links, .menu-links, nav div {
-                display: flex !important;
-                align-items: center !important;
-                gap: 0 !important;
-            }
-
-            /* Ocultar elementos redundantes de texto amontonados */
-            .nav-links a:not([href*="servicio"]):not([href*="service"]),
-            nav a:not([href*="servicio"]):not([href*="service"]),
-            .menu-links a:not([href*="servicio"]):not([href*="service"]) {
-                display: none !important;
+                padding: 8px 0px !important;
             }
 
             .logo-img, .logo, header img, nav img {
-                height: 30px !important;
+                height: 35px !important;
                 width: auto !important;
                 max-width: 120px !important;
                 object-fit: contain !important;
             }
 
-            /* DISEÑO DE BOTÓN MÓVIL RE-ESTILIZADO PARA EL SOPORTE CORPORATIVO */
-            .btn-nav-ticket, a[href*="servicio"], a[href*="service"] {
-                display: inline-block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                padding: 6px 12px !important;
-                font-size: 11px !important;
-                font-weight: 700 !important;
-                text-transform: uppercase !important;
-                background: var(--turquoise-main) !important; 
-                color: #000000 !important;
-                border-radius: 14px !important;
-                white-space: nowrap !important;
-                text-decoration: none !important;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
-            }
-
-            /* ========================================================= */
             /* 2. REPARACIÓN DEL CARRUSEL RESPONSIVO Y SECCIÓN DE SOCIOS */
-            /* ========================================================= */
-
             #partners-container, .partners-scroll, [id*="socio"], [class*="socio"], #partners-c {
                 display: flex !important;
                 flex-direction: row !important;
@@ -1309,7 +1290,6 @@
                 scroll-snap-type: x mandatory !important;
             }
 
-            /* Forzar comportamiento fluido de tarjetas de marcas/socios en móvil */
             .partner-card, .socio-card, #partners-container > div, .partners-scroll > div {
                 min-width: 110px !important;
                 max-width: 110px !important;
@@ -1337,10 +1317,7 @@
                 opacity: 1 !important;
             }
 
-            /* ========================================================= */
             /* 3. AJUSTE DE CUADRÍCULAS, FUENTES Y MÁRGENES (RESPONSIVO EN MÓVIL) */
-            /* ========================================================= */
-            
             .hero, .hero-banner {
                 padding: 35px 16px 25px 16px !important;
                 height: auto !important;
@@ -1352,7 +1329,6 @@
                 line-height: 1.2 !important;
             }
 
-            /* Conversión estricta de Grids amontonados a 1 columna */
             .services-grid, 
             .reviews-grid, 
             .objectives-grid, 
@@ -1365,7 +1341,6 @@
                 gap: 16px !important;
             }
             
-            /* Evitar anchos fijos desbordados */
             .service-card, .product-card, .objective-item, .value-card, .target-card, .feature-box, .catalog-card {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -1415,39 +1390,31 @@
 <body>
 
     <header>
-    <div class="nav-bar">
-        <a href="/" class="logo-area">
-            <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
-        </a>
-        
-        <nav class="nav-links">
-            <div class="dropdown-menu-container">
-                <a class="dropdown-trigger">Ver Categorías ▾</a>
-                <div class="dropdown-content" id="nav-dropdown-cats"></div>
-            </div>
-            
-            <a href="/servicio" style="color: var(--neon-green); font-weight: 700;">
-                <i class="fas fa-headset"></i> Soporte Corporativo
+        <div class="nav-bar">
+            <a href="/" class="logo-area">
+                <img src="Logo.png" alt="iCareTech CR Logo" class="logo-img">
             </a>
-            
-            <a href="#nosotros">Proyectos</a>
-            <a href="#catalogo">Tienda</a>
-            <a href="#clientes">Reseñas</a>
-            
-            <a href="/login" class="nav-link-corporate">
-                <i class="fas fa-file-invoice-dollar"></i> Facturación Hacienda
-            </a> 
-        </nav> 
         
-        <div class="nav-actions">
-            <div class="search-bar">
-                <input type="text" placeholder="Busca tu pieza...">
-                <span style="font-size: 18px;">🔍</span>
-            </div>
-            <a href="#" class="btn-neon" onclick="openWA('Hola, necesito asistencia técnica.')">¡Llama Ya!</a>
+            <nav class="nav-links">
+                <div class="dropdown-menu-container">
+                    <a class="dropdown-trigger btn-mobile-categorias">
+                        <i class="fas fa-layer-group"></i> Categorías <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="tienda.html"><i class="fas fa-shopping-cart"></i> Tienda</a>
+                        <a href="#nosotros"><i class="fas fa-building"></i> Sobre la Empresa</a>
+                        <a href="#contacto"><i class="fas fa-envelope"></i> Contáctanos</a>
+                        <a href="#clientes"><i class="fas fa-star"></i> Reseñas</a>
+                    </div>
+                </div>
+            
+                <a href="/login" class="nav-link-corporate" title="Soporte Corporativo">
+                    <i class="fas fa-headset" style="font-size: 18px;"></i> 
+                    <span class="hide-mobile-text">Soporte Corporativo</span>
+                </a> 
+            </nav> 
         </div>
-    </div>
-</header>
+    </header>
 
     <section class="hero-banner" id="hero-sec">
         <div class="container">
@@ -1656,11 +1623,14 @@
         
         function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-        document.querySelector('.dropdown-trigger').addEventListener('click', function(e) {
-            if(window.innerWidth <= 900) {
-                e.preventDefault();
-                document.querySelector('.dropdown-content').classList.toggle('show');
-            }
+        /* NUEVA LOGICA PARA MENUS DESPLEGABLES */
+        document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function(e) {
+                if(window.innerWidth <= 900) {
+                    e.preventDefault();
+                    this.nextElementSibling.classList.toggle('show');
+                }
+            });
         });
 
         const animObserver = new IntersectionObserver((entries, observer) => {
@@ -1828,14 +1798,6 @@
                             document.querySelector('.mobile-selector-container').style.display = "block";
                             mobileSelector.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
                         }
-                    }
-
-                    const dropdownContainer = document.getElementById('nav-dropdown-cats');
-                    if (dropdownContainer) {
-                        const realCats = categories.filter(c => c !== "Todos");
-                        dropdownContainer.innerHTML = realCats.map(cat => 
-                            `<a href="tienda.html?cat=${encodeURIComponent(cat)}"><span>${cat}</span> <i class="fas fa-chevron-right" style="font-size:10px; color:#ccc;"></i></a>`
-                        ).join('');
                     }
                     
                     filterAll(); 

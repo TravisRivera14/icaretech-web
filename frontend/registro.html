@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Corporativo | iCare Tech CR</title>
+    <link rel="icon" href="Logo_Pestana_v2.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0c10;
+            --card-bg: #1f2833;
+            --text-light: #f5f5f7;
+            --neon-blue: #00b4d8;
+            --neon-blue-hover: #90e0ef;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .register-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+        
+        .register-container img {
+            width: 140px;
+            margin-bottom: 20px;
+        }
+        
+        .register-container h2 {
+            margin-bottom: 10px;
+            font-size: 22px;
+            color: #ffffff;
+        }
+        
+        .register-container p.subtitle {
+            color: #8a99ad;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a99ad;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            background: #11141a;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.15);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button:hover {
+            background: var(--neon-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 180, 216, 0.25);
+        }
+        
+        .links a {
+            color: #8a99ad;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .links a:hover {
+            color: var(--text-light);
+        }
+        
+        /* Modal de Éxito */
+        #success-msg {
+            display: none;
+            color: #7cf5a6;
+            background: rgba(124, 245, 166, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #7cf5a6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-container">
+        <img src="Logo.png" alt="iCare Tech CR Logo">
+        <h2>Solicitud de Acceso Corporativo</h2>
+        <p class="subtitle">Completa los datos para habilitar el portal de tu empresa en nuestra plataforma.</p>
+        
+        <div id="success-msg">
+            <i class="fas fa-check-circle"></i> Solicitud enviada exitosamente. Nuestro equipo validará los datos y te enviará las credenciales.
+        </div>
+
+        <form id="registroForm" onsubmit="enviarRegistro(event)">
+            <div class="input-group">
+                <i class="fas fa-building"></i>
+                <input type="text" id="regEmpresa" placeholder="Empresa en la que trabaja" required>
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="regNombre" placeholder="Nombre completo" required>
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-briefcase"></i>
+                <input type="text" id="regPuesto" placeholder="Puesto que desempeña" required>
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-phone"></i>
+                <input type="tel" id="regTelefono" placeholder="Número telefónico" required>
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="regCorreo" placeholder="Correo electrónico" required>
+            </div>
+            
+            <button type="submit" id="btn-submit">Enviar Solicitud</button>
+        </form>
+        
+        <div class="links">
+            <a href="login.html"><i class="fas fa-arrow-left"></i> Volver al inicio de sesión</a>
+        </div>
+    </div>
+
+    <script>
+        async function enviarRegistro(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = "Enviando...";
+            btn.disabled = true;
+
+            const payload = {
+                empresa: document.getElementById('regEmpresa').value,
+                nombre: document.getElementById('regNombre').value,
+                puesto: document.getElementById('regPuesto').value,
+                telefono: document.getElementById('regTelefono').value,
+                correo: document.getElementById('regCorreo').value
+            };
+
+            try {
+                // Este endpoint lo crearemos luego en el app.py
+                const res = await fetch('/api/registro_corporativo', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if(data.success || res.ok) {
+                    document.getElementById('registroForm').style.display = 'none';
+                    document.getElementById('success-msg').style.display = 'block';
+                } else {
+                    alert("Error al enviar solicitud: " + (data.message || "Intenta nuevamente."));
+                    btn.innerText = "Enviar Solicitud";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                // Al ser modo desarrollo, simulamos el éxito si aún no está el backend listo
+                console.warn("Backend no listo aún, simulando éxito.");
+                document.getElementById('registroForm').style.display = 'none';
+                document.getElementById('success-msg').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

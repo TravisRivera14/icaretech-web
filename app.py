@@ -138,22 +138,24 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+        # SELECT correcto trayendo las columnas en orden
         cur.execute("SELECT id, nombre, password_hash, rol, empresa, debe_cambiar_pass FROM usuarios WHERE usuario = %s OR correo = %s", (usuario_input, usuario_input))
         user = cur.fetchone()
         cur.close()
         db_pool.putconn(conn)
 
+        # user[2] es password_hash. Accedemos por índice, no por nombre.
         if user and check_password_hash(user[2], password_input):
-            session['usuario_id'] = user[0]
-            session['usuario'] = user[1]
-            session['rol'] = user[3]
-            session['empresa'] = user[4]
+            session['usuario_id'] = user[0] # id
+            session['usuario'] = user[1]    # nombre
+            session['rol'] = user[3]        # rol
+            session['empresa'] = user[4]    # empresa
 
             return jsonify({
                 "success": True,
                 "usuario_id": user[0],
                 "rol": user[3],
-                "debe_cambiar_pass": user[5]
+                "debe_cambiar_pass": user[5] # debe_cambiar_pass
             }), 200
         else:
             return jsonify({"success": False, "message": "Credenciales inválidas"}), 401

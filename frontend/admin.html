@@ -508,6 +508,7 @@
         <li class="sidebar-item" onclick="switchTab('tab-contenidos')"><i class="fas fa-sliders"></i> Landing & Contenidos</li>
         <li class="sidebar-item" onclick="switchTab('tab-personal')"><i class="fas fa-users-gear"></i> Personal Técnico</li>
         <li class="sidebar-item" onclick="switchTab('tab-auditoria')"><i class="fas fa-clock-rotate-left"></i> Auditoría (Logs)</li>
+        <li class="sidebar-item" onclick="switchTab('tab-solicitudes')"><i class="fas fa-user-check"></i> Solicitudes Registro</li>
     </ul>
 </aside>
 
@@ -819,21 +820,16 @@
 
     // FUNCIÓN PARA ALTERNAR ENTRE LAS DISTINTAS PESTAÑAS DEL PANEL LATERAL
     function switchTab(tabId) {
-        // Remueve la clase 'active' de todas las secciones y botones
-        document.querySelectorAll('.tab-section').forEach(section => section.classList.remove('active'));
-        document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-        
-        // Activa solo la sección y botón seleccionados
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-
-        // Cambia dinámicamente el título principal de la cabecera según la pestaña elegida
         const titles = {
-            'tab-tickets': 'Monitoreo de Tickets de Soporte',
-            'tab-empresas': 'Vínculos Comerciales Corporativos',
-            'tab-contenidos': 'Estructura Dinámica de la Landing',
-            'tab-personal': 'Ecosistema de Colaboradores e Ingenieros',
-            'tab-auditoria': 'Registro Maestro de Cambios Técnicos'
+            'tab-tickets': 'Tickets de Soporte',
+            'tab-solicitudes': 'Gestión de Solicitudes de Registro',
+            'tab-empresas': 'Clientes Corporativos',
+            'tab-contenidos': 'Landing & Contenidos',
+            'tab-personal': 'Personal Técnico'
         };
         document.getElementById('main-panel-title').innerText = titles[tabId];
     }
@@ -1013,6 +1009,46 @@
             alert("Error de conexión con el servidor.");
         });
     });
+
+    function cargarSolicitudes() {
+        fetch(`${API}/admin/solicitudes`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(data => {
+            const body = document.getElementById('tabla-solicitudes');
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay solicitudes pendientes.</td></tr>';
+            } else {
+                body.innerHTML = data.map(s => `
+                    <tr>
+                        <td>${s.empresa}</td>
+                        <td>${s.nombre}</td>
+                        <td>${s.correo}</td>
+                        <td><button class="btn-edit" onclick="aprobarSolicitud(${s.id})">Aprobar</button></td>
+                    </tr>
+                `).join('');
+            }
+        });
+    }
+
+    function aprobarSolicitud(id) {
+        if(!confirm("¿Aprobar este usuario?")) return;
+        fetch(`${API}/admin/aprobar_solicitud`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({id: id})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) {
+                alert("Usuario aprobado.");
+                cargarSolicitudes();
+                // Si tienes la función cargarListaTrabajadores(), llámala aquí también
+            } else {
+                alert("Error: " + data.message);
+            }
+        });
+    }
 
     // FUNCIÓN QUE DIBUJA FILA POR FILA LA TABLA DE TICKETS DE SOPORTE TÉCNICO
     function renderTablaTickets(lista) {

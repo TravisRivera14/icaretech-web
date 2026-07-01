@@ -1,21 +1,21 @@
-{ 
-  "version": 2, 
-  "builds": [ 
-    { "src": "app.py", "use": "@vercel/python" }, 
-    { "src": "frontend/**", "use": "@vercel/static" } 
-  ], 
-  "routes": [ 
-    { "src": "/api/(.*)", "dest": "app.py" }, 
-    { "src": "/login(?:\\.html)?", "dest": "frontend/login.html" }, 
-    { "src": "/registro(?:\\.html)?", "dest": "frontend/registro.html" }, 
-    { "src": "/recuperar(?:\\.html)?", "dest": "frontend/recuperar.html" }, 
-    { "src": "/admin(?:\\.html)?", "dest": "frontend/admin.html" }, 
-    { "src": "/config_hacienda(?:\\.html)?", "dest": "frontend/config_hacienda.html" }, 
-    { "src": "/servicio(?:\\.html)?", "dest": "frontend/servicio.html" }, 
-    { "src": "/tienda(?:\\.html)?", "dest": "frontend/tienda.html" }, 
-    { "src": "/dashboard(?:\\.html)?", "dest": "frontend/dashboard.html" }, 
-    { "src": "/dashboard_cliente(?:\\.html)?", "dest": "frontend/dashboard_cliente.html" }, 
-    { "src": "/assets/(.*)", "dest": "frontend/assets/$1" }, 
+{
+  "version": 2,
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python" },
+    { "src": "frontend/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "app.py" },
+    { "src": "/login(?:\\.html)?", "dest": "frontend/login.html" },
+    { "src": "/registro(?:\\.html)?", "dest": "frontend/registro.html" },
+    { "src": "/recuperar(?:\\.html)?", "dest": "frontend/recuperar.html" },
+    { "src": "/admin(?:\\.html)?", "dest": "frontend/admin.html" },
+    { "src": "/config_hacienda(?:\\.html)?", "dest": "frontend/config_hacienda.html" },
+    { "src": "/servicio(?:\\.html)?", "dest": "frontend/servicio.html" },
+    { "src": "/tienda(?:\\.html)?", "dest": "frontend/tienda.html" },
+    { "src": "/dashboard(?:\\.html)?", "dest": "frontend/dashboard.html" },
+    { "src": "/dashboard_cliente(?:\\.html)?", "dest": "frontend/dashboard_cliente.html" },
+    { "src": "/assets/(.*)", "dest": "frontend/assets/$1" },
     { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" },
     { "src": "/(.*)", "dest": "frontend/index.html" }
   ]

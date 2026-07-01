@@ -779,6 +779,35 @@ def obtener_datos_operativos():
         "facturas": [{"id": f[0], "monto": str(f[1])} for f in facturas],
         "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2]} for t in tickets]
     })
+    
+@app.route('/api/cliente/datos-operativos', methods=['GET'])
+@login_required
+def obtener_datos_operativos():
+    # Obtenemos el nombre de la empresa del cliente logueado desde la sesión
+    empresa = session.get('empresa') 
+    
+    if not empresa: 
+        return jsonify({"error": "Usuario no asociado a ninguna empresa"}), 403
+    
+    try:
+        # Buscamos el ID de la empresa por su nombre
+        empresa_db = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa,), fetch=True)
+        if not empresa_db:
+            return jsonify({"error": "Empresa no encontrada en sistema"}), 404
+        
+        id_empresa = empresa_db[0][0]
+        
+        # Consultamos los datos filtrados por ese ID de empresa
+        facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+        tickets = db_query("SELECT id, asunto, estado, prioridad FROM tickets_soporte WHERE empresa_id = %s", (id_empresa,), fetch=True) or []
+        
+        return jsonify({
+            "empresa": empresa,
+            "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
+            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3]} for t in tickets]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     init_db()

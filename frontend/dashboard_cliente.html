@@ -6,87 +6,75 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; }
-        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; min-height: 100vh; }
         
-        header { background: #11141a; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .ops-nav button { background: transparent; color: var(--text); border: none; padding: 10px 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .ops-nav button:hover { color: var(--accent); }
-        
-        .main-container { padding: 40px 50px; }
-        .view { display: none; }
-        .view.active { display: block; }
-        
+        /* SIDEBAR LATERAL */
+        .sidebar { width: 260px; background: #11141a; padding: 30px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar h2 { font-size: 18px; color: var(--accent); margin-bottom: 30px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .sidebar li:hover { background: var(--card); color: var(--accent); }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { flex: 1; padding: 40px; }
         .card { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* TABLA ESTILO IMAGEN 2 */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,0,0,0.2); padding: 15px; text-align: left; color: var(--accent); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
-    <nav class="ops-nav">
-        <button onclick="switchView('datacenter')"><i class="fas fa-server"></i> Data Center</button>
-        <button onclick="switchView('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
-        <button onclick="switchView('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
-        <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
-    </nav>
-</header>
+<aside class="sidebar">
+    <h2>iCare Ops</h2>
+    <ul>
+        <li onclick="switchView('datacenter')"><i class="fas fa-server"></i> Data Center</li>
+        <li onclick="switchView('facturacion')"><i class="fas fa-file-invoice"></i> Facturación</li>
+        <li onclick="switchView('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</li>
+        <li onclick="switchView('inventario')"><i class="fas fa-boxes"></i> Inventario</li>
+        <li onclick="switchView('cotizaciones')"><i class="fas fa-calculator"></i> Cotizaciones</li>
+    </ul>
+</aside>
 
-<main class="main-container">
-    <section id="view-datacenter" class="view active">
-        <div class="card">
-            <h2>Monitoreo de Infraestructura</h2>
-            <p>Estado de servidores y servicios asignados a tu empresa.</p>
-            </div>
-    </section>
-
+<main class="main-content">
     <section id="view-facturacion" class="view">
         <div class="card">
-            <h2>Estado de Cuenta</h2>
-            <table id="tabla-facturas">
-                <thead><tr><th>ID</th><th>Monto</th><th>Estado</th></tr></thead>
-                <tbody id="lista-facturas"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <section id="view-tickets" class="view">
-        <div class="card">
-            <h2>Seguimiento de Tickets</h2>
-            <table id="tabla-tickets">
-                <thead><tr><th>Asunto</th><th>Prioridad</th><th>Estado</th></tr></thead>
-                <tbody id="lista-tickets"></tbody>
+            <h2>Gestión de Facturación</h2>
+            <table>
+                <thead>
+                    <tr><th>Fecha</th><th>Consecutivo</th><th>Cliente</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="lista-facturas">
+                    </tbody>
             </table>
         </div>
     </section>
 </main>
 
 <script>
-    function switchView(viewName) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + viewName).classList.add('active');
+    function switchView(view) {
+        // Lógica para mostrar/ocultar secciones
     }
 
     async function cargarDatos() {
         const res = await fetch('/api/cliente/datos-operativos');
         const data = await res.json();
         
-        // Llenar facturas
-        const facturasBody = document.getElementById('lista-facturas');
-        facturasBody.innerHTML = data.facturas.map(f => `<tr><td>${f.id}</td><td>₡${f.monto}</td><td>Pagado</td></tr>`).join('');
-        
-        // Llenar tickets
-        const ticketsBody = document.getElementById('lista-tickets');
-        ticketsBody.innerHTML = data.tickets.map(t => `<tr><td>${t.asunto}</td><td>Alta</td><td>${t.estado}</td></tr>`).join('');
+        // Ejemplo de cómo llenar la tabla de Facturación (Imagen 2)
+        const body = document.getElementById('lista-facturas');
+        body.innerHTML = data.facturas.map(f => `
+            <tr>
+                <td>${f.fecha}</td>
+                <td>${f.consecutivo}</td>
+                <td>${f.cliente}</td>
+                <td>₡${f.monto}</td>
+                <td><span class="badge">${f.estado}</span></td>
+                <td><button onclick="descargarPDF(${f.id})">PDF</button></td>
+            </tr>
+        `).join('');
     }
-
-    async function logout() {
-        await fetch('/api/logout');
-        window.location.href = '/login';
-    }
-
-    window.onload = cargarDatos;
 </script>
 </body>
 </html>

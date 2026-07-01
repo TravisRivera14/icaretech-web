@@ -76,7 +76,7 @@ def login_required(f):
     return decorated_function
 
 # ==========================================
-# RUTAS DE AUTENTICACIÓN (CORREGIDAS)
+# RUTAS DE AUTENTICACIÓN Y USUARIOS
 # ==========================================
 
 @app.route('/api/login', methods=['POST'])
@@ -88,7 +88,6 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        # Seleccionamos las columnas fijas que sabemos que existen
         cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s", (usr,))
         user = cur.fetchone()
         cur.close()
@@ -110,6 +109,59 @@ def setup_admin():
     password_encriptada = generate_password_hash('AdminiCare2026')
     db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
     return jsonify({"mensaje": "¡Contraseña actualizada a AdminiCare2026!"})
+
+@app.route('/api/admin/usuarios', methods=['GET'])
+@login_required
+def listar_usuarios():
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
+    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
+    return jsonify([{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw])
+
+@app.route('/api/admin/crear-usuario', methods=['POST'])
+@login_required
+def crear_usuario():
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
+    d = request.json or {}
+    password_encriptada = generate_password_hash(d.get('password', '12345'))
+    try:
+        db_query("""INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (d.get('nombre'), d.get('usuario'), password_encriptada, d.get('rol'), d.get('empresa_id'), d.get('email'), d.get('telefono')))
+        registrar_cambio("Creó Usuario", f"Se registró a: {d.get('nombre')}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+@app.route('/api/admin/editar-usuario', methods=['POST'])
+@login_required
+def editar_usuario():
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
+    d = request.json or {}
+    try:
+        if d.get('password') and d.get('password').strip() != "":
+            db_query("UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s, rol = %s WHERE id = %s", 
+                     (d.get('usuario'), generate_password_hash(d.get('password')), d.get('nombre'), d.get('rol'), d.get('id')))
+        else:
+            db_query("UPDATE usuarios SET usuario = %s, nombre = %s, rol = %s WHERE id = %s", 
+                     (d.get('usuario'), d.get('nombre'), d.get('rol'), d.get('id')))
+        registrar_cambio("Modificó Usuario", f"Actualizadas credenciales de {d.get('usuario')}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
+@login_required
+def eliminar_usuario(id):
+    if session.get('rol') != 'admin': return jsonify({"message": "denegado"}), 403
+    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+    registrar_cambio("Eliminó Usuario", f"ID {id}")
+    return jsonify({"success": True})
+
+@app.route('/api/admin/logs', methods=['GET'])
+@login_required
+def get_logs():
+    if session.get('rol') != 'admin': return jsonify({"message": "Denegado"}), 403
+    logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 100", fetch=True) or []
+    return jsonify([{"fecha": l[0], "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
 
 # ==========================================
 # 🔐 FASE 3: MOTOR DE AUTENTICACIÓN OAUTH 2.0 CON HACIENDA 
@@ -388,7 +440,6 @@ def emitir_factura_electronica_api():
         return jsonify({"success": False, "message": "Faltan datos esenciales (Cliente o Líneas de detalle)"}), 400
 
     try:
-        # Asegurarse de que la tabla empresa y clientes existan (esto podría requerir crear las tablas si no las tienes)
         res_emisor = db_query("SELECT cedula_juridica, nombre_empresa, correo FROM empresa WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
         if not res_emisor:
             return jsonify({"success": False, "message": "Empresa emisora no registrada o incompleta."}), 400
@@ -446,56 +497,8 @@ def emitir_factura_electronica_api():
         return jsonify({"success": False, "message": f"Error interno en el servidor: {str(e)}"}), 500
 
 # ==========================================
-# 🎫 CONTROLADORES MAESTROS DE SOPORTE Y TICKETS
+# RUTAS DE SOPORTE, TICKETS Y SOLICITUDES
 # ==========================================
-
-@app.route('/api/tickets', methods=['POST'])
-def crear_ticket_publico():
-    d = request.json or {}
-    empresa_id = d.get('empresa_id')
-    contacto = d.get('contacto')
-    whatsapp = d.get('whatsapp') 
-    asunto = d.get('asunto')
-    descripcion = d.get('descripcion')
-    prioridad = d.get('prioridad', 'Alta')
-
-    if not contacto or not asunto or not descripcion:
-        return jsonify({"error": f"Faltan campos obligatorios. Recibí: {d}"}), 400
-
-    db_query(
-        "INSERT INTO tickets_soporte (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s, %s)",
-        (empresa_id, contacto, whatsapp, asunto, descripcion, prioridad)
-    )
-
-    mensaje = f"🎫 Ticket: {asunto}. Cliente: {contacto}. WhatsApp: {whatsapp}."
-    phone = os.environ.get('WHATSAPP_PHONE')
-    apikey = os.environ.get('WHATSAPP_APIKEY')
-    
-    if phone and apikey:
-        try:
-            url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={mensaje}&apikey={apikey}"
-            requests.get(url)
-        except Exception as e:
-            print(f"Error WhatsApp: {e}")
-
-    registrar_cambio("Ticket Creado", f"Avería reportada por {contacto}")
-    return jsonify({"success": True, "message": "Ticket registrado con éxito"})
-
-@app.route('/api/admin/tickets', methods=['GET'])
-@login_required
-def listar_tickets_admin():
-    query = '''SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, t.descripcion, t.prioridad, t.estado, t.fecha 
-               FROM tickets_soporte t
-               JOIN empresas_recomiendan e ON t.empresa_id = e.id
-               ORDER BY t.fecha DESC'''
-    
-    tickets_raw = db_query(query, fetch=True) or []
-    resultado = [{
-        "id": r[0], "empresa_id": r[1], "empresa_nombre": r[2], "contacto": r[3],
-        "asunto": r[4], "descripcion": r[5], "prioridad": r[6], "estado": r[7],
-        "fecha": r[8].isoformat() if hasattr(r[8], 'isoformat') else str(r[8])
-    } for r in tickets_raw]
-    return jsonify(resultado)
 
 @app.route('/api/admin/solicitudes', methods=['GET'])
 def listar_solicitudes():
@@ -524,61 +527,15 @@ def eliminar_varios():
     db_query(f"DELETE FROM {tabla} WHERE id IN %s", (ids,))
     return jsonify({"success": True})
 
-# --- RUTA FALTANTE PARA LOGS ---
-@app.route('/api/admin/logs', methods=['GET'])
-@login_required
-def get_logs():
-    if session.get('rol') != 'admin': return jsonify({"message": "Denegado"}), 403
-    logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 50", fetch=True) or []
-    return jsonify([{"fecha": l[0], "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
-
-# --- ASEGURA QUE ESTA RUTA EXISTA ---
-@app.route('/api/admin/usuarios', methods=['GET'])
-@login_required
-def listar_usuarios():
-    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
-    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
-    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
-    return jsonify(resultado)
-
-# RUTA PARA LISTAR EMPRESAS (Para que el dropdown no salga vacío)
-@app.route('/api/recomiendan', methods=['GET'])
-def listar_empresas_publico():
-    res = db_query("SELECT id, nombre FROM empresas_recomiendan", fetch=True) or []
-    return jsonify([{"id": r[0], "nombre": r[1]} for r in res])
-
-@app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
-@login_required
-def cambiar_estado_ticket(id):
-    d = request.json or {}
-    nuevo_estado = d.get('estado', 'Resuelto')
-    db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (nuevo_estado, id))
-    registrar_cambio("Resolvió Ticket", f"Ticket ID {id} cambiado a estado: {nuevo_estado}")
-    return jsonify({"success": True})
-
-@app.route('/api/admin/empresas-soporte', methods=['POST'])
-@login_required
-def dar_alta_empresa_soporte():
-    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
-    d = request.json or {}
-    nombre = d.get('nombre')
-    if not nombre: return jsonify({"error": "Nombre requerido"}), 400
-
-    db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre,))
-    registrar_cambio("Alta Empresa", f"Se dio de alta a la empresa cliente: {nombre}")
-    return jsonify({"success": True})
-
-@app.route('/api/admin/empresas-soporte/<int:id>', methods=['DELETE'])
-@login_required
-def dar_baja_empresa_soporte(id):
-    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
-    db_query("DELETE FROM empresas_recomiendan WHERE id = %s", (id,))
-    registrar_cambio("Baja Empresa", f"Removida la empresa cliente ID {id}")
-    return jsonify({"success": True})
-
-# ==========================================
-# 🛠️ RUTAS DE CONTENIDO GENERAL (PROTEGIDAS)
-# ==========================================
+@app.route('/api/registro_corporativo', methods=['POST'])
+def registro_corporativo():
+    data = request.json
+    try:
+        db_query("""INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo) VALUES (%s, %s, %s, %s, %s)""", 
+                 (data.get('empresa'), data.get('nombre'), data.get('puesto'), data.get('telefono'), data.get('correo')))
+        return jsonify({"success": True}), 201
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():
@@ -626,8 +583,8 @@ def obtener_todo():
         parts_raw = db_query("SELECT id, nombre, imagen FROM socios", fetch=True) or []
         parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in parts_raw]
         
-        reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente, estrellas FROM resenas", fetch=True) or []
-        reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4], "estrellas": r[5]} for r in reviews_raw]
+        reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente FROM resenas", fetch=True) or []
+        reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4]} for r in reviews_raw]
         
         ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
         beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
@@ -714,7 +671,6 @@ def guardar_config():
             registrar_cambio("Actualizó Texto Maestro", f"Modificó la clave principal de contenido: {k}")
     return jsonify({"mensaje": "✅"})
 
-# NOTA: Guardar reseña no lleva @login_required porque se usa desde el formulario público del index.html
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
     d = request.json or {}
@@ -785,10 +741,6 @@ def eliminar_item(tabla, id):
         registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
-
-# ==========================================
-# INICIO DE LA APLICACIÓN
-# ==========================================
 
 if __name__ == '__main__':
     init_db()

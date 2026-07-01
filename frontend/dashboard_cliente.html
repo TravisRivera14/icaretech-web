@@ -2,50 +2,91 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi Panel | iCarTech CR</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Centro de Operaciones | iCare Tech CR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; }
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; }
+        
+        header { background: #11141a; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .ops-nav button { background: transparent; color: var(--text); border: none; padding: 10px 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .ops-nav button:hover { color: var(--accent); }
+        
+        .main-container { padding: 40px 50px; }
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        .card { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Panel del Cliente</h1>
-        <button onclick="logout()">Cerrar Sesión</button>
-    </header>
 
-    <main class="dashboard-container">
-        <section>
-            <h2>Mis Facturas Emitidas</h2>
-            <div id="lista-facturas">Cargando facturas...</div>
-        </section>
+<header>
+    <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
+    <nav class="ops-nav">
+        <button onclick="switchView('datacenter')"><i class="fas fa-server"></i> Data Center</button>
+        <button onclick="switchView('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
+        <button onclick="switchView('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+    </nav>
+</header>
+
+<main class="main-container">
+    <section id="view-datacenter" class="view active">
+        <div class="card">
+            <h2>Monitoreo de Infraestructura</h2>
+            <p>Estado de servidores y servicios asignados a tu empresa.</p>
+            </div>
+    </section>
+
+    <section id="view-facturacion" class="view">
+        <div class="card">
+            <h2>Estado de Cuenta</h2>
+            <table id="tabla-facturas">
+                <thead><tr><th>ID</th><th>Monto</th><th>Estado</th></tr></thead>
+                <tbody id="lista-facturas"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="view-tickets" class="view">
+        <div class="card">
+            <h2>Seguimiento de Tickets</h2>
+            <table id="tabla-tickets">
+                <thead><tr><th>Asunto</th><th>Prioridad</th><th>Estado</th></tr></thead>
+                <tbody id="lista-tickets"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    function switchView(viewName) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + viewName).classList.add('active');
+    }
+
+    async function cargarDatos() {
+        const res = await fetch('/api/cliente/datos-operativos');
+        const data = await res.json();
         
-        <section>
-            <h2>Emitir Nueva Proforma</h2>
-            <button onclick="window.location.href='/config_hacienda'">Ir al Facturador</button>
-        </section>
-    </main>
+        // Llenar facturas
+        const facturasBody = document.getElementById('lista-facturas');
+        facturasBody.innerHTML = data.facturas.map(f => `<tr><td>${f.id}</td><td>₡${f.monto}</td><td>Pagado</td></tr>`).join('');
+        
+        // Llenar tickets
+        const ticketsBody = document.getElementById('lista-tickets');
+        ticketsBody.innerHTML = data.tickets.map(t => `<tr><td>${t.asunto}</td><td>Alta</td><td>${t.estado}</td></tr>`).join('');
+    }
 
-    <script>
-        // 1. Verificación de Seguridad al cargar
-        window.onload = async () => {
-            const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
-            if (res.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
-            cargarDatosCliente();
-        };
+    async function logout() {
+        await fetch('/api/logout');
+        window.location.href = '/login';
+    }
 
-        // 2. Cargar datos específicos de este cliente
-        async function cargarDatosCliente() {
-            const res = await fetch('/api/cliente/mis-datos', { credentials: 'include' });
-            const data = await res.json();
-            document.getElementById('lista-facturas').innerHTML = 
-                data.facturas.map(f => `<p>Factura #${f.id} - ₡${f.monto}</p>`).join('');
-        }
-
-        async function logout() {
-            await fetch('/api/logout', { credentials: 'include' });
-            window.location.href = '/login';
-        }
-    </script>
+    window.onload = cargarDatos;
+</script>
 </body>
 </html>

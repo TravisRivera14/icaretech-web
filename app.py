@@ -527,6 +527,23 @@ def eliminar_varios():
     db_query("DELETE FROM solicitudes_registro WHERE id IN %s", (tuple(ids),))
     return jsonify({"success": True})
 
+# --- RUTA FALTANTE PARA LOGS ---
+@app.route('/api/admin/logs', methods=['GET'])
+@login_required
+def get_logs():
+    if session.get('rol') != 'admin': return jsonify({"message": "Denegado"}), 403
+    logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 50", fetch=True) or []
+    return jsonify([{"fecha": l[0], "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
+
+# --- ASEGURA QUE ESTA RUTA EXISTA ---
+@app.route('/api/admin/usuarios', methods=['GET'])
+@login_required
+def listar_usuarios():
+    if session.get('rol') != 'admin': return jsonify({"message": "Acceso denegado"}), 403
+    users_raw = db_query("SELECT id, usuario, rol, nombre FROM usuarios ORDER BY id ASC", fetch=True) or []
+    resultado = [{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3]} for r in users_raw]
+    return jsonify(resultado)
+
 # RUTA PARA LISTAR EMPRESAS (Para que el dropdown no salga vacío)
 @app.route('/api/recomiendan', methods=['GET'])
 def listar_empresas_publico():

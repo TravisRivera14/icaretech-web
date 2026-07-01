@@ -765,6 +765,72 @@
     </div>
 </div>
 
+<section id="tab-solicitudes" class="tab-section">
+    <div class="card">
+        <h2>Solicitudes de Registro</h2>
+        <button class="btn-del" onclick="eliminarSeleccionados()">Eliminar Seleccionados</button>
+        <table class="ticket-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)"></th>
+                    <th>Empresa</th><th>Nombre</th><th>Correo</th><th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-solicitudes"><tr><td colspan="5">Cargando...</td></tr></tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+    // ESTAS FUNCIONES VAN DENTRO DE TU <script>
+    function cargarSolicitudes() {
+        fetch(`${API}/admin/solicitudes`)
+        .then(r => r.json())
+        .then(data => {
+            const body = document.getElementById('tabla-solicitudes');
+            if(data.length === 0) body.innerHTML = '<tr><td colspan="5">Sin solicitudes.</td></tr>';
+            else body.innerHTML = data.map(s => `
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox" value="${s.id}"></td>
+                    <td>${s.empresa}</td>
+                    <td>${s.nombre}</td>
+                    <td>${s.correo}</td>
+                    <td><button class="btn-edit" onclick="aprobarSolicitud(${s.id})">Aprobar</button></td>
+                </tr>
+            `).join('');
+        });
+    }
+
+    function toggleSelectAll(source) {
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = source.checked);
+    }
+
+    function eliminarSeleccionados() {
+        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(c => c.value);
+        if(ids.length === 0) return alert("Selecciona solicitudes.");
+        
+        fetch(`${API}/admin/eliminar-varios`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ids: ids})
+        }).then(() => {
+            alert("Eliminados");
+            cargarSolicitudes();
+        });
+    }
+
+    function aprobarSolicitud(id) {
+        fetch(`${API}/admin/aprobar_solicitud`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: id})
+        }).then(() => {
+            alert("Usuario aprobado.");
+            cargarSolicitudes();
+        });
+    }
+</script>
+
 <script>
     // 1. VERIFICACIÓN DE SEGURIDAD Y CARGA INICIAL AL ABRIR LA PÁGINA
     window.onload = function() {

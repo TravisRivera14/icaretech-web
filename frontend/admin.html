@@ -823,6 +823,7 @@
         document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
+        document.getElementById('main-panel-title').innerText = document.querySelector(`[onclick="switchTab('${tabId}')"]`).innerText;
         event.currentTarget.classList.add('active');
 
         const titles = {
@@ -836,6 +837,49 @@
         // Si el título es undefined, forzamos un valor por defecto
         document.getElementById('main-panel-title').innerText = titles[tabId] || 'Panel de Administración';
     }
+
+    // CARGA SOLICITUDES CON MANEJO DE ERRORES
+        function cargarSolicitudes() {
+            fetch(`${API}/admin/solicitudes`)
+            .then(r => r.ok ? r.json() : [])
+            .then(data => {
+                const body = document.getElementById('tabla-solicitudes');
+                if(!data.length) body.innerHTML = '<tr><td colspan="4">Sin solicitudes.</td></tr>';
+                else body.innerHTML = data.map(s => `
+                    <tr>
+                        <td><input type="checkbox" class="check-sol" value="${s.id}"></td>
+                        <td>${s.empresa}</td>
+                        <td>${s.nombre}</td>
+                        <td><button onclick="aprobarSolicitud(${s.id})">Aprobar</button></td>
+                    </tr>
+                `).join('');
+            }).catch(e => console.error("Error cargando solicitudes:", e));
+        }
+
+        // CARGA EMPRESAS (Para que el dropdown no salga vacío)
+        function cargarEmpresas() {
+            fetch(`${API}/recomiendan`)
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('select-empresa-alta');
+                select.innerHTML = data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+            }).catch(e => console.error("Error cargando empresas:", e));
+        }
+
+        // BORRADO MASIVO
+        function eliminarSeleccionados(tabla) {
+            const ids = Array.from(document.querySelectorAll('.check-sol:checked')).map(c => c.value);
+            if(ids.length === 0) return alert("Selecciona algo primero.");
+            
+            fetch(`${API}/admin/eliminar-varios`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tabla: tabla, ids: ids})
+            }).then(() => {
+                alert("Eliminados.");
+                cargarSolicitudes();
+            });
+        }
 
     // FUNCIÓN REUTILIZABLE PARA LEER ARCHIVOS DE IMAGEN SUBIDOS POR EL USUARIO Y CONVERTIRLOS A BASE64
     const handleFile = (id, cb) => {

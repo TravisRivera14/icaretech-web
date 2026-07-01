@@ -498,6 +498,28 @@ def listar_tickets_admin():
     } for r in tickets_raw]
     return jsonify(resultado)
 
+# RUTA PARA BORRADO MASIVO
+@app.route('/api/admin/eliminar-varios', methods=['POST'])
+@login_required
+def eliminar_varios():
+    if session.get('rol') != 'admin': return jsonify({"message": "Denegado"}), 403
+    data = request.json
+    tabla = data.get('tabla') # 'usuarios', 'tickets_soporte', etc.
+    ids = data.get('ids') # Lista [1, 2, 3]
+    
+    if tabla not in ['usuarios', 'tickets_soporte', 'productos']: return jsonify({"error": "Tabla no permitida"}), 400
+    
+    # query dinámica segura
+    query = f"DELETE FROM {tabla} WHERE id IN %s"
+    db_query(query, (tuple(ids),))
+    return jsonify({"success": True})
+
+# RUTA PARA LISTAR EMPRESAS (Para que el dropdown no salga vacío)
+@app.route('/api/recomiendan', methods=['GET'])
+def listar_empresas_publico():
+    res = db_query("SELECT id, nombre FROM empresas_recomiendan", fetch=True) or []
+    return jsonify([{"id": r[0], "nombre": r[1]} for r in res])
+
 @app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
 @login_required
 def cambiar_estado_ticket(id):

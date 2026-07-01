@@ -16,8 +16,7 @@
     { "src": "/dashboard(?:\\.html)?", "dest": "frontend/dashboard.html" }, 
     { "src": "/dashboard_cliente(?:\\.html)?", "dest": "frontend/dashboard_cliente.html" }, 
     { "src": "/assets/(.*)", "dest": "frontend/assets/$1" }, 
-    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" }, 
-    { "handle": "filesystem" }, 
-    { "src": "/(.*)", "dest": "frontend/index.html" } 
-  ] 
+    { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" },
+    { "src": "/(.*)", "dest": "frontend/index.html" }
+  ]
 }

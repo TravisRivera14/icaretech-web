@@ -498,22 +498,19 @@ def listar_tickets_admin():
     return jsonify(resultado)
 
 @app.route('/api/admin/solicitudes', methods=['GET'])
-def get_solicitudes():
-    return jsonify([])
+def listar_solicitudes():
+    res = db_query("SELECT id, empresa, nombre_completo, correo FROM solicitudes_registro", fetch=True) or []
+    return jsonify([{"id": r[0], "empresa": r[1], "nombre": r[2], "correo": r[3]} for r in res])
 
 @app.route('/api/admin/aprobar_solicitud', methods=['POST'])
 def aprobar_solicitud():
-    d = request.json
-    sol_id = d.get('id')
+    sol_id = request.json.get('id')
     try:
         sol = db_query("SELECT empresa, nombre_completo, correo FROM solicitudes_registro WHERE id = %s", (sol_id,), fetch=True)
         if not sol: return jsonify({"success": False}), 404
-        
         emp, nom, corr = sol[0]
-        pwd_default = generate_password_hash('iCare2026_Cambiar')
-        
         db_query("INSERT INTO usuarios (usuario, password_hash, rol, nombre, empresa, correo, debe_cambiar_pass) VALUES (%s, %s, 'cliente', %s, %s, %s, TRUE)", 
-                 (corr, pwd_default, nom, emp, corr))
+                 (corr, generate_password_hash('iCare2026_Cambiar'), nom, emp, corr))
         db_query("DELETE FROM solicitudes_registro WHERE id = %s", (sol_id,))
         return jsonify({"success": True})
     except Exception as e:
@@ -522,9 +519,9 @@ def aprobar_solicitud():
 @app.route('/api/admin/eliminar-varios', methods=['POST'])
 def eliminar_varios():
     data = request.json
-    ids = data.get('ids', [])
-    if not ids: return jsonify({"success": False}), 400
-    db_query("DELETE FROM solicitudes_registro WHERE id IN %s", (tuple(ids),))
+    tabla = data.get('tabla')
+    ids = tuple(data.get('ids', []))
+    db_query(f"DELETE FROM {tabla} WHERE id IN %s", (ids,))
     return jsonify({"success": True})
 
 # --- RUTA FALTANTE PARA LOGS ---

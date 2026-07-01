@@ -27,8 +27,7 @@ app.config.update(
 DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
-def get_db_connection():
-    return db_pool.getconn()
+def get_db_connection(): return db_pool.getconn()
 
 def db_query(query, params=(), fetch=False):
     conn = get_db_connection()
@@ -40,7 +39,7 @@ def db_query(query, params=(), fetch=False):
         c.close()
         return res
     except Exception as e:
-        print(f"DEBUG ERROR DB: {str(e)}")
+        print(f"Error DB: {e}")
         raise e
     finally:
         db_pool.putconn(conn)
@@ -498,20 +497,38 @@ def listar_tickets_admin():
     } for r in tickets_raw]
     return jsonify(resultado)
 
-# RUTA PARA BORRADO MASIVO
+@app.route('/api/admin/solicitudes', methods=['GET'])
+def get_solicitudes():
+    try:
+        res = db_query("SELECT id, empresa, nombre_completo, correo FROM solicitudes_registro", fetch=True) or []
+        return jsonify([{"id": r[0], "empresa": r[1], "nombre": r[2], "correo": r[3]} for r in res])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/aprobar_solicitud', methods=['POST'])
+def aprobar_solicitud():
+    d = request.json
+    sol_id = d.get('id')
+    try:
+        sol = db_query("SELECT empresa, nombre_completo, correo FROM solicitudes_registro WHERE id = %s", (sol_id,), fetch=True)
+        if not sol: return jsonify({"success": False}), 404
+        
+        emp, nom, corr = sol[0]
+        pwd_default = generate_password_hash('iCare2026_Cambiar')
+        
+        db_query("INSERT INTO usuarios (usuario, password_hash, rol, nombre, empresa, correo, debe_cambiar_pass) VALUES (%s, %s, 'cliente', %s, %s, %s, TRUE)", 
+                 (corr, pwd_default, nom, emp, corr))
+        db_query("DELETE FROM solicitudes_registro WHERE id = %s", (sol_id,))
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 @app.route('/api/admin/eliminar-varios', methods=['POST'])
-@login_required
 def eliminar_varios():
-    if session.get('rol') != 'admin': return jsonify({"message": "Denegado"}), 403
     data = request.json
-    tabla = data.get('tabla') # 'usuarios', 'tickets_soporte', etc.
-    ids = data.get('ids') # Lista [1, 2, 3]
-    
-    if tabla not in ['usuarios', 'tickets_soporte', 'productos']: return jsonify({"error": "Tabla no permitida"}), 400
-    
-    # query dinámica segura
-    query = f"DELETE FROM {tabla} WHERE id IN %s"
-    db_query(query, (tuple(ids),))
+    ids = data.get('ids', [])
+    if not ids: return jsonify({"success": False}), 400
+    db_query("DELETE FROM solicitudes_registro WHERE id IN %s", (tuple(ids),))
     return jsonify({"success": True})
 
 # RUTA PARA LISTAR EMPRESAS (Para que el dropdown no salga vacío)

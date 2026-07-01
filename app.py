@@ -82,26 +82,48 @@ def login_required(f):
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
-    usr = data.get('usuario')
-    pwd = data.get('password')
+    # El usuario puede escribir su correo, username o teléfono aquí
+    usr = data.get('usuario', '').strip()
+    pwd = data.get('password', '').strip()
 
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass FROM usuarios WHERE usuario = %s", (usr,))
+        
+        # Busca coincidencia en usuario, correo O teléfono
+        cur.execute("""
+            SELECT id, nombre, password_hash, rol, debe_cambiar_pass 
+            FROM usuarios 
+            WHERE LOWER(usuario) = LOWER(%s) 
+               OR LOWER(correo) = LOWER(%s)
+               OR telefono = %s
+        """, (usr, usr, usr))
+        
         user = cur.fetchone()
         cur.close()
         db_pool.putconn(conn)
 
-        if user and check_password_hash(user[2], pwd):
+        if not user:
+            print(f"DEBUG: El identificador '{usr}' no existe en la BD.")
+            return jsonify({"success": False, "message": "Usuario no encontrado"}), 401
+
+        if check_password_hash(user[2], pwd):
             session['usuario_id'] = user[0]
             session['usuario'] = user[1]
             session['rol'] = user[3]
-            return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4]}), 200
+            
+            # Bloque corregido: incluimos usuario_id para que el frontend pueda gestionar el cambio de clave
+            return jsonify({
+                "success": True, 
+                "rol": user[3], 
+                "debe_cambiar_pass": user[4],
+                "usuario_id": user[0] 
+            }), 200
         
-        return jsonify({"success": False, "message": "Credenciales inválidas"}), 401
+        print(f"DEBUG: Contraseña incorrecta para '{usr}'.")
+        return jsonify({"success": False, "message": "Contraseña incorrecta"}), 401
     except Exception as e:
-        print(f"Error técnico: {e}")
+        print(f"Error técnico en login: {e}")
         return jsonify({"success": False, "message": "Error interno del servidor"}), 500
 
 @app.route('/api/setup-admin', methods=['GET'])

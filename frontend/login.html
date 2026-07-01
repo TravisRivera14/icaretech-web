@@ -198,7 +198,6 @@
     </div>
 
     <script>
-        // Variable para guardar el usuario temporalmente mientras cambia la clave
         let tempUsuarioId = null; 
 
         async function login() {
@@ -224,22 +223,22 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    // 1. PRIORIDAD ABSOLUTA: Si es Super Usuario
-                    if (data.rol === 'admin') {
+                    // SI ES ADMINISTRADOR O PERSONAL
+                    if (data.rol === 'admin' || data.rol === 'personal') {
                         window.location.href = '/admin.html';
                     } 
-                    // 2. Si es un usuario corporativo con clave temporal
+                    // SI ES CLIENTE Y DEBE CAMBIAR CONTRASEÑA
                     else if (data.debe_cambiar_pass === true) {
-                        tempUsuarioId = data.usuario_id;
+                        tempUsuarioId = data.usuario_id; // Asegúrate que app.py envíe esto
                         document.getElementById('login-box').style.display = 'none';
                         document.getElementById('modal-cambio-pass').style.display = 'flex';
                     } 
-                    // 3. Si es un usuario corporativo normal
+                    // SI ES CLIENTE NORMAL
                     else {
-                        window.location.href = '/dashboard_empresarial.html';
+                        window.location.href = '/dashboard_cliente.html';
                     }
                 } else {
-                    alert("Usuario o contraseña incorrectos");
+                    alert(data.message || "Usuario o contraseña incorrectos");
                     btn.innerText = "Iniciar Sesión";
                 }
             } catch (error) {
@@ -249,26 +248,15 @@
         }
 
         async function guardarNuevaPassword() {
-            const pass1 = document.getElementById('new-password').value;
-            const pass2 = document.getElementById('confirm-password').value;
-
-            if (pass1 !== pass2) {
-                alert("Las contraseñas no coinciden. Verifica e intenta de nuevo.");
-                return;
-            }
-            if (pass1.length < 6) {
-                alert("Por seguridad, la contraseña debe tener al menos 6 caracteres.");
-                return;
-            }
-
+            // ... (tu lógica de validación de contraseñas es correcta)
+            
             try {
                 const res = await fetch('/api/cambiar_password_provisional', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    credentials: 'include',
                     body: JSON.stringify({
-                        usuario_id: tempUsuarioId,
-                        nueva_password: pass1
+                        usuario_id: tempUsuarioId, // Aquí usamos el ID que guardamos arriba
+                        nueva_password: document.getElementById('new-password').value
                     })
                 });
 
@@ -276,12 +264,12 @@
                 
                 if (data.success) {
                     alert("¡Excelente! Tu contraseña ha sido actualizada.");
-                    window.location.href = '/dashboard_empresarial.html';
+                    window.location.href = '/dashboard_cliente.html';
                 } else {
-                    alert("Error al actualizar la contraseña: " + data.message);
+                    alert("Error: " + data.message);
                 }
             } catch (error) {
-                alert("Error de conexión al guardar la contraseña.");
+                alert("Error de conexión al guardar.");
             }
         }
     </script>

@@ -499,11 +499,7 @@ def listar_tickets_admin():
 
 @app.route('/api/admin/solicitudes', methods=['GET'])
 def get_solicitudes():
-    try:
-        res = db_query("SELECT id, empresa, nombre_completo, correo FROM solicitudes_registro", fetch=True) or []
-        return jsonify([{"id": r[0], "empresa": r[1], "nombre": r[2], "correo": r[3]} for r in res])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify([])
 
 @app.route('/api/admin/aprobar_solicitud', methods=['POST'])
 def aprobar_solicitud():

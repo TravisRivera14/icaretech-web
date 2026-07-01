@@ -6,74 +6,94 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; }
-        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* SIDEBAR LATERAL */
-        .sidebar { width: 260px; background: #11141a; padding: 30px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar h2 { font-size: 18px; color: var(--accent); margin-bottom: 30px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar li { padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        /* Barra Superior */
+        header { background: #11141a; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .top-nav { display: flex; gap: 20px; }
+        .top-nav button { background: transparent; color: var(--text); border: none; padding: 10px 20px; cursor: pointer; font-weight: 600; font-size: 15px; }
+        .top-nav button:hover { color: var(--accent); }
+        
+        /* Layout Principal */
+        .app-layout { display: flex; flex: 1; }
+        .sidebar { width: 260px; background: #11141a; padding: 20px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar li { padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
         .sidebar li:hover { background: var(--card); color: var(--accent); }
-
-        /* CONTENIDO PRINCIPAL */
         .main-content { flex: 1; padding: 40px; }
-        .card { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
         
-        /* TABLA ESTILO IMAGEN 2 */
+        .card { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: rgba(0,0,0,0.2); padding: 15px; text-align: left; color: var(--accent); }
+        th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-<aside class="sidebar">
-    <h2>iCare Ops</h2>
-    <ul>
-        <li onclick="switchView('datacenter')"><i class="fas fa-server"></i> Data Center</li>
-        <li onclick="switchView('facturacion')"><i class="fas fa-file-invoice"></i> Facturación</li>
-        <li onclick="switchView('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</li>
-        <li onclick="switchView('inventario')"><i class="fas fa-boxes"></i> Inventario</li>
-        <li onclick="switchView('cotizaciones')"><i class="fas fa-calculator"></i> Cotizaciones</li>
-    </ul>
-</aside>
+<header>
+    <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
+    <nav class="top-nav">
+        <button onclick="showSidebar('datacenter')">Data Center</button>
+        <button onclick="showSidebar('facturacion')">Facturación</button>
+        <button onclick="showSidebar('tickets')">Tickets</button>
+    </nav>
+</header>
 
-<main class="main-content">
-    <section id="view-facturacion" class="view">
-        <div class="card">
-            <h2>Gestión de Facturación</h2>
-            <table>
-                <thead>
-                    <tr><th>Fecha</th><th>Consecutivo</th><th>Cliente</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr>
-                </thead>
-                <tbody id="lista-facturas">
-                    </tbody>
-            </table>
+<div class="app-layout">
+    <aside class="sidebar">
+        <ul id="menu-opciones">
+            <li>Selecciona una categoría arriba</li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div id="contenido-dinamico" class="card">
+            <h2>Bienvenido a tu Centro de Operaciones</h2>
+            <p>Selecciona una opción del menú para comenzar.</p>
         </div>
-    </section>
-</main>
+    </main>
+</div>
 
 <script>
-    function switchView(view) {
-        // Lógica para mostrar/ocultar secciones
+    const menuData = {
+        'facturacion': [
+            { nombre: 'Facturas Emitidas', icon: 'fa-file-invoice' },
+            { nombre: 'Pagos Realizados', icon: 'fa-credit-card' },
+            { nombre: 'Configuración Hacienda', icon: 'fa-cog' }
+        ],
+        'datacenter': [
+            { nombre: 'Estado Servidores', icon: 'fa-server' },
+            { nombre: 'Logs de Sistema', icon: 'fa-list' }
+        ],
+        'tickets': [
+            { nombre: 'Mis Tickets', icon: 'fa-ticket-alt' },
+            { nombre: 'Crear Ticket', icon: 'fa-plus' }
+        ]
+    };
+
+    function showSidebar(categoria) {
+        const lista = document.getElementById('menu-opciones');
+        lista.innerHTML = '';
+        menuData[categoria].forEach(op => {
+            lista.innerHTML += `<li onclick="renderTabla('${op.nombre}')"><i class="fas ${op.icon}"></i> ${op.nombre}</li>`;
+        });
     }
 
-    async function cargarDatos() {
+    async function renderTabla(opcion) {
+        document.getElementById('contenido-dinamico').innerHTML = `<h2>${opcion}</h2><div id="tabla-datos">Cargando...</div>`;
+        
+        // Aquí conectas con tu API /api/cliente/datos-operativos
         const res = await fetch('/api/cliente/datos-operativos');
         const data = await res.json();
         
-        // Ejemplo de cómo llenar la tabla de Facturación (Imagen 2)
-        const body = document.getElementById('lista-facturas');
-        body.innerHTML = data.facturas.map(f => `
-            <tr>
-                <td>${f.fecha}</td>
-                <td>${f.consecutivo}</td>
-                <td>${f.cliente}</td>
-                <td>₡${f.monto}</td>
-                <td><span class="badge">${f.estado}</span></td>
-                <td><button onclick="descargarPDF(${f.id})">PDF</button></td>
-            </tr>
-        `).join('');
+        // Lógica de renderizado según la opción
+        if(opcion === 'Facturas Emitidas') {
+            document.getElementById('tabla-datos').innerHTML = `
+                <table>
+                    <thead><tr><th>Consecutivo</th><th>Monto</th><th>Estado</th></tr></thead>
+                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody>
+                </table>
+            `;
+        }
     }
 </script>
 </body>

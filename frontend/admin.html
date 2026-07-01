@@ -824,6 +824,7 @@
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
+
         const titles = {
             'tab-tickets': 'Tickets de Soporte',
             'tab-solicitudes': 'Gestión de Solicitudes de Registro',
@@ -831,7 +832,9 @@
             'tab-contenidos': 'Landing & Contenidos',
             'tab-personal': 'Personal Técnico'
         };
-        document.getElementById('main-panel-title').innerText = titles[tabId];
+    
+        // Si el título es undefined, forzamos un valor por defecto
+        document.getElementById('main-panel-title').innerText = titles[tabId] || 'Panel de Administración';
     }
 
     // FUNCIÓN REUTILIZABLE PARA LEER ARCHIVOS DE IMAGEN SUBIDOS POR EL USUARIO Y CONVERTIRLOS A BASE64

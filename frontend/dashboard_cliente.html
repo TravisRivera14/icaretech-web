@@ -101,6 +101,42 @@
     }
     
     showSection('facturacion'); // Inicia en facturación por defecto
+
+    // Agrega esto al final de tu tag <script> en dashboard_cliente.html
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const seccion = urlParams.get('seccion');
+        const accion = urlParams.get('accion');
+
+        if (seccion === 'tickets' && accion === 'nuevo') {
+            showSection('tickets'); // Abre el menú de tickets
+            renderModulo('Crear Nuevo Ticket'); // Ejecuta la función de renderizado
+        }
+    };
+
+    // Asegúrate de que tu función renderModulo maneje 'Crear Nuevo Ticket'
+    async function renderModulo(nombre) {
+        const contenedor = document.getElementById('contenido-dinamico');
+        if (nombre === 'Crear Nuevo Ticket') {
+            contenedor.innerHTML = `
+                <h2>Crear Nuevo Ticket</h2>
+                <form id="form-ticket">
+                    <input type="text" id="asunto" placeholder="Asunto del problema" required>
+                    <textarea id="descripcion" placeholder="Describe el inconveniente técnico..." required></textarea>
+                    <select id="prioridad">
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                    <button type="submit">Enviar Ticket</button>
+                </form>
+            `;
+            // Aquí agregarías el evento submit para hacer el POST a tu API
+        } else {
+            // ... (tu lógica existente de tablas)
+        }
+    }
+
 </script>
 </body>
 </html>

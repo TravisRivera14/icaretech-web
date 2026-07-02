@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -76,55 +76,55 @@ def login_required(f):
     return decorated_function
 
 # ==========================================
-# RUTAS DE AUTENTICACIÓN Y USUARIOS
+# RUTAS DE AUTENTICACIÓN
 # ==========================================
 
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
-    # El usuario puede escribir su correo, username o teléfono aquí
     usr = data.get('usuario', '').strip()
     pwd = data.get('password', '').strip()
-
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        
-        # Busca coincidencia en usuario, correo O teléfono
-        cur.execute("""
-            SELECT id, nombre, password_hash, rol, debe_cambiar_pass 
-            FROM usuarios 
-            WHERE LOWER(usuario) = LOWER(%s) 
-               OR LOWER(correo) = LOWER(%s)
-               OR telefono = %s
-        """, (usr, usr, usr))
-        
+        cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s) OR LOWER(correo) = LOWER(%s) OR telefono = %s", (usr, usr, usr))
         user = cur.fetchone()
         cur.close()
         db_pool.putconn(conn)
-
-        if not user:
-            print(f"DEBUG: El identificador '{usr}' no existe en la BD.")
-            return jsonify({"success": False, "message": "Usuario no encontrado"}), 401
-
-        if check_password_hash(user[2], pwd):
+        if user and check_password_hash(user[2], pwd):
             session['usuario_id'] = user[0]
             session['usuario'] = user[1]
             session['rol'] = user[3]
-            
-            # Bloque corregido: incluimos usuario_id para que el frontend pueda gestionar el cambio de clave
-            return jsonify({
-                "success": True, 
-                "rol": user[3], 
-                "debe_cambiar_pass": user[4],
-                "usuario_id": user[0] 
-            }), 200
-        
-        print(f"DEBUG: Contraseña incorrecta para '{usr}'.")
-        return jsonify({"success": False, "message": "Contraseña incorrecta"}), 401
+            session['empresa'] = user[5]
+            return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4], "usuario_id": user[0]}), 200
+        return jsonify({"success": False, "message": "Credenciales incorrectas"}), 401
     except Exception as e:
-        print(f"Error técnico en login: {e}")
-        return jsonify({"success": False, "message": "Error interno del servidor"}), 500
+        return jsonify({"success": False, "message": str(e)}), 500
+
+# ==========================================
+# RUTA FINAL UNIFICADA (DATOS OPERATIVOS)
+# ==========================================
+
+@app.route('/api/cliente/datos-operativos', methods=['GET'])
+@login_required
+def obtener_datos_operativos():
+    empresa_nombre = session.get('empresa') 
+    if not empresa_nombre: return jsonify({"error": "No asociado a empresa"}), 403
+    
+    try:
+        res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_nombre,), fetch=True)
+        if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
+        id_empresa = res_emp[0][0]
+        
+        facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+        tickets = db_query("SELECT id, asunto, estado, prioridad FROM tickets_soporte WHERE empresa_id = %s", (id_empresa,), fetch=True) or []
+        
+        return jsonify({
+            "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
+            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3]} for t in tickets]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/setup-admin', methods=['GET'])
 def setup_admin():
@@ -764,77 +764,6 @@ def eliminar_item(tabla, id):
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
-@app.route('/api/cliente/datos-operativos', methods=['GET'])
-@login_required
-def obtener_datos_operativos():
-    empresa = session.get('empresa') # La empresa del cliente logueado
-    if not empresa: return jsonify({"error": "No asociado a empresa"}), 403
-    
-    # Ejemplo de cómo filtrarías los datos:
-    facturas = db_query("SELECT id, monto FROM Facturas WHERE id_empresa = (SELECT id FROM empresas_recomiendan WHERE nombre = %s)", (empresa,), fetch=True)
-    tickets = db_query("SELECT id, asunto, estado FROM tickets_soporte WHERE empresa_id = (SELECT id FROM empresas_recomiendan WHERE nombre = %s)", (empresa,), fetch=True)
-    
-    return jsonify({
-        "empresa": empresa,
-        "facturas": [{"id": f[0], "monto": str(f[1])} for f in facturas],
-        "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2]} for t in tickets]
-    })
-    
-@app.route('/api/cliente/datos-operativos', methods=['GET'])
-@login_required
-def obtener_datos_operativos():
-    # Obtenemos el nombre de la empresa del cliente logueado desde la sesión
-    empresa = session.get('empresa') 
-    
-    if not empresa: 
-        return jsonify({"error": "Usuario no asociado a ninguna empresa"}), 403
-    
-    try:
-        # Buscamos el ID de la empresa por su nombre
-        empresa_db = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa,), fetch=True)
-        if not empresa_db:
-            return jsonify({"error": "Empresa no encontrada en sistema"}), 404
-        
-        id_empresa = empresa_db[0][0]
-        
-        # Consultamos los datos filtrados por ese ID de empresa
-        facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
-        tickets = db_query("SELECT id, asunto, estado, prioridad FROM tickets_soporte WHERE empresa_id = %s", (id_empresa,), fetch=True) or []
-        
-        return jsonify({
-            "empresa": empresa,
-            "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
-            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3]} for t in tickets]
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-    
-@app.route('/api/cliente/datos-operativos', methods=['GET'])
-@login_required
-def obtener_datos_operativos():
-    # Obtenemos el nombre de la empresa desde la sesión iniciada
-    empresa_nombre = session.get('empresa') 
-    
-    if not empresa_nombre: 
-        return jsonify({"error": "No asociado a empresa"}), 403
-    
-    try:
-        # Buscamos el ID de la empresa para filtrar todo
-        res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_nombre,), fetch=True)
-        if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
-        id_empresa = res_emp[0][0]
-        
-        # Consultamos datos reales
-        facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
-        tickets = db_query("SELECT id, asunto, estado, prioridad FROM tickets_soporte WHERE empresa_id = %s", (id_empresa,), fetch=True) or []
-        
-        return jsonify({
-            "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
-            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3]} for t in tickets]
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     init_db()

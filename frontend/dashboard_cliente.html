@@ -20,14 +20,11 @@
         .nav-item:hover { background: var(--card); color: var(--accent); }
         
         .submenu { list-style: none; padding-left: 45px; display: none; background: #0b0c10; }
-        .submenu li { padding: 10px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
+        .submenu li { padding: 8px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
         .submenu li:hover { color: var(--accent); }
         
-        .has-submenu::after { content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-left: auto; font-size: 12px; transition: transform 0.3s; }
-        .has-submenu.active::after { transform: rotate(180deg); }
-        
         .main-content { flex: 1; padding: 40px; }
-        .card { background: var(--card); padding: 30px; border-radius: 12px; }
+        .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -37,11 +34,11 @@
 
 <header>
     <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
-    <nav class="top-nav" id="top-nav">
-        <button onclick="showMainSection('datacenter')" class="active"><i class="fas fa-server"></i> Data Center</button>
-        <button onclick="showMainSection('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
-        <button onclick="showMainSection('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
-        <button onclick="showMainSection('inventario')"><i class="fas fa-boxes"></i> Inventario</button>
+    <nav class="top-nav">
+        <button onclick="showSection('inicio')">Inicio</button>
+        <button onclick="showSection('facturacion')">Facturación</button>
+        <button onclick="showSection('proformas')">Proformas</button>
+        <button onclick="showSection('recepcion')">Recepción</button>
     </nav>
 </header>
 
@@ -50,68 +47,56 @@
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
             <h2>Panel de Control</h2>
-            <p>Selecciona una sección para gestionar tus operaciones.</p>
+            <p>Selecciona una opción del menú lateral.</p>
         </div>
     </main>
 </div>
 
 <script>
     const menuData = {
+        'inicio': [{nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, {nombre: 'POS', sub: ['Ingresar', 'Vendedores']}],
         'facturacion': [
-            { nombre: 'Facturas Emitidas', icon: 'fa-file-invoice' },
-            { nombre: 'Nueva factura', icon: 'fa-file-plus' },
-            { nombre: 'Nuevo tiquete', icon: 'fa-receipt' },
-            { nombre: 'Documentos generados', icon: 'fa-list' }
+            {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
+            {nombre: 'Reportes'}
         ],
-        'datacenter': [
-            { nombre: 'Resumen de Servidores', icon: 'fa-server' },
-            { nombre: 'Backups y Seguridad', icon: 'fa-shield-alt' }
-        ],
-        'tickets': [
-            { nombre: 'Tickets Activos', icon: 'fa-clock' },
-            { nombre: 'Crear Nuevo Ticket', icon: 'fa-plus-circle' }
-        ],
-        'inventario': [
-            { nombre: 'Equipos en Custodia', icon: 'fa-laptop' }
-        ]
+        'proformas': [{nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']}],
+        'recepcion': [{nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']}]
     };
 
-    function showMainSection(section) {
+    function showSection(sec) {
         const sidebar = document.getElementById('sidebar');
-        sidebar.innerHTML = '<div class="menu-title">' + section.toUpperCase() + '</div>';
-        
-        menuData[section].forEach(item => {
-            sidebar.innerHTML += `
-                <div class="nav-item" onclick="renderModulo('${item.nombre}')">
-                    <i class="fas ${item.icon}"></i> ${item.nombre}
-                </div>`;
+        sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
+        menuData[sec].forEach(item => {
+            if (item.sub) {
+                sidebar.innerHTML += `
+                    <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
+                    <ul class="submenu" style="display:block">
+                        ${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}
+                    </ul>`;
+            } else {
+                sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
+            }
         });
     }
 
-    async function renderModulo(nombre) {
-        const contenedor = document.getElementById('contenido-dinamico');
-        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
-        
+    function toggleSub(el) { el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; }
+
+    async function render(opcion) {
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
         try {
-            const res = await fetch('/api/cliente/datos-operativos', { credentials: 'include' });
-            if (!res.ok) throw new Error("Error al conectar con el servidor.");
+            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             const data = await res.json();
-
-            if (nombre === 'Facturas Emitidas') {
-                contenedor.innerHTML = `<h2>${nombre}</h2>
-                    <table>
-                        <thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                        <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody>
-                    </table>`;
+            if(opcion.includes('Factura') || opcion === 'Documentos generados') {
+                cont.innerHTML = `<h2>${opcion}</h2>
+                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
             } else {
-                contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo bajo mantenimiento.</p>`;
+                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en desarrollo.</p>`;
             }
-        } catch (e) {
-            contenedor.innerHTML = `<h2>Error</h2><p>${e.message}</p>`;
-        }
+        } catch(e) { cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; }
     }
-
-    showMainSection('facturacion');
+    showSection('facturacion');
 </script>
 </body>
 </html>

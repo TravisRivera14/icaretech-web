@@ -52,17 +52,12 @@
 </div>
 
 <script>
-    // Estructura completa de tus categorías
     const menuData = {
         'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
         'facturacion': [
             {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, 
-            {nombre: 'POS', sub: ['Ingresar', 'Vendedores']},
-            {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
-            {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
-            {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
-            {nombre: 'Reportes'},
-            {nombre: 'Configuración', sub: ['Datos de la empresa', 'Usuarios', 'Métodos de pago', 'Impuestos', 'Plantillas de correo', 'Plantillas de documentos']}
+            {nombre: 'POS'}, {nombre: 'Facturación'}, {nombre: 'Proformas'}, {nombre: 'Recepción'}, 
+            {nombre: 'Reportes'}, {nombre: 'Configuración'}
         ],
         'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
         'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
@@ -72,259 +67,72 @@
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
         menuData[sec].forEach(item => {
-            if (item.sub) {
-                sidebar.innerHTML += `
-                    <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
-                    <ul class="submenu" style="display:block">${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}</ul>`;
-            } else {
-                sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
-            }
+            sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
         });
     }
 
-    function toggleSub(el) { el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; }
-
     async function render(opcion) {
         const cont = document.getElementById('contenido-dinamico');
-        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
-        try {
-            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-            const data = await res.json();
-            // Lógica de visualización para facturas
-            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
-                cont.innerHTML = `<h2>${opcion}</h2>
-                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
-            } else {
-                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
-            }
-        } catch(e) { cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; }
-    }
-    
-    showSection('facturacion'); // Inicia en facturación por defecto
+        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando...</p>`;
 
-    // Agrega esto al final de tu tag <script> en dashboard_cliente.html
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const seccion = urlParams.get('seccion');
-        const accion = urlParams.get('accion');
-
-        if (seccion === 'tickets' && accion === 'nuevo') {
-            showSection('tickets'); // Abre el menú de tickets
-            renderModulo('Crear Nuevo Ticket'); // Ejecuta la función de renderizado
-        }
-    };
-
-// ... (resto de tu código anterior hasta showSection)
-
-    async function render(opcion) {
-        if (opcion === 'Crear Nuevo Ticket') {
+        // Si es un módulo de formulario o vista especial, delegamos a renderModulo
+        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'POS', 'Facturación', 'Proformas', 'Recepción', 'Reportes', 'Configuración', 'Tickets Activos', 'Historial'];
+        
+        if (modulosEspeciales.includes(opcion)) {
             return renderModulo(opcion);
         }
-        const cont = document.getElementById('contenido-dinamico');
-        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
+
         try {
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             const data = await res.json();
-            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
-                cont.innerHTML = `<h2>${opcion}</h2>
-                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
-            } else {
-                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
-            }
-        } catch(e) { cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; }
+            cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} cargado desde el servidor.</p>`;
+        } catch(e) { 
+            cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; 
+        }
     }
 
     async function renderModulo(nombre) {
-        const contenedor = document.getElementById('contenido-dinamico');
-        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando formulario...</p>`;
-
-        // Si es el módulo de crear ticket, inyectamos el formulario
+        const cont = document.getElementById('contenido-dinamico');
+        
         if (nombre === 'Crear Nuevo Ticket') {
-            contenedor.innerHTML = `
+            cont.innerHTML = `
                 <h2>Reportar Nuevo Requerimiento</h2>
                 <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px;">
-                    <div class="form-group">
-                        <label>Empresa</label>
-                        <input type="text" value="${sessionStorage.getItem('empresa') || 'Tu Empresa'}" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
-                    </div>
+                    <input type="text" value="Empresa: ${sessionStorage.getItem('empresa') || 'Activa'}" disabled style="padding:10px; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
                     <input type="text" id="ticketContacto" placeholder="Nombre completo" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="text" id="ticketAsunto" placeholder="Asunto del problema" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <textarea id="ticketDescripcion" placeholder="Describe el inconveniente técnico..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
-                    
-                    <label>Prioridad</label>
+                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <input type="text" id="ticketAsunto" placeholder="Asunto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <textarea id="ticketDescripcion" placeholder="Detalle..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
                     <select id="prioridad" style="padding:12px; border-radius:5px; background:#0b0c10; color:#fff; border:1px solid #444;">
-                        <option value="Baja">Baja</option>
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
+                        <option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option>
                     </select>
-                    
-                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:white;">Enviar Ticket</button>
-                </form>
-            `;
+                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; color:white; cursor:pointer;">Enviar Ticket</button>
+                </form>`;
             document.getElementById('form-ticket').addEventListener('submit', crearTicket);
-        }
-
-        if (nombre === 'Inicio') {
-            contenedor.innerHTML = `
-                <h2>Inicio - Facturación</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Bienvenido al módulo de facturación. Aquí podrás gestionar todo lo relacionado con tus clientes, productos y documentos fiscales.</p>
-                    <h3>Opciones disponibles:</h3>
-                    <ul>
-                        <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
-                        <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
-                        <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
-                        <li><strong>Facturación y Proformas:</strong> Emite nuevos documentos.</li>
-                    </ul>
-                </div>
-            `;
-        } else if (nombre === 'Mi plan') {
-            contenedor.innerHTML = `
-                <h2>Mi Plan Actual</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Estás en el plan Básico: incluye hasta 3 facturas mensuales gratuitas.</p>
-                    <p>¿Necesitas más? Puedes actualizar a cualquiera de nuestros planes premium.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Actualizar Plan
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Clientes') {
-            contenedor.innerHTML = `
-                <h2>Administración de Clientes</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Gestiona tu lista de clientes, agrega nuevos o edita los existentes.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Agregar Nuevo Cliente
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Productos') {
-            contenedor.innerHTML = `
-                <h2>Administración de Productos</h2>
-                <div class="card" style="background:#
-1f2833; padding:20px; border-radius:8px;">
-                    <p>Registra y actualiza tus productos o servicios para la facturación.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Agregar Nuevo Producto
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'POS') {
-            contenedor.innerHTML = `
-                <h2>Punto de Venta (POS)</h2>
-                <div class="card" style="background:#1
-                f2833; padding:20px; border-radius:8px;">
-                    <p>Accede a nuestro sistema de punto de venta para generar ventas rápidas y eficientes.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Abrir POS
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Facturación') {
-            contenedor.innerHTML = `
-                <h2>Facturación</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Emite nuevas facturas, tiquetes o compras de manera rápida y sencilla.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Nueva Factura
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Proformas') {
-            contenedor.innerHTML = `
-                <h2>Proformas</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Genera proformas para tus clientes antes de emitir facturas definitivas.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Nueva Proforma
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Recepción') {
-            contenedor.innerHTML = `
-                <h2>Recepción de Documentos</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Sube y gestiona los documentos recibidos de tus clientes o proveedores.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Cargar Documento
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Reportes') {
-            contenedor.innerHTML = `
-                <h2>Reportes</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Genera reportes detallados sobre tus operaciones de facturación y ventas.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Generar Reporte
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Configuración') {
-            contenedor.innerHTML = `
-                <h2>Configuración</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Administra la configuración de tu cuenta, incluyendo datos de la empresa, usuarios y métodos de pago.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Configurar Cuenta
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Tickets Activos') {
-            contenedor.innerHTML = `
-                <h2>Tickets Activos</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Visualiza y gestiona todos los tickets de soporte técnico que has creado.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Ver Tickets
-                    </button>
-                </div>
-            `;
-        } else if (nombre === 'Historial') {
-            contenedor.innerHTML = `
-                <h2>Historial de Tickets</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
-                    <p>Consulta el historial completo de tus tickets de soporte técnico, incluyendo los resueltos y cerrados.</p>
-                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
-                        Ver Historial
-                    </button>
-                </div>
-            `;
         } else {
-            contenedor.innerHTML = `<h2>${nombre}</h2><p>Contenido del módulo ${nombre} en línea.</p>`;
+            // Lógica para las otras secciones de facturación
+            cont.innerHTML = `<h2>${nombre}</h2><div class="card"><p>Módulo de ${nombre} en construcción.</p></div>`;
         }
-
     }
 
-    async function crearTicket(event) {
-        event.preventDefault();
-        const ticketData = {
+    async function crearTicket(e) {
+        e.preventDefault();
+        const data = {
             asunto: document.getElementById('ticketAsunto').value,
             descripcion: document.getElementById('ticketDescripcion').value,
             prioridad: document.getElementById('prioridad').value,
             contacto: document.getElementById('ticketContacto').value,
             whatsapp: document.getElementById('ticketWhatsApp').value
         };
-
         const res = await fetch('/api/tickets/crear', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(ticketData)
+            body: JSON.stringify(data)
         });
-        
-        const resJson = await res.json();
-        if(resJson.success) {
-            alert("¡Ticket enviado correctamente!");
-            render('Tickets Activos');
-        } else {
-            alert("Error: " + resJson.message);
-        }
+        if((await res.json()).success) { alert("¡Ticket enviado!"); render('Tickets Activos'); }
     }
 
+    showSection('facturacion');
 </script>
 </body>
 </html>

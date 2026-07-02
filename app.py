@@ -764,6 +764,21 @@ def eliminar_item(tabla, id):
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
+@app.route('/api/tickets/crear', methods=['POST'])
+@login_required
+def crear_ticket():
+    d = request.json
+    empresa_id = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (session.get('empresa'),), fetch=True)[0][0]
+    
+    try:
+        db_query("""
+            INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) 
+            VALUES (%s, %s, %s, %s, %s)
+        """, (empresa_id, session.get('usuario'), d.get('asunto'), d.get('descripcion'), d.get('prioridad')))
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 if __name__ == '__main__':
     init_db()

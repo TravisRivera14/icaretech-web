@@ -137,6 +137,26 @@
         }
     }
 
+    async function crearTicket(event) {
+    event.preventDefault();
+    const ticketData = {
+        asunto: document.getElementById('asunto').value,
+        descripcion: document.getElementById('descripcion').value,
+        prioridad: document.getElementById('prioridad').value
+    };
+
+    const res = await fetch('/api/tickets/crear', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(ticketData)
+    });
+    
+    if((await res.json()).success) {
+        alert("¡Ticket enviado correctamente!");
+        render('Tickets Activos');
+    }
+}
+
 </script>
 </body>
 </html>

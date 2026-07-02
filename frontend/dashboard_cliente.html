@@ -85,6 +85,43 @@
         });
     }
 
+    async function renderTabla(opcion) {
+    const contenedor = document.getElementById('contenido-dinamico');
+    contenedor.innerHTML = `<h2>${opcion}</h2><div id="tabla-datos">Cargando...</div>`;
+    
+    try {
+        const res = await fetch('/api/cliente/datos-operativos');
+        const data = await res.json();
+        
+        if(opcion === 'Facturas Emitidas') {
+            document.getElementById('tabla-datos').innerHTML = `
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--accent)">
+                            <th style="padding:15px;">Consecutivo</th>
+                            <th style="padding:15px;">Fecha</th>
+                            <th style="padding:15px;">Monto</th>
+                            <th style="padding:15px;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.facturas.map(f => `
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                                <td style="padding:15px;">${f.consecutivo}</td>
+                                <td style="padding:15px;">${f.fecha}</td>
+                                <td style="padding:15px;">₡${f.monto}</td>
+                                <td style="padding:15px;"><span style="color:var(--accent)">${f.estado}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+    } catch(e) {
+        contenedor.innerHTML = "<h2>Error</h2><p>No se pudieron cargar los datos.</p>";
+    }
+}
+
     // Carga inicial
     showSidebar('facturacion');
 </script>

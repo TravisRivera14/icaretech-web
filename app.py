@@ -808,6 +808,33 @@ def obtener_datos_operativos():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    
+@app.route('/api/cliente/datos-operativos', methods=['GET'])
+@login_required
+def obtener_datos_operativos():
+    # Obtenemos el nombre de la empresa desde la sesión iniciada
+    empresa_nombre = session.get('empresa') 
+    
+    if not empresa_nombre: 
+        return jsonify({"error": "No asociado a empresa"}), 403
+    
+    try:
+        # Buscamos el ID de la empresa para filtrar todo
+        res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_nombre,), fetch=True)
+        if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
+        id_empresa = res_emp[0][0]
+        
+        # Consultamos datos reales
+        facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+        tickets = db_query("SELECT id, asunto, estado, prioridad FROM tickets_soporte WHERE empresa_id = %s", (id_empresa,), fetch=True) or []
+        
+        return jsonify({
+            "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
+            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3]} for t in tickets]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     init_db()

@@ -34,11 +34,11 @@
 
 <header>
     <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
-    <nav class="top-nav">
-        <button onclick="showSection('inicio')">Inicio</button>
-        <button onclick="showSection('facturacion')">Facturación</button>
-        <button onclick="showSection('proformas')">Proformas</button>
-        <button onclick="showSection('recepcion')">Recepción</button>
+    <nav class="top-nav" id="top-nav">
+        <button onclick="showSection('datacenter')"><i class="fas fa-server"></i> Data Center</button>
+        <button onclick="showSection('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
+        <button onclick="showSection('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        <button onclick="showSection('inventario')"><i class="fas fa-boxes"></i> Inventario</button>
     </nav>
 </header>
 
@@ -46,21 +46,25 @@
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
-            <h2>Panel de Control</h2>
-            <p>Selecciona una opción del menú lateral.</p>
+            <h2>Centro de Operaciones</h2>
         </div>
     </main>
 </div>
 
 <script>
+    // Estructura completa de tus categorías
     const menuData = {
-        'inicio': [{nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, {nombre: 'POS', sub: ['Ingresar', 'Vendedores']}],
+        'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
         'facturacion': [
+            {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, 
+            {nombre: 'POS', sub: ['Ingresar', 'Vendedores']},
             {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
+            {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
+            {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
             {nombre: 'Reportes'}
         ],
-        'proformas': [{nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']}],
-        'recepcion': [{nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']}]
+        'tickets': [{nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
+        'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
     };
 
     function showSection(sec) {
@@ -70,9 +74,7 @@
             if (item.sub) {
                 sidebar.innerHTML += `
                     <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
-                    <ul class="submenu" style="display:block">
-                        ${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}
-                    </ul>`;
+                    <ul class="submenu" style="display:block">${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}</ul>`;
             } else {
                 sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
             }
@@ -87,16 +89,18 @@
         try {
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             const data = await res.json();
-            if(opcion.includes('Factura') || opcion === 'Documentos generados') {
+            // Lógica de visualización para facturas
+            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
                 cont.innerHTML = `<h2>${opcion}</h2>
                     <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
                     <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
             } else {
-                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en desarrollo.</p>`;
+                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
             }
         } catch(e) { cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; }
     }
-    showSection('facturacion');
+    
+    showSection('facturacion'); // Inicia en facturación por defecto
 </script>
 </body>
 </html>

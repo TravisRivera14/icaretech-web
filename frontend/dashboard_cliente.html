@@ -116,28 +116,42 @@
     };
 
     async function renderModulo(nombre) {
-        const contenedor = document.getElementById('contenido-dinamico');
-        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
+    const contenedor = document.getElementById('contenido-dinamico');
+    contenedor.innerHTML = `<h2>${nombre}</h2>`;
 
-        try {
-            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-            const data = await res.json();
+    async function renderModulo(nombre) {
+    const contenedor = document.getElementById('contenido-dinamico');
+    contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
 
-            if (nombre === 'Crear Nuevo Ticket') {
-                contenedor.innerHTML = `
-                    <h2>Crear Nuevo Ticket</h2>
-                    <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:500px;">
-                        <input type="text" id="asunto" placeholder="Asunto del problema" required style="padding:10px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                        <textarea id="descripcion" placeholder="Describe el inconveniente técnico..." required style="padding:10px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:100px;"></textarea>
-                        <select id="prioridad" style="padding:10px; border-radius:5px; background:#0b0c10; color:#fff;">
-                            <option value="Baja">Baja</option>
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                        </select>
-                        <button type="submit" style="padding:12px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Enviar Ticket</button>
+    try {
+        const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
+        const data = await res.json();
+
+        if (nombre === 'Crear Nuevo Ticket') {
+            contenedor.innerHTML = `
+                <h2>Reportar Nuevo Requerimiento</h2>
+                <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px;">
+                    <div class="form-group">
+                        <label>Empresa</label>
+                        <input type="text" value="${sessionStorage.getItem('empresa') || 'Tu Empresa'}" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
+                    </div>
+                    <input type="text" id="ticketContacto" placeholder="Nombre completo" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <input type="text" id="ticketAsunto" placeholder="Asunto del problema" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <textarea id="ticketDescripcion" placeholder="Describe el inconveniente técnico..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
+                    
+                    <label>Prioridad</label>
+                    <select id="prioridad" style="padding:12px; border-radius:5px; background:#0b0c10; color:#fff; border:1px solid #444;">
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                    
+                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:white;">Enviar Ticket</button>
                 </form>
             `;
             document.getElementById('form-ticket').addEventListener('submit', crearTicket);
+        
         } else if (nombre === 'Documentos generados' || nombre === 'Facturas Emitidas') {
             if (data.facturas) {
                 contenedor.innerHTML = `
@@ -145,42 +159,38 @@
                     <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
                     <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
             } else {
-                    contenedor.innerHTML = `<h2>${nombre}</h2><p>No se encontraron documentos generados.</p>`;
+                contenedor.innerHTML = `<h2>${nombre}</h2><p>No se encontraron documentos generados.</p>`;
             }
         } else {
-                contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo de ${nombre} en línea.</p>`;
-            }
-    } catch(e) {
-            contenedor.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`;
+            contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo de ${nombre} en línea.</p>`;
         }
+    } catch(e) {
+        contenedor.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`;
     }
+    }}
 
     async function crearTicket(event) {
     event.preventDefault();
     const ticketData = {
-        asunto: document.getElementById('asunto').value,
-        descripcion: document.getElementById('descripcion').value,
-        prioridad: document.getElementById('prioridad').value
+        asunto: document.getElementById('ticketAsunto').value,
+        descripcion: document.getElementById('ticketDescripcion').value,
+        prioridad: document.getElementById('prioridad').value,
+        contacto: document.getElementById('ticketContacto').value,
+        whatsapp: document.getElementById('ticketWhatsApp').value // Nuevo campo
     };
 
-    try {
-        const res = await fetch('/api/tickets/crear', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(ticketData)
-        });
-        
-        const result = await res.json();
-        
-        if(result.success) {
-            alert("¡Ticket enviado correctamente!");
-            // Redirigimos al historial de tickets
-            render('Tickets Activos'); 
-        } else {
-            alert("Error: " + result.message);
-        }
-    } catch (error) {
-        alert("No se pudo conectar con el servidor.");
+    const res = await fetch('/api/tickets/crear', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(ticketData)
+    });
+    
+    const resJson = await res.json();
+    if(resJson.success) {
+        alert("¡Ticket enviado correctamente!");
+        render('Tickets Activos');
+    } else {
+        alert("Error: " + resJson.message);
     }
 }
 

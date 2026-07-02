@@ -9,91 +9,91 @@
         body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
         /* Barra Superior */
-        header { background: #11141a; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .top-nav { display: flex; gap: 20px; }
-        .top-nav button { background: transparent; color: var(--text); border: none; padding: 10px 20px; cursor: pointer; font-weight: 600; font-size: 15px; }
-        .top-nav button:hover { color: var(--accent); }
+        header { background: #11141a; padding: 15px 40px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .top-nav { display: flex; gap: 30px; margin-left: 40px; }
+        .top-nav button { background: none; border: none; color: #8a99ad; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .top-nav button:hover, .top-nav button.active { color: var(--accent); }
         
         /* Layout Principal */
         .app-layout { display: flex; flex: 1; }
         .sidebar { width: 260px; background: #11141a; padding: 20px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar li { padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
+        .sidebar h3 { font-size: 14px; color: #555; text-transform: uppercase; margin-bottom: 15px; }
+        .sidebar li { padding: 12px; cursor: pointer; border-radius: 6px; margin-bottom: 5px; list-style: none; transition: 0.2s; }
         .sidebar li:hover { background: var(--card); color: var(--accent); }
-        .main-content { flex: 1; padding: 40px; }
         
-        .card { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .main-content { flex: 1; padding: 30px; }
+        .card { background: var(--card); padding: 30px; border-radius: 12px; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
-    <nav class="top-nav">
-        <button onclick="showSidebar('datacenter')">Data Center</button>
-        <button onclick="showSidebar('facturacion')">Facturación</button>
-        <button onclick="showSidebar('tickets')">Tickets</button>
+    <nav class="top-nav" id="top-nav">
+        <button onclick="changeCategory('datacenter', this)"><i class="fas fa-server"></i> Data Center</button>
+        <button onclick="changeCategory('facturacion', this)"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
+        <button onclick="changeCategory('tickets', this)"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        <button onclick="changeCategory('inventario', this)"><i class="fas fa-boxes"></i> Inventario</button>
     </nav>
 </header>
 
 <div class="app-layout">
     <aside class="sidebar">
-        <ul id="menu-opciones">
-            <li>Selecciona una categoría arriba</li>
-        </ul>
+        <h3 id="sidebar-title">Selecciona una categoría</h3>
+        <ul id="menu-opciones"></ul>
     </aside>
 
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
-            <h2>Bienvenido a tu Centro de Operaciones</h2>
-            <p>Selecciona una opción del menú para comenzar.</p>
+            <h2>Bienvenido al Centro de Operaciones</h2>
+            <p>Selecciona una sección en la barra superior para gestionar tu empresa.</p>
         </div>
     </main>
 </div>
 
 <script>
-    const menuData = {
+    const menuConfig = {
         'facturacion': [
             { nombre: 'Facturas Emitidas', icon: 'fa-file-invoice' },
             { nombre: 'Pagos Realizados', icon: 'fa-credit-card' },
-            { nombre: 'Configuración Hacienda', icon: 'fa-cog' }
+            { nombre: 'Notas de Crédito', icon: 'fa-sticky-note' },
+            { nombre: 'Configuración Fiscal', icon: 'fa-cog' }
         ],
         'datacenter': [
             { nombre: 'Estado Servidores', icon: 'fa-server' },
-            { nombre: 'Logs de Sistema', icon: 'fa-list' }
+            { nombre: 'Respaldos (Backups)', icon: 'fa-database' },
+            { nombre: 'Logs de Acceso', icon: 'fa-list' }
         ],
         'tickets': [
-            { nombre: 'Mis Tickets', icon: 'fa-ticket-alt' },
-            { nombre: 'Crear Ticket', icon: 'fa-plus' }
+            { nombre: 'Tickets Activos', icon: 'fa-clock' },
+            { nombre: 'Historial Cerrados', icon: 'fa-check-circle' },
+            { nombre: 'Crear Nuevo Ticket', icon: 'fa-plus-circle' }
+        ],
+        'inventario': [
+            { nombre: 'Equipos en Custodia', icon: 'fa-laptop' },
+            { nombre: 'Componentes/Piezas', icon: 'fa-microchip' },
+            { nombre: 'Movimientos', icon: 'fa-exchange-alt' }
         ]
     };
 
-    function showSidebar(categoria) {
+    function changeCategory(cat, btn) {
+        document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const sidebarTitle = document.getElementById('sidebar-title');
         const lista = document.getElementById('menu-opciones');
+        
+        sidebarTitle.innerText = cat.toUpperCase();
         lista.innerHTML = '';
-        menuData[categoria].forEach(op => {
-            lista.innerHTML += `<li onclick="renderTabla('${op.nombre}')"><i class="fas ${op.icon}"></i> ${op.nombre}</li>`;
+        
+        menuConfig[cat].forEach(op => {
+            lista.innerHTML += `<li onclick="cargarModulo('${op.nombre}')"><i class="fas ${op.icon}"></i> ${op.nombre}</li>`;
         });
     }
 
-    async function renderTabla(opcion) {
-        document.getElementById('contenido-dinamico').innerHTML = `<h2>${opcion}</h2><div id="tabla-datos">Cargando...</div>`;
-        
-        // Aquí conectas con tu API /api/cliente/datos-operativos
-        const res = await fetch('/api/cliente/datos-operativos');
-        const data = await res.json();
-        
-        // Lógica de renderizado según la opción
-        if(opcion === 'Facturas Emitidas') {
-            document.getElementById('tabla-datos').innerHTML = `
-                <table>
-                    <thead><tr><th>Consecutivo</th><th>Monto</th><th>Estado</th></tr></thead>
-                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody>
-                </table>
-            `;
-        }
+    function cargarModulo(nombre) {
+        document.getElementById('contenido-dinamico').innerHTML = `<h2>${nombre}</h2><p>Cargando datos desde iCare Core...</p>`;
+        // Aquí puedes hacer el fetch a tus rutas de app.py dependiendo del módulo
     }
 </script>
 </body>

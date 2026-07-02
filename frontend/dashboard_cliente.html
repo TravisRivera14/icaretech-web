@@ -61,9 +61,10 @@
             {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
             {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
             {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
-            {nombre: 'Reportes'}
+            {nombre: 'Reportes'},
+            {nombre: 'Configuración', sub: ['Datos de la empresa', 'Usuarios', 'Métodos de pago', 'Impuestos', 'Plantillas de correo', 'Plantillas de documentos']}
         ],
-        'tickets': [{nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
+        'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
         'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
     };
 
@@ -114,26 +115,43 @@
         }
     };
 
-    // Asegúrate de que tu función renderModulo maneje 'Crear Nuevo Ticket'
     async function renderModulo(nombre) {
         const contenedor = document.getElementById('contenido-dinamico');
-        if (nombre === 'Crear Nuevo Ticket') {
-            contenedor.innerHTML = `
-                <h2>Crear Nuevo Ticket</h2>
-                <form id="form-ticket">
-                    <input type="text" id="asunto" placeholder="Asunto del problema" required>
-                    <textarea id="descripcion" placeholder="Describe el inconveniente técnico..." required></textarea>
-                    <select id="prioridad">
-                        <option value="Baja">Baja</option>
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
-                    </select>
-                    <button type="submit">Enviar Ticket</button>
+        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
+
+        try {
+            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
+            const data = await res.json();
+
+            if (nombre === 'Crear Nuevo Ticket') {
+                contenedor.innerHTML = `
+                    <h2>Crear Nuevo Ticket</h2>
+                    <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:500px;">
+                        <input type="text" id="asunto" placeholder="Asunto del problema" required style="padding:10px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                        <textarea id="descripcion" placeholder="Describe el inconveniente técnico..." required style="padding:10px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:100px;"></textarea>
+                        <select id="prioridad" style="padding:10px; border-radius:5px; background:#0b0c10; color:#fff;">
+                            <option value="Baja">Baja</option>
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                        <button type="submit" style="padding:12px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Enviar Ticket</button>
                 </form>
             `;
-            // Aquí agregarías el evento submit para hacer el POST a tu API
+            document.getElementById('form-ticket').addEventListener('submit', crearTicket);
+        } else if (nombre === 'Documentos generados' || nombre === 'Facturas Emitidas') {
+            if (data.facturas) {
+                contenedor.innerHTML = `
+                    <h2>${nombre}</h2>
+                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
+            } else {
+                    contenedor.innerHTML = `<h2>${nombre}</h2><p>No se encontraron documentos generados.</p>`;
+            }
         } else {
-            // ... (tu lógica existente de tablas)
+                contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo de ${nombre} en línea.</p>`;
+            }
+    } catch(e) {
+            contenedor.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`;
         }
     }
 
@@ -145,15 +163,24 @@
         prioridad: document.getElementById('prioridad').value
     };
 
-    const res = await fetch('/api/tickets/crear', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(ticketData)
-    });
-    
-    if((await res.json()).success) {
-        alert("¡Ticket enviado correctamente!");
-        render('Tickets Activos');
+    try {
+        const res = await fetch('/api/tickets/crear', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(ticketData)
+        });
+        
+        const result = await res.json();
+        
+        if(result.success) {
+            alert("¡Ticket enviado correctamente!");
+            // Redirigimos al historial de tickets
+            render('Tickets Activos'); 
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (error) {
+        alert("No se pudo conectar con el servidor.");
     }
 }
 

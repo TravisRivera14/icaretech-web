@@ -115,18 +115,32 @@
         }
     };
 
-    async function renderModulo(nombre) {
-    const contenedor = document.getElementById('contenido-dinamico');
-    contenedor.innerHTML = `<h2>${nombre}</h2>`;
+// ... (resto de tu código anterior hasta showSection)
+
+    async function render(opcion) {
+        if (opcion === 'Crear Nuevo Ticket') {
+            return renderModulo(opcion);
+        }
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
+        try {
+            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
+            const data = await res.json();
+            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
+                cont.innerHTML = `<h2>${opcion}</h2>
+                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
+            } else {
+                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
+            }
+        } catch(e) { cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; }
+    }
 
     async function renderModulo(nombre) {
-    const contenedor = document.getElementById('contenido-dinamico');
-    contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
+        const contenedor = document.getElementById('contenido-dinamico');
+        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando formulario...</p>`;
 
-    try {
-        const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-        const data = await res.json();
-
+        // Si es el módulo de crear ticket, inyectamos el formulario
         if (nombre === 'Crear Nuevo Ticket') {
             contenedor.innerHTML = `
                 <h2>Reportar Nuevo Requerimiento</h2>
@@ -151,48 +165,33 @@
                 </form>
             `;
             document.getElementById('form-ticket').addEventListener('submit', crearTicket);
-        
-        } else if (nombre === 'Documentos generados' || nombre === 'Facturas Emitidas') {
-            if (data.facturas) {
-                contenedor.innerHTML = `
-                    <h2>${nombre}</h2>
-                    <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                    <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
-            } else {
-                contenedor.innerHTML = `<h2>${nombre}</h2><p>No se encontraron documentos generados.</p>`;
-            }
-        } else {
-            contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo de ${nombre} en línea.</p>`;
         }
-    } catch(e) {
-        contenedor.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`;
     }
-    }}
 
     async function crearTicket(event) {
-    event.preventDefault();
-    const ticketData = {
-        asunto: document.getElementById('ticketAsunto').value,
-        descripcion: document.getElementById('ticketDescripcion').value,
-        prioridad: document.getElementById('prioridad').value,
-        contacto: document.getElementById('ticketContacto').value,
-        whatsapp: document.getElementById('ticketWhatsApp').value // Nuevo campo
-    };
+        event.preventDefault();
+        const ticketData = {
+            asunto: document.getElementById('ticketAsunto').value,
+            descripcion: document.getElementById('ticketDescripcion').value,
+            prioridad: document.getElementById('prioridad').value,
+            contacto: document.getElementById('ticketContacto').value,
+            whatsapp: document.getElementById('ticketWhatsApp').value
+        };
 
-    const res = await fetch('/api/tickets/crear', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(ticketData)
-    });
-    
-    const resJson = await res.json();
-    if(resJson.success) {
-        alert("¡Ticket enviado correctamente!");
-        render('Tickets Activos');
-    } else {
-        alert("Error: " + resJson.message);
+        const res = await fetch('/api/tickets/crear', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(ticketData)
+        });
+        
+        const resJson = await res.json();
+        if(resJson.success) {
+            alert("¡Ticket enviado correctamente!");
+            render('Tickets Activos');
+        } else {
+            alert("Error: " + resJson.message);
+        }
     }
-}
 
 </script>
 </body>

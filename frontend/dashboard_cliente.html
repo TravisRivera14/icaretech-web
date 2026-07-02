@@ -166,6 +166,138 @@
             `;
             document.getElementById('form-ticket').addEventListener('submit', crearTicket);
         }
+
+        if (nombre === 'Inicio') {
+            contenedor.innerHTML = `
+                <h2>Inicio - Facturación</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Bienvenido al módulo de facturación. Aquí podrás gestionar todo lo relacionado con tus clientes, productos y documentos fiscales.</p>
+                    <h3>Opciones disponibles:</h3>
+                    <ul>
+                        <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
+                        <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
+                        <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
+                        <li><strong>Facturación y Proformas:</strong> Emite nuevos documentos.</li>
+                    </ul>
+                </div>
+            `;
+        } else if (nombre === 'Mi plan') {
+            contenedor.innerHTML = `
+                <h2>Mi Plan Actual</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Estás en el plan Básico: incluye hasta 3 facturas mensuales gratuitas.</p>
+                    <p>¿Necesitas más? Puedes actualizar a cualquiera de nuestros planes premium.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Actualizar Plan
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Clientes') {
+            contenedor.innerHTML = `
+                <h2>Administración de Clientes</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Gestiona tu lista de clientes, agrega nuevos o edita los existentes.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Agregar Nuevo Cliente
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Productos') {
+            contenedor.innerHTML = `
+                <h2>Administración de Productos</h2>
+                <div class="card" style="background:#
+1f2833; padding:20px; border-radius:8px;">
+                    <p>Registra y actualiza tus productos o servicios para la facturación.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Agregar Nuevo Producto
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'POS') {
+            contenedor.innerHTML = `
+                <h2>Punto de Venta (POS)</h2>
+                <div class="card" style="background:#1
+                f2833; padding:20px; border-radius:8px;">
+                    <p>Accede a nuestro sistema de punto de venta para generar ventas rápidas y eficientes.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Abrir POS
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Facturación') {
+            contenedor.innerHTML = `
+                <h2>Facturación</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Emite nuevas facturas, tiquetes o compras de manera rápida y sencilla.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Nueva Factura
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Proformas') {
+            contenedor.innerHTML = `
+                <h2>Proformas</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Genera proformas para tus clientes antes de emitir facturas definitivas.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Nueva Proforma
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Recepción') {
+            contenedor.innerHTML = `
+                <h2>Recepción de Documentos</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Sube y gestiona los documentos recibidos de tus clientes o proveedores.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Cargar Documento
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Reportes') {
+            contenedor.innerHTML = `
+                <h2>Reportes</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Genera reportes detallados sobre tus operaciones de facturación y ventas.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Generar Reporte
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Configuración') {
+            contenedor.innerHTML = `
+                <h2>Configuración</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Administra la configuración de tu cuenta, incluyendo datos de la empresa, usuarios y métodos de pago.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Configurar Cuenta
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Tickets Activos') {
+            contenedor.innerHTML = `
+                <h2>Tickets Activos</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Visualiza y gestiona todos los tickets de soporte técnico que has creado.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Ver Tickets
+                    </button>
+                </div>
+            `;
+        } else if (nombre === 'Historial') {
+            contenedor.innerHTML = `
+                <h2>Historial de Tickets</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px;">
+                    <p>Consulta el historial completo de tus tickets de soporte técnico, incluyendo los resueltos y cerrados.</p>
+                    <button style="padding:10px 20px; background:#00b4d8; border:none; border-radius:5px; color:#fff; cursor:pointer;">
+                        Ver Historial
+                    </button>
+                </div>
+            `;
+        } else {
+            contenedor.innerHTML = `<h2>${nombre}</h2><p>Contenido del módulo ${nombre} en línea.</p>`;
+        }
+
     }
 
     async function crearTicket(event) {

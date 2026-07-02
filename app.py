@@ -501,6 +501,12 @@ def emitir_factura_electronica_api():
         }
 
         xml_generado = generar_xml_factura_44(datos_xml_maestro, lineas_frontend)
+        
+        # ----------------------------------------------------------------------
+        # AQUI INYECTAREMOS EL CÓDIGO DE FIRMA DIGITAL CON signxml (PRÓXIMO PASO)
+        # xml_firmado = firmar_xml_hacienda(id_empresa_actual, xml_generado)
+        # ----------------------------------------------------------------------
+
         resultado_envio = enviar_factura_hacienda(id_empresa_actual, datos_xml_maestro, xml_generado)
 
         if resultado_envio["success"]:
@@ -768,13 +774,21 @@ def eliminar_item(tabla, id):
 @login_required
 def crear_ticket():
     d = request.json
-    empresa_id = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (session.get('empresa'),), fetch=True)[0][0]
-    
     try:
+        empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (session.get('empresa'),), fetch=True)
+        
+        if not empresa_res:
+            return jsonify({"success": False, "message": "No se encontró la empresa del usuario."}), 404
+            
+        empresa_id = empresa_res[0][0]
+        
         db_query("""
             INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) 
             VALUES (%s, %s, %s, %s, %s)
         """, (empresa_id, session.get('usuario'), d.get('asunto'), d.get('descripcion'), d.get('prioridad')))
+        
+        registrar_cambio("Ticket Creado", f"El usuario {session.get('usuario')} creó un ticket de prioridad {d.get('prioridad')}")
+        
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500

@@ -14,7 +14,7 @@
         .top-nav button:hover, .top-nav button.active { color: var(--accent); }
         
         .app-layout { display: flex; flex: 1; }
-        .sidebar { width: 280px; background: #11141a; padding: 20px 0; border-right: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .sidebar { width: 280px; background: #11141a; padding: 20px 0; border-right: 1px solid rgba(255,255,255,0.05); }
         .menu-title { font-size: 12px; color: #555; text-transform: uppercase; margin: 20px 20px 10px; font-weight: 600; }
         .nav-item { padding: 12px 20px; cursor: pointer; color: #8a99ad; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .nav-item:hover { background: var(--card); color: var(--accent); }
@@ -23,11 +23,12 @@
         .submenu li { padding: 10px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
         .submenu li:hover { color: var(--accent); }
         
-        .has-submenu::after { content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-left: auto; font-size: 12px; transition: transform 0.3s; }
-        .has-submenu.active::after { transform: rotate(180deg); }
-        
         .main-content { flex: 1; padding: 40px; }
-        .card { background: var(--card); padding: 30px; border-radius: 12px; }
+        .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
 <header>
     <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
     <nav class="top-nav" id="top-nav">
-        <button onclick="showMainSection('datacenter')" class="active"><i class="fas fa-server"></i> Data Center</button>
+        <button onclick="showMainSection('datacenter')"><i class="fas fa-server"></i> Data Center</button>
         <button onclick="showMainSection('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
         <button onclick="showMainSection('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
         <button onclick="showMainSection('inventario')"><i class="fas fa-boxes"></i> Inventario</button>
@@ -43,108 +44,81 @@
 </header>
 
 <div class="app-layout">
-    <aside class="sidebar" id="sidebar">
-        <!-- Los menús se cargarán aquí dinámicamente -->
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
             <h2>Panel de Control</h2>
-            <p>Bienvenido al Centro de Operaciones.</p>
+            <p>Selecciona una sección superior para gestionar tus operaciones.</p>
         </div>
     </main>
 </div>
 
 <script>
     const menuData = {
+        'facturacion': [
+            { nombre: 'Facturas Emitidas', icon: 'fa-file-invoice' },
+            { nombre: 'Nueva factura', icon: 'fa-file-plus' },
+            { nombre: 'Nuevo tiquete', icon: 'fa-receipt' },
+            { nombre: 'Documentos generados', icon: 'fa-list' }
+        ],
         'datacenter': [
             { nombre: 'Resumen de Servidores', icon: 'fa-server' },
-            { nombre: 'Monitoreo en Tiempo Real', icon: 'fa-chart-line' },
-            { nombre: 'Backups y Seguridad', icon: 'fa-shield-alt' },
-            { nombre: 'Logs de Sistema', icon: 'fa-list' }
-        ],
-        'facturacion': [
-            { nombre: 'Inicio', icon: 'fa-home' },
-            { nombre: 'Mi plan', icon: 'fa-star' },
-            { nombre: 'Clientes', icon: 'fa-users' },
-            { nombre: 'Productos', icon: 'fa-th-large' },
-            { 
-                nombre: 'POS', icon: 'fa-cash-register', 
-                submenu: ['Ingresar', 'Vendedores']
-            },
-            { 
-                nombre: 'Facturación', icon: 'fa-file-invoice', 
-                submenu: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados'] 
-            },
-            { 
-                nombre: 'Proformas', icon: 'fa-calculator', 
-                submenu: ['Nueva proforma', 'Proformas generadas'] 
-            },
-            { 
-                nombre: 'Recepción', icon: 'fa-upload', 
-                submenu: ['Cargar documento', 'Documentos cargados', 'Correos recibidos'] 
-            },
-            { nombre: 'Reportes', icon: 'fa-file-alt' }
+            { nombre: 'Backups y Seguridad', icon: 'fa-shield-alt' }
         ],
         'tickets': [
             { nombre: 'Tickets Activos', icon: 'fa-clock' },
-            { nombre: 'Historial Cerrados', icon: 'fa-check-circle' },
             { nombre: 'Crear Nuevo Ticket', icon: 'fa-plus-circle' }
         ],
         'inventario': [
-            { nombre: 'Equipos en Custodia', icon: 'fa-laptop' },
-            { nombre: 'Inventario de Piezas', icon: 'fa-microchip' },
-            { nombre: 'Movimientos Recientes', icon: 'fa-exchange-alt' }
+            { nombre: 'Equipos en Custodia', icon: 'fa-laptop' }
         ]
     };
 
     function showMainSection(section) {
-        document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
-        // Activamos el botón de la barra superior
-        const buttons = document.querySelectorAll('.top-nav button');
-        buttons.forEach(btn => {
-            if(btn.textContent.toLowerCase().includes(section)) btn.classList.add('active');
-        });
-
-        // Cargamos la barra lateral
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = '<div class="menu-title">' + section.toUpperCase() + '</div>';
         
         menuData[section].forEach(item => {
-            if (item.submenu) {
-                sidebar.innerHTML += `
-                    <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
-                        <i class="fas ${item.icon}"></i> ${item.nombre}
-                    </div>
-                    <ul class="submenu">
-                        ${item.submenu.map(sub => `<li onclick="renderModulo('${sub}')">${sub}</li>`).join('')}
-                    </ul>
-                `;
-            } else {
-                sidebar.innerHTML += `
-                    <div class="nav-item" onclick="renderModulo('${item.nombre}')">
-                        <i class="fas ${item.icon}"></i> ${item.nombre}
-                    </div>
-                `;
-            }
+            sidebar.innerHTML += `
+                <div class="nav-item" onclick="renderModulo('${item.nombre}')">
+                    <i class="fas ${item.icon}"></i> ${item.nombre}
+                </div>`;
+        });
+        showMainSectionActive(section);
+    }
+
+    function showMainSectionActive(activeSection) {
+        document.querySelectorAll('.top-nav button').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.toLowerCase().includes(activeSection)) btn.classList.add('active');
         });
     }
 
-    function toggleSubmenu(element) {
-        element.classList.toggle('active');
-        const submenu = element.nextElementSibling;
-        if (submenu.style.display === 'block') {
-            submenu.style.display = 'none';
-        } else {
-            submenu.style.display = 'block';
+    async function renderModulo(nombre) {
+        const contenedor = document.getElementById('contenido-dinamico');
+        contenedor.innerHTML = `<h2>${nombre}</h2><p>Cargando datos...</p>`;
+        
+        try {
+            const res = await fetch('/api/cliente/datos-operativos', { credentials: 'include' });
+            if (!res.ok) throw new Error("Error al conectar con iCare Core");
+            const data = await res.json();
+
+            if (nombre === 'Facturas Emitidas') {
+                contenedor.innerHTML = `<h2>${nombre}</h2>
+                    <table>
+                        <thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                        <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody>
+                    </table>`;
+            } else {
+                contenedor.innerHTML = `<h2>${nombre}</h2><p>Módulo bajo mantenimiento.</p>`;
+            }
+        } catch (e) {
+            contenedor.innerHTML = `<h2>Error</h2><p>${e.message}</p>`;
         }
     }
 
-    function renderModulo(nombre) {
-        document.getElementById('contenido-dinamico').innerHTML = `<h2>${nombre}</h2><p>Cargando información...</p>`;
-    }
-
-    // Inicializamos con la sección de facturación seleccionada
+    // Inicializar
     showMainSection('facturacion');
 </script>
 </body>

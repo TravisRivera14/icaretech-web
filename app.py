@@ -13,14 +13,18 @@ import base64
 import json
 
 app = Flask(__name__)
+# Habilita el envío de credenciales (cookies) entre el frontend y el backend
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
+# [¡CORRECCIÓN VITAL PARA EL LOGIN!]
+# Se cambia SECURE a False y SAMESITE a 'Lax' para evitar que el navegador destruya 
+# la cookie de sesión si no estás usando un certificado HTTPS estricto.
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=False, 
+    SESSION_COOKIE_SAMESITE='Lax', 
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -54,14 +58,14 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, whatsapp VARCHAR(20))''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     
     # Intento seguro de añadir columna whatsapp si la tabla ya existía de antes
     try:
         c.execute('''ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)''')
     except psycopg2.Error:
-        conn.rollback() # Si la columna ya existe, simplemente hacemos rollback del error para que siga normalmente
+        conn.rollback() # Si la columna ya existe, simplemente hacemos rollback
     else:
         conn.commit()
 
@@ -780,34 +784,44 @@ def eliminar_item(tabla, id):
     return jsonify({"error": "No válida"}), 400
 
 @app.route('/api/tickets/crear', methods=['POST'])
-@login_required
+# Eliminamos @login_required para que servicio.html (público) pueda enviar tickets
 def crear_ticket():
     d = request.json
     try:
-        # Obtenemos la empresa directamente de la sesión segura del usuario
-        nombre_empresa = session.get('empresa')
+        # 1. Intentamos obtener el ID directamente del formulario (Caso: servicio.html)
+        empresa_id = d.get('empresa_id')
         
-        if not nombre_empresa:
-            return jsonify({"success": False, "message": "Tu usuario no tiene una empresa asignada. Contacta al administrador."}), 400
-            
-        empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (nombre_empresa,), fetch=True)
-        
-        # EL TRUCO: Si la empresa no existe en la tabla, la creamos automáticamente 
-        # para que no falle la llave foránea y el ticket se guarde.
-        if not empresa_res:
-            db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre_empresa,))
+        # 2. Si el formulario no envió ID, buscamos en la sesión (Caso: dashboard_cliente.html)
+        if not empresa_id:
+            nombre_empresa = session.get('empresa')
+            if not nombre_empresa:
+                return jsonify({"success": False, "message": "No se proporcionó empresa y no hay sesión activa."}), 400
+                
             empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (nombre_empresa,), fetch=True)
             
-        empresa_id = empresa_res[0][0]
+            # Autoguardado si la empresa no existe
+            if not empresa_res:
+                db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre_empresa,))
+                empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (nombre_empresa,), fetch=True)
+                
+            empresa_id = empresa_res[0][0]
+
+        # Determinar el nombre de usuario para el registro de logs
+        usuario_log = session.get('usuario', d.get('contacto', 'Usuario Público'))
         
-        # Guardamos el ticket con el ID correcto
+        # Guardar el ticket
         db_query("""
             INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad, whatsapp) 
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (empresa_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
         
-        registrar_cambio("Ticket Creado", f"El usuario {session.get('usuario')} creó un ticket de prioridad {d.get('prioridad')}")
+        # Registrar el evento en el historial
+        registrar_cambio("Ticket Creado", f"El usuario {usuario_log} creó un ticket de prioridad {d.get('prioridad')}")
         
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True, port=5001)

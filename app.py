@@ -784,14 +784,23 @@ def eliminar_item(tabla, id):
 def crear_ticket():
     d = request.json
     try:
-        empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (session.get('empresa'),), fetch=True)
+        # Obtenemos la empresa directamente de la sesión segura del usuario
+        nombre_empresa = session.get('empresa')
         
+        if not nombre_empresa:
+            return jsonify({"success": False, "message": "Tu usuario no tiene una empresa asignada. Contacta al administrador."}), 400
+            
+        empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (nombre_empresa,), fetch=True)
+        
+        # EL TRUCO: Si la empresa no existe en la tabla, la creamos automáticamente 
+        # para que no falle la llave foránea y el ticket se guarde.
         if not empresa_res:
-            return jsonify({"success": False, "message": "No se encontró la empresa del usuario."}), 404
+            db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (nombre_empresa,))
+            empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (nombre_empresa,), fetch=True)
             
         empresa_id = empresa_res[0][0]
         
-        # Inserción corregida para incluir whatsapp y tomar el contacto correcto del formulario
+        # Guardamos el ticket con el ID correcto
         db_query("""
             INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad, whatsapp) 
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -802,8 +811,3 @@ def crear_ticket():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-
-
-if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, port=5001)

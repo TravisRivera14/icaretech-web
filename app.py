@@ -54,8 +54,17 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, whatsapp VARCHAR(20))''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
+    
+    # Intento seguro de añadir columna whatsapp si la tabla ya existía de antes
+    try:
+        c.execute('''ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)''')
+    except psycopg2.Error:
+        conn.rollback() # Si la columna ya existe, simplemente hacemos rollback del error para que siga normalmente
+    else:
+        conn.commit()
+
     conn.commit()
     c.close()
     conn.close()
@@ -782,10 +791,11 @@ def crear_ticket():
             
         empresa_id = empresa_res[0][0]
         
+        # Inserción corregida para incluir whatsapp y tomar el contacto correcto del formulario
         db_query("""
-            INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) 
-            VALUES (%s, %s, %s, %s, %s)
-        """, (empresa_id, session.get('usuario'), d.get('asunto'), d.get('descripcion'), d.get('prioridad')))
+            INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad, whatsapp) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (empresa_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
         
         registrar_cambio("Ticket Creado", f"El usuario {session.get('usuario')} creó un ticket de prioridad {d.get('prioridad')}")
         

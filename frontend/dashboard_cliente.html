@@ -52,87 +52,183 @@
 </div>
 
 <script>
+    // Estructura completa de tus categorías
     const menuData = {
         'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
         'facturacion': [
             {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, 
-            {nombre: 'POS'}, {nombre: 'Facturación'}, {nombre: 'Proformas'}, {nombre: 'Recepción'}, 
-            {nombre: 'Reportes'}, {nombre: 'Configuración'}
+            {nombre: 'POS', sub: ['Ingresar', 'Vendedores']},
+            {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
+            {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
+            {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
+            {nombre: 'Reportes'},
+            {nombre: 'Configuración', sub: ['Datos de la empresa', 'Usuarios', 'Métodos de pago', 'Impuestos', 'Plantillas de correo', 'Plantillas de documentos']}
         ],
         'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
         'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
     };
 
+    // Función para mostrar el menú lateral (Con soporte para submenús)
     function showSection(sec) {
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
         menuData[sec].forEach(item => {
-            sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
+            if (item.sub) {
+                sidebar.innerHTML += `
+                    <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
+                    <ul class="submenu" style="display:block">${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}</ul>`;
+            } else {
+                sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
+            }
         });
     }
 
-    async function render(opcion) {
-        const cont = document.getElementById('contenido-dinamico');
-        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando...</p>`;
+    // Despliega o contrae los submenús
+    function toggleSub(el) { 
+        el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; 
+    }
 
-        // Si es un módulo de formulario o vista especial, delegamos a renderModulo
-        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'POS', 'Facturación', 'Proformas', 'Recepción', 'Reportes', 'Configuración', 'Tickets Activos', 'Historial'];
+    // Punto de entrada al cargar la página
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const seccion = urlParams.get('seccion');
+        const accion = urlParams.get('accion');
+
+        if (seccion === 'tickets' && accion === 'nuevo') {
+            showSection('tickets');
+            render('Crear Nuevo Ticket'); 
+        } else {
+            showSection('facturacion'); // Inicia en facturación por defecto
+            render('Inicio');
+        }
+    };
+
+    // Función principal para decidir qué renderizar
+    async function render(opcion) {
+        // Lista de módulos que tienen un diseño a medida
+        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Nueva proforma', 'Cargar documento', 'Reportes', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
         
         if (modulosEspeciales.includes(opcion)) {
             return renderModulo(opcion);
         }
 
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
+        
+        // Módulos que cargan datos del servidor (como las tablas)
         try {
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             const data = await res.json();
-            cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} cargado desde el servidor.</p>`;
+            
+            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
+                if(data.facturas && data.facturas.length > 0) {
+                    cont.innerHTML = `<h2>${opcion}</h2>
+                        <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                        <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
+                } else {
+                    cont.innerHTML = `<h2>${opcion}</h2><p>No se encontraron documentos generados.</p>`;
+                }
+            } else {
+                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
+            }
         } catch(e) { 
             cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; 
         }
     }
 
+    // Función para inyectar los formularios e interfaces visuales específicos
     async function renderModulo(nombre) {
         const cont = document.getElementById('contenido-dinamico');
         
         if (nombre === 'Crear Nuevo Ticket') {
             cont.innerHTML = `
                 <h2>Reportar Nuevo Requerimiento</h2>
-                <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px;">
-                    <input type="text" value="Empresa: ${sessionStorage.getItem('empresa') || 'Activa'}" disabled style="padding:10px; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
-                    <input type="text" id="ticketContacto" placeholder="Nombre completo" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="text" id="ticketAsunto" placeholder="Asunto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <textarea id="ticketDescripcion" placeholder="Detalle..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
+                <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
+                    <div class="form-group">
+                        <label style="color:#8a99ad; font-size:13px; margin-bottom:5px; display:block;">Empresa</label>
+                        <input type="text" value="${sessionStorage.getItem('empresa') || 'Tu Empresa'}" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
+                    </div>
+                    <input type="text" id="ticketContacto" placeholder="Nombre completo del contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <input type="text" id="ticketAsunto" placeholder="Asunto del problema" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
+                    <textarea id="ticketDescripcion" placeholder="Describe el inconveniente técnico en detalle..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
+                    
+                    <label style="color:#8a99ad; font-size:13px; display:block; margin-top:5px;">Prioridad</label>
                     <select id="prioridad" style="padding:12px; border-radius:5px; background:#0b0c10; color:#fff; border:1px solid #444;">
-                        <option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option>
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
                     </select>
-                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; color:white; cursor:pointer;">Enviar Ticket</button>
-                </form>`;
+                    
+                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:white; margin-top:10px;">Enviar Ticket</button>
+                </form>
+            `;
             document.getElementById('form-ticket').addEventListener('submit', crearTicket);
+            
+        } else if (nombre === 'Inicio') {
+            cont.innerHTML = `
+                <h2>Inicio - Facturación</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
+                    <p style="font-size:15px; line-height:1.6;">Bienvenido al módulo de facturación. Aquí podrás gestionar todo lo relacionado con tus clientes, productos y documentos fiscales.</p>
+                    <h3 style="margin-top:20px; color:var(--accent);">Opciones disponibles:</h3>
+                    <ul style="color:#8a99ad; line-height:2; margin-top:10px;">
+                        <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
+                        <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
+                        <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
+                        <li><strong>Facturación y Proformas:</strong> Emite nuevos documentos.</li>
+                    </ul>
+                </div>
+            `;
+            
+        } else if (nombre === 'Mi plan') {
+            cont.innerHTML = `
+                <h2>Mi Plan Actual</h2>
+                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
+                    <p style="font-size:16px; margin-bottom:15px;">Estás en el <strong>Plan Básico</strong>: incluye hasta 3 facturas mensuales gratuitas.</p>
+                    <p style="color:#8a99ad; margin-bottom:25px;">¿Necesitas más capacidad? Puedes actualizar a cualquiera de nuestros planes premium con mejoras integrales para tu facturación electrónica.</p>
+                    <button style="padding:12px 25px; background:var(--accent); border:none; border-radius:5px; color:#fff; cursor:pointer; font-weight:bold;">
+                        Ver opciones y actualizar Plan
+                    </button>
+                </div>
+            `;
+            
         } else {
-            // Lógica para las otras secciones de facturación
-            cont.innerHTML = `<h2>${nombre}</h2><div class="card"><p>Módulo de ${nombre} en construcción.</p></div>`;
+            // Plantilla por defecto para los módulos visuales que iremos armando
+            cont.innerHTML = `
+                <h2>${nombre}</h2>
+                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
+                    <p>Módulo de ${nombre} en construcción.</p>
+                </div>
+            `;
         }
     }
 
-    async function crearTicket(e) {
-        e.preventDefault();
-        const data = {
+    // Función para crear el ticket conectada a la API
+    async function crearTicket(event) {
+        event.preventDefault();
+        const ticketData = {
             asunto: document.getElementById('ticketAsunto').value,
             descripcion: document.getElementById('ticketDescripcion').value,
             prioridad: document.getElementById('prioridad').value,
             contacto: document.getElementById('ticketContacto').value,
             whatsapp: document.getElementById('ticketWhatsApp').value
         };
+
         const res = await fetch('/api/tickets/crear', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
+            body: JSON.stringify(ticketData)
         });
-        if((await res.json()).success) { alert("¡Ticket enviado!"); render('Tickets Activos'); }
+        
+        const resJson = await res.json();
+        if(resJson.success) {
+            alert("¡Ticket enviado correctamente!");
+            render('Tickets Activos');
+        } else {
+            alert("Error: " + resJson.message);
+        }
     }
 
-    showSection('facturacion');
 </script>
 </body>
 </html>

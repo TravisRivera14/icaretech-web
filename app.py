@@ -54,27 +54,20 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, usuario_id INT, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', whatsapp VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     
-    # NUEVAS TABLAS DE PERMISOS (Centro de Operaciones)
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     
-    try:
-        c.execute('''ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)''')
-    except psycopg2.Error:
-        conn.rollback() 
-    else:
-        conn.commit()
-
-    # Agregar usuario_id para control individual de tickets
-    try:
-        c.execute('''ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT''')
-    except psycopg2.Error:
-        conn.rollback()
-    else:
-        conn.commit()
+    try: c.execute('''ALTER TABLE usuarios ADD COLUMN correo VARCHAR(150)''')
+    except: conn.rollback()
+    try: c.execute('''ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20)''')
+    except: conn.rollback()
+    try: c.execute('''ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT''')
+    except: conn.rollback()
+    try: c.execute('''ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)''')
+    except: conn.rollback()
 
     conn.commit()
     c.close()
@@ -133,7 +126,6 @@ def obtener_datos_operativos():
             if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
             id_empresa = res_emp[0][0]
             
-        # Determinar Permisos Modulares
         perm_emp = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (id_empresa,), fetch=True)
         perm_usr = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_usuario WHERE usuario_id = %s", (usuario_id,), fetch=True)
         
@@ -141,18 +133,12 @@ def obtener_datos_operativos():
         if perm_emp and perm_usr:
             e_f, e_d, e_i, e_t = perm_emp[0]
             u_f, u_d, u_i, u_t = perm_usr[0]
-            permisos_finales = {
-                "facturacion": e_f and u_f,
-                "datacenter": e_d and u_d,
-                "inventario": e_i and u_i,
-                "tickets": e_t and u_t
-            }
+            permisos_finales = { "facturacion": e_f and u_f, "datacenter": e_d and u_d, "inventario": e_i and u_i, "tickets": e_t and u_t }
 
         facturas = []
         if permisos_finales["facturacion"]:
             facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
             
-        # Lógica de Roles para Tickets
         if rol == 'cliente_admin':
             tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
         else:
@@ -190,7 +176,6 @@ def crear_usuario():
         db_query("""INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (d.get('nombre'), d.get('usuario'), password_encriptada, d.get('rol'), d.get('empresa_id'), d.get('email'), d.get('telefono')))
         
-        # Asignar permisos predeterminados al nuevo usuario
         res = db_query("SELECT id FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
         if res:
             db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (res[0][0],))
@@ -198,7 +183,16 @@ def crear_usuario():
         registrar_cambio("Creó Usuario", f"Se registró a: {d.get('nombre')}")
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+        # Detectar el campo exacto del choque en base de datos
+        error_str = str(e).lower()
+        campo_invalido = "general"
+        if "usuario" in error_msg_str("usuarios_usuario_key", error_str): campo_invalido = "usuario"
+        elif "correo" in error_msg_str("usuarios_correo_key", error_str) or "email" in error_str: campo_invalido = "correo"
+        elif "telefono" in error_msg_str("usuarios_telefono_key", error_str) or "phone" in error_str: campo_invalido = "telefono"
+        return jsonify({"success": False, "message": str(e), "campo": campo_invalido}), 400
+
+def error_msg_str(key, error):
+    return key if key in error or "unique constraint" in error else ""
 
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 @login_required
@@ -215,7 +209,12 @@ def editar_usuario():
         registrar_cambio("Modificó Usuario", f"Actualizadas credenciales de {d.get('usuario')}")
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+        error_str = str(e).lower()
+        campo_invalido = "general"
+        if "usuario" in error_msg_str("usuarios_usuario_key", error_str): campo_invalido = "usuario"
+        elif "correo" in error_msg_str("usuarios_correo_key", error_str) or "email" in error_str: campo_invalido = "correo"
+        elif "telefono" in error_msg_str("usuarios_telefono_key", error_str) or "phone" in error_str: campo_invalido = "telefono"
+        return jsonify({"success": False, "message": str(e), "campo": campo_invalido}), 400
 
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
 @login_required
@@ -233,7 +232,6 @@ def get_logs():
     logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 100", fetch=True) or []
     return jsonify([{"fecha": l[0], "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
 
-# ----------- NUEVAS RUTAS DEL CENTRO DE OPERACIONES -----------
 @app.route('/api/admin/operaciones/empresa/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_empresa(empresa_id):
@@ -275,7 +273,6 @@ def save_permisos_usuario():
     db_query("UPDATE permisos_usuario SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE usuario_id=%s",
              (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('usuario_id')))
     return jsonify({"success": True})
-# --------------------------------------------------------------
 
 def obtener_oauth_token_hacienda(id_empresa):
     res = db_query("""SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s""", (id_empresa,), fetch=True)

@@ -95,7 +95,6 @@
         .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
         .ai-bulletin-box { background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02)); border: 1px dashed var(--turquoise-main); border-radius: 12px; padding: 20px; margin-top: 25px; display: none; }
         
-        /* Switch Custom para el Centro de Operaciones */
         .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; margin-bottom: 15px; font-weight: 600; color: #cfd8dc; }
         .toggle-switch input { display: none; }
         .slider { width: 44px; height: 24px; background-color: #333; border-radius: 34px; position: relative; transition: 0.4s; }
@@ -195,7 +194,7 @@
             <div class="card">
                 <h2><i class="fas fa-building" style="color: var(--turquoise-main);"></i> 1. Selecciona un Cliente</h2>
                 <select id="select-ops-empresa" onchange="cargarOperaciones(this.value)">
-                    <option value="">-- Seleccionar --</option>
+                    <option value="">-- Cargar Empresas --</option>
                 </select>
                 
                 <div id="panel-ops-empresa" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border:1px solid var(--turquoise-main);">
@@ -303,11 +302,18 @@
             <div class="card">
                 <h2><i class="fas fa-user-plus" style="color: var(--turquoise-main);"></i> Registrar Cuenta de Personal</h2>
                 <form id="form-alta-trabajador">
-                    <input type="text" id="new-emp-name" placeholder="Nombre completo" required>
-                    <input type="text" id="new-emp-user" placeholder="Usuario" required>
+                    <input type="text" id="new-emp-name" placeholder="Nombre completo" required oninput="limpiarError('new-emp-name')">
+                    
+                    <input type="text" id="new-emp-user" placeholder="Usuario" required oninput="limpiarError('new-emp-user')">
+                    <div id="error-new-emp-user" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este usuario ya está en uso.</div>
+                    
                     <input type="password" id="new-emp-pass" placeholder="Clave inicial" required>
-                    <input type="email" id="new-emp-email" placeholder="Correo electrónico" required>
-                    <input type="tel" id="new-emp-phone" placeholder="Número telefónico" required>
+                    
+                    <input type="email" id="new-emp-email" placeholder="Correo electrónico" required oninput="limpiarError('new-emp-email')">
+                    <div id="error-new-emp-email" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este correo ya está en uso.</div>
+                    
+                    <input type="tel" id="new-emp-phone" placeholder="Número telefónico" required oninput="limpiarError('new-emp-phone')">
+                    <div id="error-new-emp-phone" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este teléfono ya está en uso.</div>
                     
                     <label for="new-emp-role">Nivel de Acceso:</label>
                     <select id="new-emp-role" onchange="toggleEmpresa(this.value, 'div-empresa-alta')" required>
@@ -332,11 +338,19 @@
                     <h3 style="color:var(--turquoise-main);">✏️ Actualizar Credenciales</h3>
                     <form id="form-editar-trabajador">
                         <input type="hidden" id="edit-emp-id">
-                        <input type="text" id="edit-emp-name" required>
-                        <input type="text" id="edit-emp-user" required>
+                        
+                        <input type="text" id="edit-emp-name" required placeholder="Nombre completo" oninput="limpiarError('edit-emp-name')">
+                        
+                        <input type="text" id="edit-emp-user" required placeholder="Usuario" oninput="limpiarError('edit-emp-user')">
+                        <div id="error-edit-emp-user" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este usuario ya está en uso.</div>
+                        
                         <input type="password" id="edit-emp-pass" placeholder="Nueva clave (dejar en blanco para omitir)">
-                        <input type="email" id="edit-emp-email" placeholder="Correo electrónico" required>
-                        <input type="tel" id="edit-emp-phone" placeholder="Número telefónico" required>
+                        
+                        <input type="email" id="edit-emp-email" placeholder="Correo electrónico" required oninput="limpiarError('edit-emp-email')">
+                        <div id="error-edit-emp-email" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este correo ya está en uso.</div>
+                        
+                        <input type="tel" id="edit-emp-phone" placeholder="Número telefónico" required oninput="limpiarError('edit-emp-phone')">
+                        <div id="error-edit-emp-phone" style="color:var(--del); font-size:12px; font-weight:600; margin:-10px 0 10px 5px; display:none;">⚠️ Este teléfono ya está en uso.</div>
                         
                         <label>Modificar Nivel:</label>
                         <select id="edit-emp-role" onchange="toggleEmpresa(this.value, 'div-empresa-edit')">
@@ -443,7 +457,7 @@
 
                 cacheTickets = tickets;
                 renderTablaTickets(tickets); 
-                loadContent(); // Aquí ahora se recargan las empresas automáticamente de forma segura
+                loadContent(); 
                 cargarListaTrabajadores(); 
                 cargarHistorialLogs(); 
                 cargarSolicitudes(); 
@@ -615,9 +629,30 @@
         }
     }
 
+    // --- FUNCIONES PARA ERRORES DE CAMPOS DUPLICADOS ---
+    function limpiarError(idInput) {
+        document.getElementById(idInput).style.borderColor = 'transparent';
+        const errorDiv = document.getElementById('error-' + idInput);
+        if(errorDiv) errorDiv.style.display = 'none';
+    }
+
+    function mostrarErrorCampo(idInput, mensaje) {
+        const inputEl = document.getElementById(idInput);
+        if(inputEl) inputEl.style.borderColor = 'var(--del)';
+        const errorDiv = document.getElementById('error-' + idInput);
+        if(errorDiv) {
+            errorDiv.innerText = mensaje;
+            errorDiv.style.display = 'block';
+        }
+    }
+
     function activarEdicionUsuario(uEncoded) {
         const u = JSON.parse(decodeURIComponent(uEncoded));
         document.getElementById('bloque-editar-usuario').style.display = 'block';
+        
+        // Limpiamos errores previos por si acaso
+        ['edit-emp-name', 'edit-emp-user', 'edit-emp-email', 'edit-emp-phone'].forEach(id => limpiarError(id));
+
         document.getElementById('edit-emp-id').value = u.id;
         document.getElementById('edit-emp-name').value = u.nombre;
         document.getElementById('edit-emp-user').value = u.usuario;
@@ -651,7 +686,21 @@
                 })
             })
             .then(res => res.json()).then(data => {
-                if (data.success) { alert('Credenciales actualizadas!'); cancelarEdicion(); cargarListaTrabajadores(); }
+                if (data.success) { 
+                    alert('Credenciales actualizadas!'); 
+                    cancelarEdicion(); 
+                    cargarListaTrabajadores(); 
+                } else {
+                    if (data.campo === 'usuario') {
+                        mostrarErrorCampo('edit-emp-user', '⚠️ El usuario ya pertenece a otra persona.');
+                    } else if (data.campo === 'correo') {
+                        mostrarErrorCampo('edit-emp-email', '⚠️ Este correo ya está registrado.');
+                    } else if (data.campo === 'telefono') {
+                        mostrarErrorCampo('edit-emp-phone', '⚠️ Este número telefónico ya está en uso.');
+                    } else {
+                        alert("Error: " + (data.message || "No se pudo actualizar")); 
+                    }
+                }
             });
         });
     }
@@ -675,7 +724,17 @@
                     alert('Usuario registrado con éxito.');
                     document.getElementById('form-alta-trabajador').reset(); 
                     cargarListaTrabajadores();
-                } else { alert("Error: " + (data.message || "No se pudo registrar")); }
+                } else { 
+                    if (data.campo === 'usuario') {
+                        mostrarErrorCampo('new-emp-user', '⚠️ Este usuario ya está en uso.');
+                    } else if (data.campo === 'correo') {
+                        mostrarErrorCampo('new-emp-email', '⚠️ Este correo ya está registrado.');
+                    } else if (data.campo === 'telefono') {
+                        mostrarErrorCampo('new-emp-phone', '⚠️ Este número telefónico ya está en uso.');
+                    } else {
+                        alert("Error: " + (data.message || "No se pudo registrar")); 
+                    }
+                }
             }).catch(err => { alert("Error de conexión con el servidor."); });
         });
     }
@@ -788,7 +847,6 @@
         }).then(r => r.json()).then(() => { alert("Incidencia actualizada."); cargarTicketsAdmin(); });
     }
 
-    // AHORA AGREGAR EMPRESA RECARGA LOS DATOS DE FORMA SEGURA
     function agregarEmpresaSoporte() {
         const nombre = document.getElementById('newSupportEmpName').value;
         if (!nombre) return alert("Especifica el nombre corporativo.");
@@ -806,7 +864,7 @@
             document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Agregar Cliente";
             document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
             document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
-            loadContent(); // Llama a loadContent, que a su vez llama a actualizarTodosLosSelectoresDeEmpresas
+            loadContent(); 
         });
     }
 
@@ -825,10 +883,7 @@
                 cacheData.resenas = data.resenas || []; cacheData.socios = data.socios || [];
                 cacheData.beneficios = data.beneficios || []; cacheData.objetivos = data.objetivos || [];
                 
-                // GUARDAMOS LAS EMPRESAS EN EL CACHÉ GLOBAL
                 cacheData.empresas = data.empresas || [];
-                
-                // ACTUALIZAMOS LOS 3 DROPDOWNS A LA VEZ DE FORMA SEGURA
                 actualizarTodosLosSelectoresDeEmpresas();
 
                 if (data.config) {
@@ -876,7 +931,6 @@
             });
     }
 
-    // FUNCIÓN MAESTRA QUE LLENA TODOS LOS SELECTORES DE EMPRESA A LA VEZ
     function actualizarTodosLosSelectoresDeEmpresas() {
         const options = '<option value="">-- Seleccionar --</option>' + cacheData.empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
         
@@ -885,7 +939,7 @@
             if(selectElement) {
                 const prevVal = selectElement.value;
                 selectElement.innerHTML = options;
-                if(prevVal) selectElement.value = prevVal; // Recuperar la selección si ya tenía una
+                if(prevVal) selectElement.value = prevVal;
             }
         });
     }
@@ -930,7 +984,6 @@
         }
     }
 
-    // YA NO LLAMA AL SERVIDOR PARA BUSCAR EMPRESAS, SOLO MUESTRA EL DIV (PORQUE LAS EMPRESAS SE PRE-CARGAN)
     function toggleEmpresa(rol, divId) {
         const div = document.getElementById(divId);
         if(!div) return;
@@ -960,7 +1013,6 @@
         if(!empId) { document.getElementById('panel-ops-empresa').style.display = 'none'; document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; return; }
         currentOpsEmpresa = empId;
         
-        // Cargar Permisos de la Empresa
         fetch(`${API}/admin/operaciones/empresa/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(data => {
             document.getElementById('panel-ops-empresa').style.display = 'block';
             document.getElementById('emp-mod-fact').checked = data.facturacion;
@@ -969,7 +1021,6 @@
             document.getElementById('emp-mod-tck').checked = data.tickets;
         });
 
-        // Cargar Usuarios de esa empresa
         fetch(`${API}/admin/operaciones/usuarios/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(users => {
             const list = document.getElementById('lista-ops-usuarios');
             if(users.length === 0) { list.innerHTML = "No hay trabajadores (Clientes) registrados bajo esta empresa."; return; }

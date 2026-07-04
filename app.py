@@ -183,7 +183,6 @@ def crear_usuario():
         registrar_cambio("Creó Usuario", f"Se registró a: {d.get('nombre')}")
         return jsonify({"success": True})
     except Exception as e:
-        # Detectar el campo exacto del choque en base de datos
         error_str = str(e).lower()
         campo_invalido = "general"
         if "usuario" in error_msg_str("usuarios_usuario_key", error_str): campo_invalido = "usuario"
@@ -219,11 +218,19 @@ def editar_usuario():
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_usuario(id):
+    # CORRECCIÓN: Manejo de llave foránea y excepciones para borrado exitoso.
     if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "denegado"}), 403
-    db_query("DELETE FROM usuarios WHERE id = %s", (id,))
-    db_query("DELETE FROM permisos_usuario WHERE usuario_id = %s", (id,))
-    registrar_cambio("Eliminó Usuario", f"ID {id}")
-    return jsonify({"success": True})
+    try:
+        # 1. Desvincular usuario de los tickets sin borrar el ticket para no perder historial
+        db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
+        # 2. Borrar permisos
+        db_query("DELETE FROM permisos_usuario WHERE usuario_id = %s", (id,))
+        # 3. Borrar usuario
+        db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Usuario", f"ID {id}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error en base de datos: {str(e)}"}), 500
 
 @app.route('/api/admin/logs', methods=['GET'])
 @login_required
@@ -253,9 +260,17 @@ def save_permisos_empresa():
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
+    # CORRECCIÓN: Búsqueda dual (por ID numérico en string o por Nombre) para evitar listas vacías
     if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"error": "Denegado"}), 403
-    users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s", (str(empresa_id),), fetch=True) or []
+    
+    # Conseguimos el nombre de la empresa por si el usuario se guardó con el nombre
+    res_emp = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (empresa_id,), fetch=True)
+    nombre_empresa = res_emp[0][0] if res_emp else ""
+    
+    # Buscamos coincidencias cruzadas
+    users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s OR empresa = %s", (str(empresa_id), nombre_empresa), fetch=True) or []
     lista = []
+    
     for u in users:
         u_id = u[0]
         p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_usuario WHERE usuario_id = %s", (u_id,), fetch=True)
@@ -263,6 +278,7 @@ def get_permisos_usuarios_empresa(empresa_id):
             db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (u_id,))
             p = [(True, True, True, True)]
         lista.append({"id": u_id, "nombre": u[1], "rol": u[2], "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}})
+    
     return jsonify(lista)
 
 @app.route('/api/admin/operaciones/usuario', methods=['POST'])
@@ -735,6 +751,17 @@ def eliminar_ticket_admin(id):
     try:
         db_query("DELETE FROM tickets_soporte WHERE id = %s", (id,))
         registrar_cambio("Eliminó Ticket", f"Ticket ID {id} eliminado de forma permanente")
+        return jsonify({"success": True})
+    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
+@login_required
+def cambiar_estado_ticket(id):
+    if session.get('rol') not in ['admin', 'personal', 'personal_admin']: return jsonify({"message": "Denegado"}), 403
+    estado = request.json.get('estado')
+    try:
+        db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (estado, id))
+        registrar_cambio("Actualizó Ticket", f"Ticket ID {id} marcado como {estado}")
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix  # <--- IMPORTANTE: Herramienta de Proxy
 from functools import wraps
 import os
 import psycopg2
@@ -13,14 +14,19 @@ import base64
 import json
 
 app = Flask(__name__)
+
+# BLINDAJE DE PROXY: Le dice a Flask que confíe en el HTTPS de Vercel
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
+# Ajuste de Cookies para evitar que Vercel o el navegador las rechacen
 app.config.update(
     SESSION_COOKIE_SECURE=True, 
-    SESSION_COOKIE_SAMESITE='none', 
+    SESSION_COOKIE_SAMESITE='Lax', # Lax es el estándar seguro para el mismo dominio
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -244,7 +250,7 @@ def editar_usuario():
 def eliminar_usuario(id):
     if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "denegado"}), 403
     try:
-        # Blindaje: Borra o actualiza en silencio evitando cualquier bloqueo por tablas faltantes
+        # Blindaje: Borra o actualiza en silencio evitando cualquier bloqueo
         try: db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
         except Exception: pass
         
@@ -256,7 +262,6 @@ def eliminar_usuario(id):
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
-# ----------------- RUTAS DEL CENTRO DE OPERACIONES (PERMISOS) -----------------
 @app.route('/api/admin/operaciones/empresa/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_empresa(empresa_id):
@@ -307,7 +312,6 @@ def save_permisos_usuario():
     try: db_query("UPDATE permisos_usuario SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE usuario_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('usuario_id')))
     except: pass
     return jsonify({"success": True})
-# ------------------------------------------------------------------------------
 
 def obtener_oauth_token_hacienda(id_empresa):
     res = db_query("""SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s""", (id_empresa,), fetch=True)
@@ -785,5 +789,5 @@ def cambiar_estado_ticket(id):
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == '__main__':
-    init_db()
+    initialize_database()
     app.run(debug=True, port=5001)

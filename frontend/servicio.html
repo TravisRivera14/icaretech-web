@@ -172,7 +172,7 @@
                 prioridad: prioridadSeleccionada
             };
 
-            fetch(`${API}/tickets`, {
+            fetch(`${API}/tickets/crear`, { // <--- Solo tienes que agregar /crear aquí
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)

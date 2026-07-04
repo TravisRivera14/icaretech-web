@@ -781,6 +781,37 @@ def eliminar_item(tabla, id):
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
+@app.route('/api/admin/tickets', methods=['GET'])
+@login_required
+def listar_tickets_admin():
+    if session.get('rol') not in ['admin', 'personal']: 
+        return jsonify({"message": "Acceso denegado"}), 403
+    
+    try:
+        # El frontend de admin.html espera campos específicos, incluyendo el nombre de la empresa
+        query = """
+            SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
+                   t.descripcion, t.prioridad, t.estado, t.fecha 
+            FROM tickets_soporte t 
+            LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
+            ORDER BY t.fecha DESC
+        """
+        tickets_raw = db_query(query, fetch=True) or []
+        
+        return jsonify([{
+            "id": r[0], 
+            "empresa_id": r[1], 
+            "empresa_nombre": r[2] or "Sin Empresa", 
+            "contacto": r[3], 
+            "asunto": r[4], 
+            "descripcion": r[5], 
+            "prioridad": r[6], 
+            "estado": r[7], 
+            "fecha": r[8]
+        } for r in tickets_raw])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/tickets/crear', methods=['POST'])
 # Eliminamos @login_required para que servicio.html (público) pueda enviar tickets
 def crear_ticket():

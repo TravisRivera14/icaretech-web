@@ -61,10 +61,11 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, usuario_id INT, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', whatsapp VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
-    
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     conn.commit()
+    c.close()
+    conn.close()
 
     # MIGRACIÓN SEGURA: Fuerza la creación de columnas faltantes una por una
     migraciones = [
@@ -74,14 +75,8 @@ def init_db():
         "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)"
     ]
     for mig in migraciones:
-        try:
-            c.execute(mig)
-            conn.commit()
-        except Exception:
-            conn.rollback()
-
-    c.close()
-    conn.close()
+        try: db_query(mig)
+        except Exception: pass
 
 db_initialized = False
 @app.before_request
@@ -107,6 +102,11 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Función auxiliar para permitir acceso a cualquier rol de equipo técnico
+def es_admin():
+    rol = str(session.get('rol', '')).lower().strip()
+    return rol in ['admin', 'personal', 'personal_admin', 'administrador']
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
@@ -115,7 +115,6 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        
         try:
             cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s) OR LOWER(correo) = LOWER(%s) OR telefono = %s", (usr, usr, usr))
         except Exception:
@@ -132,8 +131,7 @@ def login():
             session['empresa'] = user[5]
             return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4], "usuario_id": user[0]}), 200
         return jsonify({"success": False, "message": "Credenciales incorrectas"}), 401
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/cliente/datos-operativos', methods=['GET'])
 @login_required
@@ -165,7 +163,6 @@ def obtener_datos_operativos():
             try: facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
             except: facturas = []
             
-        # BLINDAJE: Si la columna usuario_id no existe, busca por empresa general en su lugar
         tickets = []
         try:
             if rol == 'cliente_admin':
@@ -193,7 +190,7 @@ def setup_admin():
 @app.route('/api/admin/usuarios', methods=['GET'])
 @login_required
 def listar_usuarios():
-    if session.get('rol') not in ['admin', 'personal', 'personal_admin']: return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     try:
         users_raw = db_query("SELECT id, usuario, rol, nombre, empresa, correo, telefono FROM usuarios ORDER BY id ASC", fetch=True) or []
     except Exception:
@@ -206,7 +203,7 @@ def error_msg_str(key, error):
 @app.route('/api/admin/crear-usuario', methods=['POST'])
 @login_required
 def crear_usuario():
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     d = request.json or {}
     password_encriptada = generate_password_hash(d.get('password', '12345'))
     try:
@@ -231,7 +228,7 @@ def crear_usuario():
 @app.route('/api/admin/editar-usuario', methods=['POST'])
 @login_required
 def editar_usuario():
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     d = request.json or {}
     try:
         if d.get('password') and d.get('password').strip() != "":
@@ -253,7 +250,7 @@ def editar_usuario():
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_usuario(id):
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "denegado"}), 403
+    if not es_admin(): return jsonify({"message": "denegado"}), 403
     try:
         try: db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
         except Exception: pass
@@ -269,7 +266,7 @@ def eliminar_usuario(id):
 @app.route('/api/admin/operaciones/empresa/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_empresa(empresa_id):
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"error": "Denegado"}), 403
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
     try: p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (empresa_id,), fetch=True)
     except: p = None
     if p: return jsonify({"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]})
@@ -281,7 +278,7 @@ def get_permisos_empresa(empresa_id):
 @app.route('/api/admin/operaciones/empresa', methods=['POST'])
 @login_required
 def save_permisos_empresa():
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"error": "Denegado"}), 403
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
     d = request.json
     try: db_query("UPDATE permisos_empresa SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE empresa_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('empresa_id')))
     except: pass
@@ -290,7 +287,7 @@ def save_permisos_empresa():
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"error": "Denegado"}), 403
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
     res_emp = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (empresa_id,), fetch=True)
     nombre_empresa = res_emp[0][0] if res_emp else ""
     
@@ -311,7 +308,7 @@ def get_permisos_usuarios_empresa(empresa_id):
 @app.route('/api/admin/operaciones/usuario', methods=['POST'])
 @login_required
 def save_permisos_usuario():
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"error": "Denegado"}), 403
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
     d = request.json
     try: db_query("UPDATE permisos_usuario SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE usuario_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('usuario_id')))
     except: pass
@@ -370,7 +367,7 @@ def probar_conexion_hacienda_test():
 @app.route('/api/admin/configuracion-hacienda', methods=['POST'])
 @login_required
 def guardar_configuracion_hacienda():
-    if not session.get('rol'): return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     usuario_idp = request.form.get('usuario_idp')
     password_idp = request.form.get('password_idp')
     pin_p12 = request.form.get('pin_p12')
@@ -398,7 +395,7 @@ def guardar_configuracion_hacienda():
 @app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
 @login_required
 def verificar_configuracion_hacienda():
-    if not session.get('rol'): return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     id_empresa = request.args.get('id_empresa', 1)
     res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
     if res: return jsonify({"configurado": True, "usuario_idp": res[0][0], "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"})
@@ -725,8 +722,7 @@ def eliminar_item(tabla, id):
 @app.route('/api/admin/tickets', methods=['GET'])
 @login_required
 def listar_tickets_admin():
-    if session.get('rol') not in ['admin', 'personal', 'personal_admin']: 
-        return jsonify({"message": "Acceso denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     try:
         query = """
             SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
@@ -767,7 +763,6 @@ def crear_ticket():
 
         usuario_log = session.get('usuario', d.get('contacto', 'Usuario Público'))
         
-        # BLINDAJE EXTRA: Intenta con todas las columnas, si falla (porque no existen), usa la versión reducida
         try:
             db_query("""INSERT INTO tickets_soporte (empresa_id, usuario_id, contacto, asunto, descripcion, prioridad, whatsapp) VALUES (%s, %s, %s, %s, %s, %s, %s)""", (empresa_id, usuario_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
         except Exception:
@@ -780,7 +775,7 @@ def crear_ticket():
 @app.route('/api/admin/tickets/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_ticket_admin(id):
-    if session.get('rol') not in ['admin', 'personal', 'personal_admin']: return jsonify({"message": "Denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Denegado"}), 403
     try:
         db_query("DELETE FROM tickets_soporte WHERE id = %s", (id,))
         registrar_cambio("Eliminó Ticket", f"Ticket ID {id} eliminado de forma permanente")
@@ -790,7 +785,7 @@ def eliminar_ticket_admin(id):
 @app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
 @login_required
 def cambiar_estado_ticket(id):
-    if session.get('rol') not in ['admin', 'personal', 'personal_admin']: return jsonify({"message": "Denegado"}), 403
+    if not es_admin(): return jsonify({"message": "Denegado"}), 403
     estado = request.json.get('estado')
     try:
         db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (estado, id))

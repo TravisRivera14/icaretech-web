@@ -28,6 +28,11 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* Estilos extras para formularios */
+        .fact-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; background: #0b0c10; border: 1px solid #444; color: white; font-size: 14px; }
+        .fact-btn { padding: 12px 25px; background: var(--accent); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
+        .fact-btn-del { padding: 6px 12px; background: rgba(255,59,48,0.2); border: 1px solid var(--del); color: var(--del); border-radius: 4px; cursor: pointer; font-size: 12px;}
     </style>
 </head>
 <body>
@@ -88,7 +93,7 @@
                 sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
             }
         });
-        render(menuData[sec][0].nombre); // Renderizar el primer módulo por defecto
+        render(menuData[sec][0].nombre); 
     }
 
     function toggleSub(el) { 
@@ -101,11 +106,9 @@
         const accion = urlParams.get('accion');
 
         try {
-            // LECTURA DE PERMISOS EN EL BACKEND
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             userDataCache = await res.json();
 
-            // BLOQUE DE BLINDAJE DE ERRORES VISUALES
             if (userDataCache.error) { 
                 document.getElementById('contenido-dinamico').innerHTML = `
                     <h2 style="color:var(--del);"><i class="fas fa-exclamation-triangle"></i> Acceso Interrumpido</h2>
@@ -120,12 +123,10 @@
                 return; 
             }
 
-            // Lógica Cliente Admin
             if (userDataCache.rol === 'cliente_admin') {
                 document.getElementById('badge-admin').style.display = 'block';
             }
 
-            // Aplicar Permisos Modulares a los Botones Superiores
             const p = userDataCache.permisos;
             let firstSec = null;
             if (p.datacenter) { document.getElementById('btn-nav-datacenter').style.display = 'flex'; firstSec = firstSec || 'datacenter'; }
@@ -148,7 +149,7 @@
     };
 
     async function render(opcion) {
-        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Nueva proforma', 'Cargar documento', 'Reportes', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
+        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
         
         if (modulosEspeciales.includes(opcion)) {
             return renderModulo(opcion);
@@ -177,7 +178,130 @@
     async function renderModulo(nombre) {
         const cont = document.getElementById('contenido-dinamico');
         
-        if (nombre === 'Crear Nuevo Ticket') {
+        // --- 1. MÓDULO DE CLIENTES ---
+        if (nombre === 'Clientes') {
+            cont.innerHTML = `
+                <h2>Directorio de Clientes (Receptores)</h2>
+                <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap;">
+                    
+                    <div class="card" style="flex:1; min-width:300px; background:#1f2833; padding:25px;">
+                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-user-plus"></i> Registrar Cliente</h3>
+                        <form id="form-nuevo-cliente" onsubmit="guardarClienteFact(event)">
+                            <label style="color:#8a99ad; font-size:12px;">Nombre o Razón Social</label>
+                            <input type="text" id="fc-nombre" class="fact-input" required>
+                            
+                            <label style="color:#8a99ad; font-size:12px;">Tipo de Identificación</label>
+                            <select id="fc-tipo" class="fact-input">
+                                <option value="01">Cédula Física (9 dígitos)</option>
+                                <option value="02">Cédula Jurídica (10 dígitos)</option>
+                                <option value="03">DIMEX (11 o 12 dígitos)</option>
+                                <option value="04">NITE (10 dígitos)</option>
+                            </select>
+
+                            <label style="color:#8a99ad; font-size:12px;">Número de Identificación</label>
+                            <input type="text" id="fc-cedula" class="fact-input" required>
+
+                            <label style="color:#8a99ad; font-size:12px;">Correo para Envío de Factura</label>
+                            <input type="email" id="fc-correo" class="fact-input" required>
+
+                            <label style="color:#8a99ad; font-size:12px;">Teléfono</label>
+                            <input type="text" id="fc-telefono" class="fact-input" required>
+
+                            <button type="submit" class="fact-btn" style="width:100%;">Guardar Cliente</button>
+                        </form>
+                    </div>
+
+                    <div class="card" style="flex:2; min-width:300px; background:#1f2833; padding:25px;">
+                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-users"></i> Clientes Registrados</h3>
+                        <div id="tabla-clientes-fact">Cargando clientes...</div>
+                    </div>
+                </div>
+            `;
+            cargarClientesFact();
+        }
+
+        // --- 2. MÓDULO DE PRODUCTOS ---
+        else if (nombre === 'Productos') {
+            cont.innerHTML = `
+                <h2>Catálogo de Productos y Servicios (CABYS)</h2>
+                <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap;">
+                    
+                    <div class="card" style="flex:1; min-width:300px; background:#1f2833; padding:25px;">
+                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-box-open"></i> Registrar Artículo</h3>
+                        <form id="form-nuevo-producto" onsubmit="guardarProductoFact(event)">
+                            <label style="color:#8a99ad; font-size:12px;">Código CABYS Oficial</label>
+                            <input type="text" id="fp-cabys" class="fact-input" placeholder="Ej: 8311100000100" required>
+                            
+                            <label style="color:#8a99ad; font-size:12px;">Descripción del Artículo</label>
+                            <input type="text" id="fp-desc" class="fact-input" placeholder="Ej: Soporte Técnico Especializado" required>
+
+                            <label style="color:#8a99ad; font-size:12px;">Precio Unitario (CRC)</label>
+                            <input type="number" id="fp-precio" class="fact-input" step="0.01" required>
+
+                            <div style="display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <label style="color:#8a99ad; font-size:12px;">Unidad (Sp, Unid)</label>
+                                    <input type="text" id="fp-unidad" class="fact-input" value="Sp" required>
+                                </div>
+                                <div style="flex:1;">
+                                    <label style="color:#8a99ad; font-size:12px;">IVA (%)</label>
+                                    <select id="fp-iva" class="fact-input">
+                                        <option value="13.00">13%</option>
+                                        <option value="4.00">4%</option>
+                                        <option value="2.00">2%</option>
+                                        <option value="1.00">1%</option>
+                                        <option value="0.00">Exento (0%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="fact-btn" style="width:100%;">Añadir al Catálogo</button>
+                        </form>
+                    </div>
+
+                    <div class="card" style="flex:2; min-width:300px; background:#1f2833; padding:25px;">
+                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-list"></i> Catálogo Activo</h3>
+                        <div id="tabla-productos-fact">Cargando catálogo...</div>
+                    </div>
+                </div>
+            `;
+            cargarProductosFact();
+        }
+
+        // --- 3. MÓDULO DE NUEVA FACTURA ---
+        else if (nombre === 'Nueva factura') {
+            cont.innerHTML = `
+                <h2>Crear Nueva Factura Electrónica v4.3</h2>
+                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
+                    <p style="color:#8a99ad; margin-bottom:20px;">Este módulo procesará la firma XAdES-EPES y la enviará al Ministerio de Hacienda en tiempo real.</p>
+                    
+                    <h3 style="color:var(--accent); margin-bottom:10px;">1. Datos del Receptor</h3>
+                    <select id="nf-cliente" class="fact-input" style="background:#0b0c10;"><option>Cargando clientes...</option></select>
+                    
+                    <div style="display:flex; gap:15px;">
+                        <select id="nf-condicion" class="fact-input" style="flex:1;"><option value="01">Contado</option><option value="02">Crédito</option></select>
+                        <select id="nf-medio" class="fact-input" style="flex:1;"><option value="04">Transferencia Bancaria</option><option value="01">Efectivo</option><option value="03">Tarjeta</option></select>
+                    </div>
+
+                    <h3 style="color:var(--accent); margin:20px 0 10px 0;">2. Detalle de Líneas</h3>
+                    <div style="background:#0b0c10; border:1px dashed #444; padding:20px; border-radius:8px; text-align:center;">
+                        <i class="fas fa-file-invoice" style="font-size:30px; color:#444; margin-bottom:10px;"></i>
+                        <p style="color:#8a99ad; font-size:14px;">La conexión entre tu catálogo y la calculadora de Hacienda está en preparación para el Paso 3.</p>
+                    </div>
+
+                    <button class="fact-btn" style="width:100%; margin-top:20px; background:#444; color:white; cursor:not-allowed;" disabled>Emitir Comprobante (En espera de Paso 3)</button>
+                </div>
+            `;
+            // Cargar los clientes para el selector de la factura
+            fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
+                const select = document.getElementById('nf-cliente');
+                if(!data || data.length === 0) { select.innerHTML = '<option value="">No tienes clientes registrados aún</option>'; }
+                else { select.innerHTML = '<option value="">-- Selecciona el cliente --</option>' + data.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
+            });
+        }
+
+        // --- LOS MÓDULOS ANTERIORES SIGUEN AQUÍ ---
+        else if (nombre === 'Crear Nuevo Ticket') {
             cont.innerHTML = `
                 <h2>Reportar Nuevo Requerimiento</h2>
                 <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
@@ -204,7 +328,6 @@
             
         } else if (nombre === 'Historial' || nombre === 'Tickets Activos') {
             const label = userDataCache.rol === 'cliente_admin' ? 'Tickets de toda la Empresa' : 'Mis tickets reportados';
-            
             let listaTickets = userDataCache.tickets || [];
             if (nombre === 'Tickets Activos') {
                 listaTickets = listaTickets.filter(t => t.estado.toLowerCase() !== 'resuelto' && t.estado.toLowerCase() !== 'cerrado');
@@ -233,7 +356,6 @@
             cont.innerHTML = html + "</div>";
 
         } else if (nombre === 'Datos de la empresa') {
-            // NUEVO MÓDULO: CONFIGURACIÓN HACIENDA (ATV)
             cont.innerHTML = `
                 <h2>Configuración del Contribuyente (Hacienda)</h2>
                 <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
@@ -293,18 +415,95 @@
                     </button>
                 </div>
             `;
-            
         } else {
-            cont.innerHTML = `
-                <h2>${nombre}</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
-                    <p>Módulo de ${nombre} en línea.</p>
-                </div>
-            `;
+            cont.innerHTML = `<h2>${nombre}</h2><div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;"><p>Módulo de ${nombre} en línea.</p></div>`;
         }
     }
 
-    // --- FUNCIONES NUEVAS PARA HACIENDA ---
+    // --- FUNCIONES API CLIENTES ---
+    function cargarClientesFact() {
+        fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
+            const list = document.getElementById('tabla-clientes-fact');
+            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>No tienes clientes registrados.</p>"; return; }
+            
+            list.innerHTML = `<table><thead><tr><th>Nombre</th><th>Identificación</th><th>Correo</th><th>Acción</th></tr></thead><tbody>
+                ${data.map(c => `<tr>
+                    <td><b>${c.nombre}</b></td>
+                    <td style="color:#8a99ad;">${c.identificacion}</td>
+                    <td style="color:#8a99ad;">${c.correo}</td>
+                    <td><button class="fact-btn-del" onclick="borrarClienteFact(${c.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        });
+    }
+
+    function guardarClienteFact(e) {
+        e.preventDefault();
+        const btn = e.submitter; btn.innerHTML = "Guardando..."; btn.disabled = true;
+        const body = {
+            nombre: document.getElementById('fc-nombre').value,
+            tipo_identificacion: document.getElementById('fc-tipo').value,
+            identificacion: document.getElementById('fc-cedula').value,
+            correo: document.getElementById('fc-correo').value,
+            telefono: document.getElementById('fc-telefono').value
+        };
+        fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(r=>r.json()).then(data => {
+            if(data.success) { alert("Cliente guardado"); document.getElementById('form-nuevo-cliente').reset(); cargarClientesFact(); }
+            else { alert("Error: " + data.message); }
+            btn.innerHTML = "Guardar Cliente"; btn.disabled = false;
+        });
+    }
+
+    function borrarClienteFact(id) {
+        if(!confirm("¿Eliminar cliente de tu base de datos?")) return;
+        fetch('/api/eliminar/clientes_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
+        .then(r=>r.json()).then(()=> { cargarClientesFact(); });
+    }
+
+    // --- FUNCIONES API PRODUCTOS ---
+    function cargarProductosFact() {
+        fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(data => {
+            const list = document.getElementById('tabla-productos-fact');
+            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>Tu catálogo está vacío.</p>"; return; }
+            
+            list.innerHTML = `<table><thead><tr><th>CABYS</th><th>Descripción</th><th>Precio</th><th>IVA</th><th>Acción</th></tr></thead><tbody>
+                ${data.map(p => `<tr>
+                    <td style="color:#8a99ad; font-size:12px;">${p.codigo_cabys}</td>
+                    <td><b>${p.descripcion}</b></td>
+                    <td style="color:var(--accent);">₡${p.precio_unitario}</td>
+                    <td style="color:#8a99ad;">${p.impuesto}%</td>
+                    <td><button class="fact-btn-del" onclick="borrarProductoFact(${p.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        });
+    }
+
+    function guardarProductoFact(e) {
+        e.preventDefault();
+        const btn = e.submitter; btn.innerHTML = "Añadiendo..."; btn.disabled = true;
+        const body = {
+            codigo_cabys: document.getElementById('fp-cabys').value,
+            descripcion: document.getElementById('fp-desc').value,
+            precio_unitario: document.getElementById('fp-precio').value,
+            unidad_medida: document.getElementById('fp-unidad').value,
+            impuesto: document.getElementById('fp-iva').value
+        };
+        fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(r=>r.json()).then(data => {
+            if(data.success) { alert("Producto guardado"); document.getElementById('form-nuevo-producto').reset(); cargarProductosFact(); }
+            else { alert("Error: " + data.message); }
+            btn.innerHTML = "Añadir al Catálogo"; btn.disabled = false;
+        });
+    }
+
+    function borrarProductoFact(id) {
+        if(!confirm("¿Eliminar producto del catálogo?")) return;
+        fetch('/api/eliminar/productos_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
+        .then(r=>r.json()).then(()=> { cargarProductosFact(); });
+    }
+
+    // --- RESTO DE FUNCIONES (Hacienda y Tickets) ---
     async function guardarHacienda(event) {
         event.preventDefault();
         
@@ -406,7 +605,6 @@
         const resJson = await res.json();
         if(resJson.success) {
             alert("¡Ticket enviado correctamente!");
-            // Recargar datos y mostrar historial
             const newData = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             userDataCache = await newData.json();
             render('Historial');

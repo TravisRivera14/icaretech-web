@@ -1018,8 +1018,9 @@
                 <div class="list-item">
                     <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
                     <div>
-                        <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}', ${u.empresa_id})">Editar</button>
-                        <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
+                        <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irACrearUsuarioEmpresa(${e.id})"><i class="fas fa-users-cog"></i> Accesos</button>
+                        <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
+                        <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
                     </div>
                 </div>
             `).join('');
@@ -1349,15 +1350,16 @@
 
     // FUNCIÓN PARA BORRAR UNA EMPRESA DE SOPORTE
     function eliminarEmpresaSoporte(id) {
-        if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
-            fetch(`${API}/admin/empresas-soporte/${id}`, { method: 'DELETE', credentials: 'include' })
-                .then(r => r.json())
-                .then(() => {
-                    alert("Empresa removida del sistema.");
-                    loadContent(); // Refresca lista tras borrado
-                });
+    if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
+        // Se corrigió la URL apuntando al motor genérico de eliminación de tu app.py
+        fetch(`${API}/eliminar/empresas_recomiendan/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(r => r.json())
+            .then(() => {
+                alert("Empresa removida del sistema.");
+                loadContent(); // Refresca lista tras borrado
+            });
         }
-    }
+    }   
 
     // SÚPER FUNCIÓN MAESTRA QUE CARGA ABSOLUTAMENTE TODOS LOS CONTENIDOS DE LA PÁGINA PÚBLICA EN UN SOLO FETCH
     function loadContent() {
@@ -1400,8 +1402,8 @@
                     <div class="list-item">
                         <span style="display:flex; align-items:center;">${imgTag} ${e.nombre}</span>
                         <div>
-                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
-                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                            <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
+                            <button class="btn-del" style="padding:4px 10px; margin:0; margin-left:5px;" onclick="borrarTicket(${t.id}, event)"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `}).join('');
@@ -1522,6 +1524,40 @@
                 if(!select) return;
                 select.innerHTML = empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
             });
+    }
+
+    function borrarTicket(id, event) {
+        event.stopPropagation(); // Evita que se abra el popup de detalle
+        if(confirm("¿Estás seguro de eliminar este ticket de manera permanente?")) {
+            fetch(`${API}/admin/tickets/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) { 
+                    alert("Ticket eliminado correctamente."); 
+                    cargarTicketsAdmin(); // Refresca la tabla
+                } else { 
+                    alert("Error: " + data.message); 
+                }
+            });
+        }
+    }
+
+    function irACrearUsuarioEmpresa(empresaId) {
+        // 1. Navega automáticamente a la pestaña de personal
+        switchTab('tab-personal', { currentTarget: document.querySelectorAll('.sidebar-item')[4] });
+    
+        // 2. Establece el nivel de acceso como "Cliente Empresarial"
+        const rolSelect = document.getElementById('new-emp-role');
+        rolSelect.value = 'cliente';
+    
+        // 3. Despliega la caja de selección de empresas
+        toggleEmpresa('cliente', 'div-empresa-alta', 'select-empresa-alta');
+    
+        // 4. Selecciona la empresa a la que le dimos clic
+        setTimeout(() => {
+            document.getElementById('select-empresa-alta').value = empresaId;
+            document.getElementById('new-emp-name').focus(); // Lleva el puntero al nombre para escribir
+        }, 150);
     }
 
 </script>

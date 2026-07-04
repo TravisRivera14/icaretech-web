@@ -850,6 +850,18 @@ def crear_ticket():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
+@app.route('/api/admin/tickets/<int:id>', methods=['DELETE'])
+@login_required
+def eliminar_ticket_admin(id):
+    if session.get('rol') not in ['admin', 'personal']: 
+        return jsonify({"message": "Denegado"}), 403
+    try:
+        db_query("DELETE FROM tickets_soporte WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Ticket", f"Ticket ID {id} eliminado de forma permanente")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == '__main__':
     init_db()

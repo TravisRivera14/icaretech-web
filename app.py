@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.middleware.proxy_fix import ProxyFix  # <--- IMPORTANTE: Herramienta de Proxy
+from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 import os
 import psycopg2
@@ -23,10 +23,9 @@ CORS(app, supports_credentials=True)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
-# Ajuste de Cookies para evitar que Vercel o el navegador las rechacen
 app.config.update(
     SESSION_COOKIE_SECURE=True, 
-    SESSION_COOKIE_SAMESITE='Lax', # Lax es el estándar seguro para el mismo dominio
+    SESSION_COOKIE_SAMESITE='Lax', 
     SESSION_COOKIE_HTTPONLY=True
 )
 
@@ -63,25 +62,27 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, usuario_id INT, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', whatsapp VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     
-    # Nuevas tablas para el Centro de Operaciones
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
-    
-    # Asegurar columnas (migración silenciosa)
-    try: c.execute('''ALTER TABLE usuarios ADD COLUMN correo VARCHAR(150)''')
-    except: conn.rollback()
-    try: c.execute('''ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20)''')
-    except: conn.rollback()
-    try: c.execute('''ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT''')
-    except: conn.rollback()
-    try: c.execute('''ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)''')
-    except: conn.rollback()
-
     conn.commit()
+
+    # MIGRACIÓN SEGURA: Fuerza la creación de columnas faltantes una por una
+    migraciones = [
+        "ALTER TABLE usuarios ADD COLUMN correo VARCHAR(150)",
+        "ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20)",
+        "ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT",
+        "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)"
+    ]
+    for mig in migraciones:
+        try:
+            c.execute(mig)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+
     c.close()
     conn.close()
 
-# ESTO OBLIGA A VERCEL A CREAR LAS TABLAS FALTANTES EN LA BASE DE DATOS
 db_initialized = False
 @app.before_request
 def initialize_database():
@@ -115,7 +116,6 @@ def login():
         conn = get_db_connection()
         cur = conn.cursor()
         
-        # Blindaje: Si las columnas de correo/teléfono fallan, iniciamos sesión de modo clásico
         try:
             cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s) OR LOWER(correo) = LOWER(%s) OR telefono = %s", (usr, usr, usr))
         except Exception:
@@ -150,7 +150,6 @@ def obtener_datos_operativos():
             if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
             id_empresa = res_emp[0][0]
             
-        # Determinar Permisos Modulares con blindaje anticaídas
         try: perm_emp = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (id_empresa,), fetch=True)
         except: perm_emp = None
         
@@ -163,12 +162,19 @@ def obtener_datos_operativos():
 
         facturas = []
         if permisos_finales["facturacion"]:
-            facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+            try: facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+            except: facturas = []
             
-        if rol == 'cliente_admin':
-            tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
-        else:
-            tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+        # BLINDAJE: Si la columna usuario_id no existe, busca por empresa general en su lugar
+        tickets = []
+        try:
+            if rol == 'cliente_admin':
+                tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+            else:
+                tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+        except Exception:
+            try: tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+            except Exception: tickets = []
         
         return jsonify({
             "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
@@ -191,7 +197,6 @@ def listar_usuarios():
     try:
         users_raw = db_query("SELECT id, usuario, rol, nombre, empresa, correo, telefono FROM usuarios ORDER BY id ASC", fetch=True) or []
     except Exception:
-        # Fallback si no ha cargado correos y telefonos aún
         users_raw = db_query("SELECT id, usuario, rol, nombre, empresa, '', '' FROM usuarios ORDER BY id ASC", fetch=True) or []
     return jsonify([{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3], "empresa_id": r[4], "correo": r[5], "telefono": r[6]} for r in users_raw])
 
@@ -250,7 +255,6 @@ def editar_usuario():
 def eliminar_usuario(id):
     if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "denegado"}), 403
     try:
-        # Blindaje: Borra o actualiza en silencio evitando cualquier bloqueo
         try: db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
         except Exception: pass
         
@@ -762,7 +766,13 @@ def crear_ticket():
                 empresa_id = empresa_res[0][0]
 
         usuario_log = session.get('usuario', d.get('contacto', 'Usuario Público'))
-        db_query("""INSERT INTO tickets_soporte (empresa_id, usuario_id, contacto, asunto, descripcion, prioridad, whatsapp) VALUES (%s, %s, %s, %s, %s, %s, %s)""", (empresa_id, usuario_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
+        
+        # BLINDAJE EXTRA: Intenta con todas las columnas, si falla (porque no existen), usa la versión reducida
+        try:
+            db_query("""INSERT INTO tickets_soporte (empresa_id, usuario_id, contacto, asunto, descripcion, prioridad, whatsapp) VALUES (%s, %s, %s, %s, %s, %s, %s)""", (empresa_id, usuario_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
+        except Exception:
+            db_query("""INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s)""", (empresa_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad')))
+            
         registrar_cambio("Ticket Creado", f"El usuario {usuario_log} creó un ticket de prioridad {d.get('prioridad')}")
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500

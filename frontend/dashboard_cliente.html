@@ -8,8 +8,8 @@
         :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; }
         body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        header { background: #11141a; padding: 15px 40px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .top-nav { display: flex; gap: 30px; margin-left: 40px; }
+        header { background: #11141a; padding: 15px 40px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-between; }
+        .top-nav { display: flex; gap: 30px; }
         .top-nav button { background: none; border: none; color: #8a99ad; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; font-size: 15px; }
         .top-nav button:hover, .top-nav button.active { color: var(--accent); }
         
@@ -18,35 +18,26 @@
         .menu-title { font-size: 12px; color: #555; text-transform: uppercase; margin: 20px 20px 10px; font-weight: 600; }
         .nav-item { padding: 12px 20px; cursor: pointer; color: #8a99ad; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .nav-item:hover { background: var(--card); color: var(--accent); }
-        
-        .submenu { list-style: none; padding-left: 45px; display: none; background: #0b0c10; }
-        .submenu li { padding: 8px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
+        .submenu { list-style: none; padding-left: 45px; display: none; background: #0b0c10; margin:0;}
+        .submenu li { padding: 10px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
         .submenu li:hover { color: var(--accent); }
         
         .main-content { flex: 1; padding: 40px; }
         .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-<div id="splash-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.6s ease-out;">
-    <div style="width:120px; height:120px; border-radius:50%; background:var(--card); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 10px 30px rgba(0, 180, 216, 0.2);">
-        <i class="fas fa-building" style="font-size:50px; color:var(--accent);"></i>
-    </div>
-    <h2 style="color:white; margin:0; font-size:24px;">Cargando Portal...</h2>
-    <p style="color:#8a99ad; font-size:14px; margin-top:10px;">Sincronizando información de iCare Tech CR</p>
-</div>
-
 <header>
-    <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
+    <div style="display:flex; align-items:center; gap:20px;">
+        <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
+        <span id="badge-admin" style="display:none; background:var(--accent); color:black; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px;">ADMIN EMPRESARIAL</span>
+    </div>
     <nav class="top-nav" id="top-nav">
-        <button onclick="showSection('datacenter')"><i class="fas fa-server"></i> Data Center</button>
-        <button onclick="showSection('facturacion')"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
-        <button onclick="showSection('tickets')"><i class="fas fa-ticket-alt"></i> Tickets</button>
-        <button onclick="showSection('inventario')"><i class="fas fa-boxes"></i> Inventario</button>
+        <button id="btn-nav-datacenter" onclick="showSection('datacenter')" style="display:none;"><i class="fas fa-server"></i> Data Center</button>
+        <button id="btn-nav-facturacion" onclick="showSection('facturacion')" style="display:none;"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
+        <button id="btn-nav-tickets" onclick="showSection('tickets')" style="display:none;"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        <button id="btn-nav-inventario" onclick="showSection('inventario')" style="display:none;"><i class="fas fa-boxes"></i> Inventario</button>
     </nav>
 </header>
 
@@ -54,189 +45,99 @@
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
-            <h2>Centro de Operaciones</h2>
+            <h2>Cargando conexión segura...</h2>
         </div>
     </main>
 </div>
 
 <script>
+    let userDataCache = {};
+
     const menuData = {
         'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
-        'facturacion': [
-            {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, 
-            {nombre: 'POS', sub: ['Ingresar', 'Vendedores']},
-            {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
-            {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
-            {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
-            {nombre: 'Reportes'},
-            {nombre: 'Configuración', sub: ['Datos de la empresa', 'Usuarios', 'Métodos de pago', 'Impuestos', 'Plantillas de correo', 'Plantillas de documentos']}
-        ],
-        'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
-        'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
+        'facturacion': [{nombre: 'Inicio'}, {nombre: 'Nueva Factura'}, {nombre: 'Historial Fiscal'}],
+        'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Historial de Tickets'}],
+        'inventario': [{nombre: 'Equipos Activos'}, {nombre: 'Solicitud de Piezas'}]
+    };
+
+    window.onload = async function() {
+        try {
+            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
+            userDataCache = await res.json();
+            
+            if(userDataCache.error) { window.location.href = '/login.html'; return; }
+            
+            if (userDataCache.rol === 'cliente_admin') {
+                document.getElementById('badge-admin').style.display = 'block';
+            }
+
+            // Aplicar Permisos Visuales
+            const p = userDataCache.permisos;
+            let firstSec = null;
+            if(p.datacenter) { document.getElementById('btn-nav-datacenter').style.display = 'flex'; firstSec = firstSec||'datacenter'; }
+            if(p.facturacion) { document.getElementById('btn-nav-facturacion').style.display = 'flex'; firstSec = firstSec||'facturacion'; }
+            if(p.tickets) { document.getElementById('btn-nav-tickets').style.display = 'flex'; firstSec = firstSec||'tickets'; }
+            if(p.inventario) { document.getElementById('btn-nav-inventario').style.display = 'flex'; firstSec = firstSec||'inventario'; }
+
+            if(firstSec) showSection(firstSec);
+            else document.getElementById('contenido-dinamico').innerHTML = "<h2>Acceso Restringido</h2><p>No tienes módulos activos asignados.</p>";
+
+        } catch(e) { console.error("Error cargando perfil"); }
     };
 
     function showSection(sec) {
+        document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-nav-${sec}`).classList.add('active');
+
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
         menuData[sec].forEach(item => {
-            if (item.sub) {
-                sidebar.innerHTML += `
-                    <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
-                    <ul class="submenu" style="display:block">${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}</ul>`;
-            } else {
-                sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
-            }
+            sidebar.innerHTML += `<div class="nav-item" onclick="renderModulo('${item.nombre}')">${item.nombre}</div>`;
         });
-    }
-
-    function toggleSub(el) { 
-        el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; 
-    }
-
-    window.onload = async function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const seccion = urlParams.get('seccion');
-        const accion = urlParams.get('accion');
-
-        // Espera de manera síncrona a que se carguen los datos
-        if (seccion === 'tickets' && accion === 'nuevo') {
-            showSection('tickets');
-            await render('Crear Nuevo Ticket'); 
-        } else {
-            showSection('facturacion'); 
-            await render('Inicio');
-        }
-
-        // Una vez que toda la página esté inyectada, desaparece el cargando de forma fluida
-        setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            if (splash) {
-                splash.style.opacity = '0';
-                setTimeout(() => splash.style.display = 'none', 600);
-            }
-        }, 500);
-    };
-
-    async function render(opcion) {
-        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Nueva proforma', 'Cargar documento', 'Reportes', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
         
-        if (modulosEspeciales.includes(opcion)) {
-            return renderModulo(opcion);
-        }
-
-        const cont = document.getElementById('contenido-dinamico');
-        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
-        
-        try {
-            const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-            const data = await res.json();
-            
-            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
-                if(data.facturas && data.facturas.length > 0) {
-                    cont.innerHTML = `<h2>${opcion}</h2>
-                        <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                        <tbody>${data.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
-                } else {
-                    cont.innerHTML = `<h2>${opcion}</h2><p>No se encontraron documentos generados.</p>`;
-                }
-            } else {
-                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
-            }
-        } catch(e) { 
-            cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; 
-        }
+        renderModulo(menuData[sec][0].nombre); // Auto-render first option
     }
 
-    async function renderModulo(nombre) {
+    function renderModulo(nombre) {
         const cont = document.getElementById('contenido-dinamico');
         
         if (nombre === 'Crear Nuevo Ticket') {
             cont.innerHTML = `
-                <h2>Reportar Nuevo Requerimiento</h2>
-                <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
-                    <div class="form-group">
-                        <label style="color:#8a99ad; font-size:13px; margin-bottom:5px; display:block;">Empresa</label>
-                        <input type="text" value="Empresa Autorizada" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
-                    </div>
-                    <input type="text" id="ticketContacto" placeholder="Nombre completo del contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="text" id="ticketAsunto" placeholder="Asunto del problema" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <textarea id="ticketDescripcion" placeholder="Describe el inconveniente técnico en detalle..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
-                    
-                    <label style="color:#8a99ad; font-size:13px; display:block; margin-top:5px;">Prioridad</label>
-                    <select id="prioridad" style="padding:12px; border-radius:5px; background:#0b0c10; color:#fff; border:1px solid #444;">
-                        <option value="Baja">Baja</option>
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
-                    </select>
-                    
-                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:white; margin-top:10px;">Enviar Ticket</button>
-                </form>
+                <h2>Reportar Nueva Falla</h2>
+                <input type="text" id="t-asunto" placeholder="Asunto" style="width:100%; padding:12px; margin-top:15px; background:#0b0c10; color:white; border:1px solid #444; border-radius:8px;">
+                <textarea id="t-desc" placeholder="Descripción detallada..." style="width:100%; height:120px; padding:12px; margin-top:10px; background:#0b0c10; color:white; border:1px solid #444; border-radius:8px;"></textarea>
+                <select id="t-prio" style="width:100%; padding:12px; margin-top:10px; background:#0b0c10; color:white; border:1px solid #444; border-radius:8px;">
+                    <option value="Baja">Prioridad Baja</option><option value="Media">Prioridad Media</option><option value="Alta">Prioridad Alta</option>
+                </select>
+                <button onclick="enviarT()" style="margin-top:15px; padding:12px 25px; background:var(--accent); color:black; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">Crear Ticket</button>
             `;
-            document.getElementById('form-ticket').addEventListener('submit', crearTicket);
-            
-        } else if (nombre === 'Inicio') {
-            cont.innerHTML = `
-                <h2>Inicio - Facturación</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
-                    <p style="font-size:15px; line-height:1.6;">Bienvenido al módulo de facturación. Aquí podrás gestionar todo lo relacionado con tus clientes, productos y documentos fiscales.</p>
-                    <h3 style="margin-top:20px; color:var(--accent);">Opciones disponibles:</h3>
-                    <ul style="color:#8a99ad; line-height:2; margin-top:10px;">
-                        <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
-                        <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
-                        <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
-                        <li><strong>Facturación y Proformas:</strong> Emite nuevos documentos.</li>
-                    </ul>
-                </div>
-            `;
-            
-        } else if (nombre === 'Mi plan') {
-            cont.innerHTML = `
-                <h2>Mi Plan Actual</h2>
-                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
-                    <p style="font-size:16px; margin-bottom:15px;">Estás en el <strong>Plan Básico</strong>: incluye hasta 3 facturas mensuales gratuitas.</p>
-                    <p style="color:#8a99ad; margin-bottom:25px;">¿Necesitas más capacidad? Puedes actualizar a cualquiera de nuestros planes premium con mejoras integrales para tu facturación electrónica.</p>
-                    <button style="padding:12px 25px; background:var(--accent); border:none; border-radius:5px; color:#fff; cursor:pointer; font-weight:bold;">
-                        Ver opciones y actualizar Plan
-                    </button>
-                </div>
-            `;
-            
+        } else if (nombre === 'Historial de Tickets') {
+            const label = userDataCache.rol === 'cliente_admin' ? 'Tickets de toda la empresa' : 'Mis tickets reportados';
+            if (!userDataCache.tickets || userDataCache.tickets.length === 0) {
+                cont.innerHTML = `<h2>${label}</h2><p>No se encontraron registros activos.</p>`;
+                return;
+            }
+            let html = `<h2>${label}</h2><div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">`;
+            userDataCache.tickets.forEach(t => {
+                html += `<div style="padding:15px; background:#0b0c10; border:1px solid #444; border-radius:8px;">
+                    <div style="color:var(--accent); font-weight:bold; margin-bottom:5px;">${t.asunto}</div>
+                    <div style="font-size:13px; color:#8a99ad;">Estado: <b style="color:white;">${t.estado}</b> | Prioridad: ${t.prioridad}</div>
+                </div>`;
+            });
+            cont.innerHTML = html + "</div>";
         } else {
-            cont.innerHTML = `
-                <h2>${nombre}</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
-                    <p>Módulo de ${nombre} en construcción.</p>
-                </div>
-            `;
+            cont.innerHTML = `<h2>${nombre}</h2><p style="margin-top:15px; color:#8a99ad;">Has accedido correctamente al módulo autorizado por tu administrador de sistema. Esta sección se encuentra en despliegue.</p>`;
         }
     }
 
-    async function crearTicket(event) {
-        event.preventDefault();
-        const ticketData = {
-            asunto: document.getElementById('ticketAsunto').value,
-            descripcion: document.getElementById('ticketDescripcion').value,
-            prioridad: document.getElementById('prioridad').value,
-            contacto: document.getElementById('ticketContacto').value,
-            whatsapp: document.getElementById('ticketWhatsApp').value
+    async function enviarT() {
+        const d = { 
+            contacto: "Usuario Corporativo", asunto: document.getElementById('t-asunto').value, 
+            descripcion: document.getElementById('t-desc').value, prioridad: document.getElementById('t-prio').value 
         };
-
-        const res = await fetch('/api/tickets/crear', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(ticketData)
-        });
-        
-        const resJson = await res.json();
-        if(resJson.success) {
-            alert("¡Ticket enviado correctamente!");
-            render('Tickets Activos');
-        } else {
-            alert("Error: " + resJson.message);
-        }
+        const res = await fetch('/api/tickets/crear', { method: 'POST', headers: {'Content-Type':'application/json'}, credentials: 'include', body: JSON.stringify(d) });
+        if(res.ok) { alert("Reportado con éxito."); renderModulo('Historial de Tickets'); }
     }
-
 </script>
 </body>
 </html>

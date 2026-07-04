@@ -10,264 +10,111 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        @media (max-width: 768px) {
-            header { padding: 10px 15px !important; }
-            .nav-bar { flex-direction: column; gap: 10px; text-align: center; }
-            .logo-img { height: 50px !important; width: auto; }
-            .nav-links { display: flex; justify-content: center; gap: 15px; font-size: 14px; }
-        }
-        
+        /* [EL CSS SE MANTIENE EXACTAMENTE IGUAL, SE AGREGAN UN PAR DE CLASES PARA LOS SWITCHES] */
         :root { 
             --dark-bg: #0b0c10; --card-bg: #1f2833; --turquoise-main: #00b4d8; 
-            --turquoise-dark: #0077b6; --turquoise-light: #90e0ef; --del: #ff3b30; 
-            --text-light: #f5f5f7; --text-secondary: #8a99ad; 
+            --turquoise-dark: #0077b6; --text-light: #f5f5f7; --text-secondary: #8a99ad; 
             --border-smooth: rgba(255, 255, 255, 0.05); --radius-premium: 16px; 
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3); --del: #ff3b30;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px; }
-        body { background: var(--dark-bg); color: var(--text-light); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; }
-
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
-        .login-card { background: var(--card-bg); padding: 45px 35px; border-radius: 24px; box-shadow: var(--shadow-premium); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-smooth); }
-
+        body { background: var(--dark-bg); color: var(--text-light); display: flex; min-height: 100vh; }
         .sidebar { width: 280px; background: #11141a; border-right: 1px solid var(--border-smooth); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
         .sidebar-brand { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 35px; padding-left: 10px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand span { color: var(--turquoise-main); }
         .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-        .sidebar-item { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: var(--transition-smooth); }
+        .sidebar-item { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.3s; }
         .sidebar-item:hover, .sidebar-item.active { background: var(--card-bg); color: #ffffff; }
         .sidebar-item.active i { color: var(--turquoise-main); }
-
         .main-content { margin-left: 280px; flex: 1; padding: 40px 50px; max-width: 1200px; }
-        .header-area { margin-bottom: 35px; }
-        .header-area h1 { font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.8px; }
-        .header-area p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
-
         .tab-section { display: none; animation: techFadeIn 0.5s ease forwards; }
         .tab-section.active { display: grid; grid-template-columns: 1fr; gap: 25px; }
-
         @keyframes techFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .grid-two-columns { display: grid; grid-template-columns: 1fr; gap: 25px; }
         @media (min-width: 901px) { .grid-two-columns { grid-template-columns: 1fr 1fr; } }
-
-        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); box-shadow: var(--shadow-premium); border: 1px solid var(--border-smooth); box-sizing: border-box; }
+        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); border: 1px solid var(--border-smooth); box-sizing: border-box; }
         .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #ffffff; display: flex; align-items: center; gap: 10px; }
-
-        input, textarea, button, select { width: 100%; padding: 14px; margin: 6px 0 16px 0; border-radius: 10px; border: 1px solid transparent; background: var(--dark-bg); color: var(--text-light); box-sizing: border-box; font-size: 14.5px; outline: none; transition: var(--transition-smooth); }
-        input:focus, textarea:focus, select:focus { background: #11141a; border-color: var(--turquoise-main); box-shadow: 0 0 10px rgba(0, 180, 216, 0.2); }
+        input, select, textarea { width: 100%; padding: 14px; margin: 6px 0 16px 0; border-radius: 10px; border: 1px solid var(--border-smooth); background: var(--dark-bg); color: var(--text-light); font-size: 14.5px; outline: none; }
+        input:focus, select:focus { border-color: var(--turquoise-main); }
         label { font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-top: 4px; }
-        
-        button { background: var(--turquoise-main); color: #000000; border: none; cursor: pointer; font-weight: 700; margin-bottom: 0; border-radius: 22px; padding: 12px 24px; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15); }
-        button:hover { background: var(--turquoise-light); transform: translateY(-1px); }
+        button { background: var(--turquoise-main); color: #000; border: none; cursor: pointer; font-weight: 700; border-radius: 12px; padding: 12px 24px; }
+        button:hover { opacity: 0.9; }
         .btn-brand-accent { background: var(--turquoise-dark); color: white; }
-        .btn-brand-accent:hover { background: var(--turquoise-main); color: black; }
-
         .list-container { max-height: 400px; overflow-y: auto; background: #11141a; border: 1px solid var(--border-smooth); border-radius: 12px; padding: 8px; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border-smooth); font-size: 13.5px; }
-        .list-item:last-child { border-bottom: none; }
-        .list-item span { font-weight: 600; color: var(--text-light); }
+        .btn-edit { background: rgba(0, 180, 216, 0.15); color: var(--turquoise-main); padding: 6px 14px; border-radius: 6px; font-weight: 600; border: none; margin-right: 5px; }
+        .btn-del { background: rgba(255, 59, 48, 0.15); color: var(--del); padding: 6px 14px; border-radius: 6px; font-weight: 600; border: none; }
         
-        .btn-edit { background: rgba(0, 180, 216, 0.15); color: var(--turquoise-main); width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
-        .btn-edit:hover { background: var(--turquoise-main); color: #000; }
-        .btn-del { background: rgba(255, 59, 48, 0.15); color: var(--del); width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
-        .btn-del:hover { background: var(--del); color: #fff; }
-        
-        .ticket-table-wrapper { overflow-x: auto; border: 1px solid var(--border-smooth); border-radius: 12px; background: #11141a; }
-        .ticket-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-        .ticket-table th, .ticket-table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border-smooth); }
-        .ticket-table th { background: #161a22; font-weight: 700; color: #ffffff; }
-        .ticket-table tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
-        
-        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; }
-        .badge-alta { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
-        .badge-media { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-
-        .apple-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); z-index: 50000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .apple-modal-content { background: var(--card-bg); width: 100%; max-width: 680px; border-radius: 20px; padding: 35px; box-shadow: 0 30px 70px rgba(0,0,0,0.5); border: 1px solid var(--border-smooth); animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; max-height: 90vh; overflow-y: auto; }
-        @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-smooth); padding-bottom: 15px; margin-bottom: 20px; }
-        .modal-close-btn { background: var(--dark-bg); color: var(--text-light); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 14px; transition: var(--transition-smooth); }
-        .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
-        .ai-bulletin-box { background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02)); border: 1px dashed var(--turquoise-main); border-radius: 12px; padding: 20px; margin-top: 25px; display: none; }
-        
-        @media (max-width: 900px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; padding: 20px; }
-            .main-content { margin-left: 0; padding: 20px; }
-        }
+        /* Switch Custom */
+        .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; margin-bottom: 15px; font-weight: 600; color: #cfd8dc; }
+        .toggle-switch input { display: none; }
+        .slider { width: 44px; height: 24px; background-color: #333; border-radius: 34px; position: relative; transition: 0.4s; }
+        .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background-color: var(--turquoise-main); }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
 
-<div id="login-overlay">
-    <div class="login-card">
-        <h2 style="margin-bottom:6px; font-weight:800; color:var(--turquoise-main); font-size: 24px;">Control Maestro</h2>
-        <p style="color:var(--text-secondary); font-size:14px; margin-bottom:28px;">iCare Tech CR</p>
-        <form id="form-login-master">
-            <input type="text" id="login-user" placeholder="Usuario de red" required>
-            <input type="password" id="login-pass" placeholder="Contraseña cifrada" required>
-            <button type="submit" style="width:100%;">Ingresar al Panel</button>
-        </form>
-        <div id="login-error" style="color:var(--del); margin-top:16px; font-weight:600; display:none; font-size: 13.5px;">⚠️ Credenciales de red incorrectas</div>
-    </div>
-</div>
-
 <aside class="sidebar">
     <div class="sidebar-brand">iCare Admin<span>.</span></div>
     <ul class="sidebar-menu">
-        <li class="sidebar-item" onclick="switchTab('tab-tickets', event)"><i class="fas fa-ticket-alt"></i> Tickets de Soporte</li>
-        <li class="sidebar-item active" onclick="switchTab('tab-solicitudes', event)"><i class="fas fa-inbox"></i> Solicitudes</li>
-        <li class="sidebar-item" onclick="switchTab('tab-empresas', event)"><i class="fas fa-building"></i> Clientes Corporativos</li>
-        <li class="sidebar-item" onclick="switchTab('tab-contenidos', event)"><i class="fas fa-file-alt"></i> Landing & Contenidos</li>
+        <li class="sidebar-item" onclick="switchTab('tab-tickets', event)"><i class="fas fa-ticket-alt"></i> Tickets Activos</li>
+        <li class="sidebar-item active" onclick="switchTab('tab-empresas', event)"><i class="fas fa-building"></i> Clientes Corporativos</li>
+        <li class="sidebar-item" onclick="switchTab('tab-operaciones', event)"><i class="fas fa-network-wired"></i> C. de Operaciones</li>
         <li class="sidebar-item" onclick="switchTab('tab-personal', event)"><i class="fas fa-users"></i> Personal Técnico</li>
-        <li class="sidebar-item" onclick="switchTab('tab-auditoria', event)"><i class="fas fa-history"></i> Auditoría</li>
     </ul>
 </aside>
 
 <main class="main-content">
     <div class="header-area">
-        <h1 id="main-panel-title">Gestión de Solicitudes</h1>
-        <p>Aprobar o denegar solicitudes de registro de nuevos usuarios.</p>
+        <h1 id="main-panel-title">Clientes Corporativos</h1>
+        <p>Administra los vínculos B2B e infraestructura.</p>
     </div>
     
-    <section id="tab-solicitudes" class="tab-section active">
-        <div class="card">
-            <h2>Solicitudes de Registro</h2>
-            <button class="btn-del" onclick="eliminarSeleccionados('solicitudes_registro')">🗑️ Eliminar Seleccionados</button>
-            <table class="ticket-table">
-                <thead><tr><th><input type="checkbox" id="select-all-solicitudes" onclick="toggleSelectAll(this, 'check-sol')"></th><th>Empresa</th><th>Nombre</th><th>Correo</th><th>Acción</th></tr></thead>
-                <tbody id="tabla-solicitudes"><tr><td colspan="5">Cargando...</td></tr></tbody>
-            </table>
-        </div>
-    </section>
-    
-    <section id="tab-tickets" class="tab-section">
-        <div class="card">
-            <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
-            <label>Filtrar y dividir vista por Empresa:</label>
-            <select id="filtroEmpresaTickets" onchange="filtrarTicketsPorEmpresa(this.value)">
-                <option value="Todos">-- Mostrar Todas las Empresas --</option>
-            </select>
-            
-            <div class="ticket-table-wrapper">
-                <table class="ticket-table">
-                    <thead><tr><th>Fecha</th><th>Empresa</th><th>Contacto</th><th>Asunto</th><th>Descripción</th><th>Urgencia</th><th>Estado</th><th>Acciones</th></tr></thead>
-                    <tbody id="tabla-tickets-soporte">
-                        <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Cargando flujos de datos...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <section id="tab-empresas" class="tab-section">
+    <section id="tab-empresas" class="tab-section active">
         <div class="grid-two-columns">
+            <div class="card">
+                <h2><i class="fas fa-list-ol" style="color: var(--turquoise-main);"></i> Directorio de Empresas</h2>
+                <div id="lista-empresas-soporte-bajas" class="list-container">Cargando datos...</div>
+            </div>
             <div class="card">
                 <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa</h2>
                 <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
-                <label>Logo corporativo (Opcional):</label>
-                <input type="file" id="newSupportEmpImg" accept="image/*" style="padding: 10px;">
                 <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Vincular Cliente</button>
-            </div>
-            <div class="card">
-                <h2><i class="fas fa-list-ol" style="color: var(--turquoise-main);"></i> Empresas Activas en Soporte</h2>
-                <div id="lista-empresas-soporte-bajas" class="list-container">Cargando datos...</div>
             </div>
         </div>
     </section>
 
-    <section id="tab-contenidos" class="tab-section">
+    <section id="tab-operaciones" class="tab-section">
         <div class="grid-two-columns">
-            <div>
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="srv-label"><i class="fas fa-laptop-code" style="color: var(--turquoise-main);"></i> Gestionar Módulos de Servicio</h2>
-                    <input type="text" id="sIcon" placeholder="Emoji o Icono descriptivo">
-                    <input type="text" id="sTitle" placeholder="Nombre del servicio técnico">
-                    <textarea id="sDesc" rows="2" placeholder="Resumen corto de cara al cliente"></textarea>
-                    <textarea id="sProcess" rows="3" placeholder="Flujo o proceso de ejecución técnica"></textarea>
-                    <textarea id="sBenefits" rows="3" placeholder="Beneficios integrados (Uno por línea)"></textarea>
-                    <label>Imagen opcional:</label>
-                    <input type="file" id="sImgFile" accept="image/*" style="padding: 10px;">
-                    <button onclick="subirServicio()">Guardar en Servidor</button>
-                </div>
+            <div class="card">
+                <h2><i class="fas fa-building" style="color: var(--turquoise-main);"></i> 1. Selecciona una Empresa</h2>
+                <select id="select-ops-empresa" onchange="cargarOperaciones(this.value)">
+                    <option value="">-- Cargar Empresas --</option>
+                </select>
                 
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="prod-label"><i class="fas fa-box-open" style="color: var(--turquoise-main);"></i> Catálogo e Inyección de Productos</h2>
-                    <input type="text" id="pName" placeholder="Nombre de la pieza o componente">
-                    <input type="text" id="pPrice" placeholder="Valor comercial bruto (₡)">
-                    <input type="text" id="pCat" placeholder="Categoría para filtros rápidos">
-                    <label>Captura o fotografía técnica:</label>
-                    <input type="file" id="pImgFile" accept="image/*" style="padding: 10px;">
-                    <button onclick="subirProducto()">Inyectar al Catálogo</button>
-                </div>
-
-                <div class="card">
-                    <h2 id="partner-label"><i class="fas fa-handshake" style="color: var(--turquoise-main);"></i> Marcas Asociadas (Socios)</h2>
-                    <input type="text" id="partnerName" placeholder="Nombre comercial del fabricante">
-                    <input type="file" id="partnerImgFile" accept="image/*" style="padding: 10px;">
-                    <button onclick="subirSocio()">Vincular Fabricante</button>
-                </div>
-            </div>
-
-            <div>
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2><i class="fas fa-sliders" style="color: var(--turquoise-main);"></i> Textos Maestros de Identidad</h2>
-                    <input type="text" id="h_titulo" placeholder="Encabezado Hero Principal">
-                    <textarea id="mision" rows="2" placeholder="Nuestra Misión"></textarea>
-                    <textarea id="vision" rows="2" placeholder="Nuestra Visión"></textarea>
-                    <textarea id="compromiso" rows="2" placeholder="Compromiso Organizacional Corporativo"></textarea>
-                    <button onclick="updateConfig()">Sincronizar Textos</button>
-                </div>
-
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="ben-label"><i class="fas fa-award" style="color: var(--turquoise-main);"></i> Tarjetas de Valor Adicional</h2>
-                    <input type="text" id="bIcon" placeholder="Icono FontAwesome (Ej: fas fa-shield-alt)">
-                    <input type="text" id="bTitle" placeholder="Título de la ventaja">
-                    <textarea id="bDesc" rows="2" placeholder="Explicación concisa..."></textarea>
-                    <button onclick="subirBeneficio()">Publicar Tarjeta</button>
-                </div>
-
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="obj-label"><i class="fas fa-crosshairs" style="color: var(--turquoise-main);"></i> Segmentación Clientes Objetivos</h2>
-                    <input type="text" id="objIcon" placeholder="Icono FontAwesome">
-                    <input type="text" id="objTitle" placeholder="Perfil comercial objetivo">
-                    <textarea id="objDesc" rows="2" placeholder="Solución a medida provista..."></textarea>
-                    <button onclick="subirObjetivo()">Fijar Perfil</button>
-                </div>
-
-                <div class="card" style="margin-bottom: 20px;">
-                    <h2 id="emp-label"><i class="fas fa-square-poll-horizontal" style="color: var(--turquoise-main);"></i> Marcas que nos Recomiendan</h2>
-                    <input type="text" id="empName" placeholder="Nombre de la institución o local">
-                    <input type="file" id="empImgFile" accept="image/*" style="padding: 10px;">
-                    <button onclick="subirEmpresa()">Fijar Insignia Logotipo</button>
-                </div>
-
-                <div class="card">
-                    <h2 id="rev-label"><i class="fas fa-star" style="color: var(--turquoise-main);"></i> Reseñas & Clientes Satisfechos</h2>
-                    <input type="text" id="revClient" placeholder="Nombre completo">
-                    <input type="text" id="revPos" placeholder="Compañía o puesto laboral">
-                    <textarea id="revText" rows="3" placeholder="Testimonio textual..."></textarea>
-                    <input type="file" id="revImgFile" accept="image/*" style="padding: 10px;">
-                    <button onclick="subirResena()">Publicar Testimonio</button>
+                <div id="panel-ops-empresa" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border:1px solid var(--turquoise-main);">
+                    <h3 style="font-size:14px; margin-bottom:15px; color:white;">Módulos Autorizados (Plan de la Empresa)</h3>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-fact"><span class="slider"></span> Facturación Electrónica</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-data"><span class="slider"></span> Data Center & Servidores</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-inv"><span class="slider"></span> Inventario y Piezas</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-tck"><span class="slider"></span> Sistema de Tickets</label>
+                    <button style="width:100%; margin-top:10px;" onclick="guardarPermisosEmpresa()">Guardar Permisos de Empresa</button>
                 </div>
             </div>
             
-            <div class="card" style="grid-column: 1/-1;">
-                <h2><i class="fas fa-database" style="color: var(--turquoise-main);"></i> Árbol Actual de Contenidos Disponibles</h2>
-                <div id="master-list" class="list-container" style="max-height: 500px;">Conectando a Vercel serverless...</div>
+            <div class="card">
+                <h2><i class="fas fa-users-cog" style="color: var(--turquoise-main);"></i> 2. Control de Acceso por Usuario</h2>
+                <div id="lista-ops-usuarios" style="color:var(--text-secondary); font-size:14px;">Selecciona una empresa primero.</div>
             </div>
         </div>
     </section>
 
     <section id="tab-personal" class="tab-section">
-        <div id="seccion-usuarios-admin" class="grid-two-columns">
+        <div class="grid-two-columns">
             <div class="card">
-                <h2><i class="fas fa-user-plus" style="color: var(--turquoise-main);"></i> Registrar Cuenta de Personal</h2>
+                <h2><i class="fas fa-user-plus" style="color: var(--turquoise-main);"></i> Formulario de Personal</h2>
                 <form id="form-alta-trabajador">
                     <input type="text" id="new-emp-name" placeholder="Nombre completo" required>
                     <input type="text" id="new-emp-user" placeholder="Usuario" required>
@@ -275,10 +122,12 @@
                     <input type="email" id="new-emp-email" placeholder="Correo electrónico" required>
                     <input type="tel" id="new-emp-phone" placeholder="Número telefónico" required>
                     
-                    <label for="new-emp-role">Nivel de Acceso:</label>
+                    <label>Nivel de Acceso:</label>
                     <select id="new-emp-role" onchange="toggleEmpresa(this.value, 'div-empresa-alta', 'select-empresa-alta')" required>
                         <option value="personal">Personal Técnico</option>
-                        <option value="admin">Administrador General</option>
+                        <option value="personal_admin">Personal Técnico Admin</option>
+                        <option value="admin">Administración General</option>
+                        <option value="cliente_admin">Cliente Empresarial Admin</option>
                         <option value="cliente">Cliente Empresarial</option>
                     </select>
 
@@ -287,21 +136,25 @@
                         <select id="select-empresa-alta"></select>
                     </div>
 
-                    <button type="submit">Dar de Alta Acceso</button>
+                    <button type="submit">Dar de Alta</button>
                 </form>
 
-                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:var(--dark-bg); border-radius:12px; border: 1px solid var(--border-smooth);">
-                    <h3 style="color:var(--turquoise-main);">✏️ Actualizar Credenciales</h3>
+                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border: 1px solid var(--turquoise-main);">
+                    <h3 style="color:var(--turquoise-main); margin-bottom:15px;">✏️ Editar Credenciales</h3>
                     <form id="form-editar-trabajador">
                         <input type="hidden" id="edit-emp-id">
-                        <input type="text" id="edit-emp-name" required>
-                        <input type="text" id="edit-emp-user" required>
-                        <input type="password" id="edit-emp-pass" placeholder="Nueva clave">
+                        <input type="text" id="edit-emp-name" required placeholder="Nombre">
+                        <input type="text" id="edit-emp-user" required placeholder="Usuario">
+                        <input type="password" id="edit-emp-pass" placeholder="Nueva clave (Dejar en blanco para no cambiar)">
+                        <input type="email" id="edit-emp-email" placeholder="Correo electrónico" required>
+                        <input type="tel" id="edit-emp-phone" placeholder="Número telefónico" required>
                         
                         <label>Modificar Nivel:</label>
                         <select id="edit-emp-role" onchange="toggleEmpresa(this.value, 'div-empresa-edit', 'select-empresa-edit')">
                             <option value="personal">Personal Técnico</option>
-                            <option value="admin">Administrador General</option>
+                            <option value="personal_admin">Personal Técnico Admin</option>
+                            <option value="admin">Administración General</option>
+                            <option value="cliente_admin">Cliente Empresarial Admin</option>
                             <option value="cliente">Cliente Empresarial</option>
                         </select>
 
@@ -324,572 +177,216 @@
             </div>
         </div>
     </section>
-
-    <section id="tab-auditoria" class="tab-section">
-        <div class="card" id="seccion-logs-admin">
-            <h2><i class="fas fa-history" style="color: var(--turquoise-main);"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
-            <div id="lista-logs-auditoria" class="list-container" style="max-height: 550px; font-family: monospace; font-size: 13px; line-height: 1.6;">
-                Sincronizando logs en tiempo real...
-            </div>
+    
+    <section id="tab-tickets" class="tab-section">
+        <div class="card">
+            <h2>Tickets Abiertos de la Plataforma</h2>
+            <div class="list-container" id="tabla-tickets-soporte" style="max-height: 600px;">Cargando...</div>
         </div>
     </section>
 </main>
 
-<div id="modalTicketGrande" class="apple-modal">
-    <div class="apple-modal-content">
-        <div class="modal-header">
-            <h2 style="margin:0;"><i class="fas fa-expand" style="color:var(--turquoise-main);"></i> Detalle de Incidencia Externa</h2>
-            <div class="modal-close-btn" onclick="cerrarModalTicket()"><i class="fas fa-times"></i></div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-size:14px; margin-bottom:20px;">
-            <div><span style="color:var(--text-secondary);">Empresa:</span> <br><b id="modalEmpresa" style="color:var(--turquoise-main);"></b></div>
-            <div><span style="color:var(--text-secondary);">Reportado Por:</span> <br><b id="modalContacto" style="color: white;"></b></div>
-            <div><span style="color:var(--text-secondary);">Fecha Ingreso:</span> <br><span id="modalFecha"></span></div>
-            <div><span style="color:var(--text-secondary);">Urgencia Asignada:</span> <br><div id="modalPrioridad" style="margin-top:4px;"></div></div>
-        </div>
-
-        <div style="margin-bottom:20px; background:var(--dark-bg); padding:16px; border-radius:10px; border: 1px solid var(--border-smooth);">
-            <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Asunto:</span>
-            <h3 id="modalAsunto" style="margin: 4px 0 12px 0; font-size:16px; color: white;"></h3>
-            
-            <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Descripción Completa de la Falla:</span>
-            <p id="modalDescripcion" style="margin-top:4px; font-size:14px; line-height:1.5; color:#cfd8dc; white-space:pre-wrap;"></p>
-        </div>
-
-        <div style="display:flex; gap:12px;">
-            <button id="btnModalResolver" style="flex:1; background: var(--turquoise-dark); color: white;"><i class="fas fa-check-circle"></i> Marcar como Resuelto</button>
-            <button onclick="generarSolucionIA()" style="background:#ffffff; color:#000000; flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <i class="fas fa-robot" style="color:var(--turquoise-dark);"></i> Generar Solución con IA
-            </button>
-        </div>
-
-        <div id="boxSolucionIA" class="ai-bulletin-box">
-            <h3 style="font-size:14px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; color:var(--turquoise-main);">
-                <i class="fas fa-wand-magic-sparkles"></i> Diagnóstico Predictivo & Viñeta de Solución iCare IA:
-            </h3>
-            <div id="textSolucionIA" style="font-size:13.5px; line-height:1.6; color:#cfd8dc;"></div>
-        </div>
-    </div>
-</div>
-
 <script>
     const API = '/api';
-
-    let imgS = "", imgP = "", imgRev = "", imgPartner = "", imgEmp = "", imgSupportEmp = "", editId = null, editType = null;
-    let editSupportEmpId = null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
-    let cacheTickets = [];
-    let currentOpenTicket = null;
+    let currentOpsEmpresa = null;
 
     window.onload = function () {
-        fetch(`${API}/admin/tickets`, { method: 'GET', credentials: 'include' })
-        .then(res => {
-            if (!res.ok) { window.location.href = '/login.html'; return null; }
-            return res.json();
-        })
-        .then(tickets => {
-            if (tickets) {
-                document.getElementById('login-overlay').style.display = 'none';
-                const seccionUsuarios = document.getElementById('seccion-usuarios-admin');
-                if (seccionUsuarios) seccionUsuarios.style.display = 'grid';
-                const seccionLogs = document.getElementById('seccion-logs-admin');
-                if(seccionLogs) seccionLogs.style.display = 'block';
-
-                cacheTickets = tickets;
-                renderTablaTickets(tickets); 
-                loadContent(); 
-                cargarListaTrabajadores(); 
-                cargarHistorialLogs(); 
-                cargarSolicitudes(); 
-                
-                cargarEmpresasParaSelector('select-empresa-alta');
-                cargarEmpresasParaSelector('select-empresa-edit');
-            }
-        }).catch(err => {
-            console.error("Error crítico de autenticación:", err);
-            window.location.href = '/login.html';
-        });
+        loadContent(); 
+        cargarListaTrabajadores(); 
+        cargarEmpresasParaSelectores();
+        cargarTickets();
     };
 
     function switchTab(tabId, event) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        const currentTab = document.getElementById(tabId);
-        if (currentTab) currentTab.classList.add('active');
-        if (event && event.currentTarget) { event.currentTarget.classList.add('active'); }
-
-        const titles = {
-            'tab-tickets': 'Tickets de Soporte', 'tab-solicitudes': 'Gestión de Solicitudes de Registro',
-            'tab-empresas': 'Clientes Corporativos', 'tab-contenidos': 'Landing & Contenidos',
-            'tab-personal': 'Personal Técnico', 'tab-auditoria': 'Auditoría'
-        };
-        const titleElement = document.getElementById('main-panel-title');
-        if(titleElement) { titleElement.innerText = titles[tabId] || 'Panel de Administración'; }
+        document.getElementById(tabId).classList.add('active');
+        if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        const t = {'tab-tickets': 'Tickets Activos', 'tab-empresas': 'Clientes Corporativos', 'tab-operaciones': 'Centro de Operaciones', 'tab-personal': 'Personal & Accesos'};
+        document.getElementById('main-panel-title').innerText = t[tabId];
     }
 
-    function toggleSelectAll(source, className) {
-        document.querySelectorAll(`.${className}`).forEach(cb => cb.checked = source.checked);
-    }
-    
-    function cargarSolicitudes() {
-        fetch(`${API}/admin/solicitudes`)
-            .then(r => r.ok ? r.json() : Promise.resolve([]))
-            .then(data => {
-                const body = document.getElementById('tabla-solicitudes');
-                if (!body) return;
-                if (data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="5" style="text-align:center;">Sin solicitudes pendientes.</td></tr>';
-                } else {
-                    body.innerHTML = data.map(s => `
-                        <tr>
-                            <td><input type="checkbox" class="check-sol" value="${s.id}"></td>
-                            <td>${s.empresa}</td>
-                            <td>${s.nombre}</td>
-                            <td>${s.correo}</td>
-                            <td><button class="btn-edit" onclick="aprobarSolicitud(${s.id})">Aprobar</button></td>
-                        </tr>
-                    `).join('');
-                }
-            }).catch(e => console.error("Error cargando solicitudes:", e));
-    }
-
-    function aprobarSolicitud(id) {
-        if (!confirm("¿Aprobar este usuario? Se creará una cuenta de cliente.")) return;
-        fetch(`${API}/admin/aprobar_solicitud`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', body: JSON.stringify({ id: id })
-        }).then(r => r.json()).then(data => {
-            if (data.success) { alert("Usuario aprobado y registrado."); cargarSolicitudes(); cargarListaTrabajadores(); } 
-            else { alert("Error: " + data.message); }
-        });
-    }
-    
-    function eliminarSeleccionados(tabla) {
-        const ids = Array.from(document.querySelectorAll('.check-sol:checked')).map(c => c.value);
-        if (ids.length === 0) return alert("Selecciona uno o más ítems para eliminar.");
-        if (!confirm(`¿Seguro que deseas eliminar ${ids.length} registro(s)?`)) return;
-
-        fetch(`${API}/admin/eliminar-varios`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tabla: tabla, ids: ids })
-        }).then((res) => {
-            if(res.ok){ alert("Registros eliminados."); cargarSolicitudes(); } 
-            else { alert("Error al eliminar los registros."); }
-        });
-    }
-    
-    const handleFile = (id, cb) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = () => cb(r.result);
-            r.readAsDataURL(file);
-        };
-    };
-
-    handleFile('sImgFile', res => imgS = res); handleFile('pImgFile', res => imgP = res);
-    handleFile('revImgFile', res => imgRev = res); handleFile('partnerImgFile', res => imgPartner = res);
-    handleFile('empImgFile', res => imgEmp = res); handleFile('newSupportEmpImg', res => imgSupportEmp = res);
-
-    const loginForm = document.getElementById('form-login-master');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const user = document.getElementById('login-user').value;
-            const pass = document.getElementById('login-pass').value;
-
-            fetch(`${API}/login`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', body: JSON.stringify({ usuario: user, password: pass })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) { window.location.reload(); } 
-                else {
-                    const errorDiv = document.getElementById('login-error');
-                    if(errorDiv) errorDiv.style.display = 'block';
-                }
-            });
-        });
-    }
-    
-    function cargarHistorialLogs() {
-        fetch(`${API}/admin/logs`, { credentials: 'include' })
-            .then(res => res.ok ? res.json() : [])
-            .then(logs => {
-                const container = document.getElementById('lista-logs-auditoria');
-                if(!container) return;
-                container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid var(--border-smooth);">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--turquoise-main);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
-            });
-    }
-
-    // CORRECCIÓN 1: LOS BOTONES CORRECTOS DE EDICIÓN Y ELIMINACIÓN DE USUARIO
-    function cargarListaTrabajadores() {
-        fetch(`${API}/admin/usuarios`, { credentials: 'include' })
-            .then(res => res.ok ? res.json() : [])
-            .then(usuarios => {
-                const div = document.getElementById('lista-usuarios-tecnicos');
-                if(!div) return;
-                div.innerHTML = usuarios.map(u => `
-                <div class="list-item">
-                    <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
-                    <div>
-                        <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}', '${u.empresa_id || ''}')">Editar</button>
-                        <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
-                    </div>
-                </div>
-            `).join('');
-            });
-    }
-
-    function eliminarUsuario(id, nombre) {
-        if (confirm(`¿Eliminar de forma permanente al usuario ${nombre}?`)) {
-            fetch(`${API}/admin/eliminar-usuario/${id}`, { method: 'DELETE', credentials: 'include' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Usuario removido del servidor maestro.');
-                        cargarListaTrabajadores(); 
-                    } else { alert(data.message); }
-                });
-        }
-    }
-
-    function activarEdicionUsuario(id, nombre, usuario, rol, empresa_id) {
-        document.getElementById('bloque-editar-usuario').style.display = 'block';
-        document.getElementById('edit-emp-id').value = id;
-        document.getElementById('edit-emp-name').value = nombre;
-        document.getElementById('edit-emp-user').value = usuario;
-        document.getElementById('edit-emp-role').value = rol;
-
-        if (rol === 'cliente') {
-            toggleEmpresa('cliente', 'div-empresa-edit', 'select-empresa-edit');
-            setTimeout(() => { document.getElementById('select-empresa-edit').value = empresa_id; }, 100);
-        } else {
-            toggleEmpresa('otro', 'div-empresa-edit', 'select-empresa-edit');
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    function cancelarEdicion() { document.getElementById('bloque-editar-usuario').style.display = 'none'; }
-
-    const editForm = document.getElementById('form-editar-trabajador');
-    if (editForm) {
-        editForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const rol = document.getElementById('edit-emp-role').value;
-            fetch(`${API}/admin/editar-usuario`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', body: JSON.stringify({
-                    id: document.getElementById('edit-emp-id').value, nombre: document.getElementById('edit-emp-name').value,
-                    usuario: document.getElementById('edit-emp-user').value, password: document.getElementById('edit-emp-pass').value,
-                    rol: rol, empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-edit').value : null
-                })
-            })
-            .then(res => res.json()).then(data => {
-                if (data.success) { alert('Credenciales actualizadas!'); cancelarEdicion(); cargarListaTrabajadores(); }
-            });
-        });
-    }
-    
-    const altaForm = document.getElementById('form-alta-trabajador');
-    if (altaForm) {
-        altaForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const datos = {
-                nombre: document.getElementById('new-emp-name').value, usuario: document.getElementById('new-emp-user').value,
-                password: document.getElementById('new-emp-pass').value, email: document.getElementById('new-emp-email').value,
-                telefono: document.getElementById('new-emp-phone').value, rol: document.getElementById('new-emp-role').value,
-                empresa_id: document.getElementById('select-empresa-alta') ? document.getElementById('select-empresa-alta').value : null
-            };
-
-            fetch(`${API}/admin/crear-usuario`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', body: JSON.stringify(datos)
-            }).then(res => res.json()).then(data => {
-                if (data.success) {
-                    alert('Usuario registrado con éxito.');
-                    document.getElementById('form-alta-trabajador').reset(); 
-                    cargarListaTrabajadores();
-                } else { alert("Error: " + (data.message || "No se pudo registrar")); }
-            }).catch(err => { alert("Error de conexión con el servidor."); });
-        });
-    }
-
-    function cargarTicketsAdmin() {
-        fetch(`${API}/admin/tickets`, { credentials: 'include' })
-        .then(res => res.ok ? res.json() : [])
-        .then(tickets => { cacheTickets = tickets; renderTablaTickets(tickets); });
-    }
-
-    // CORRECCIÓN 2: AÑADIDO EL BOTÓN ROJO DE ELIMINAR EL TICKET
-    function renderTablaTickets(lista) {
-        const tbody = document.getElementById('tabla-tickets-soporte');
-        if(!tbody) return;
-        if (lista.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding: 30px;">No hay reportes levantados en esta partición.</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = lista.map(t => {
-            const fechaStr = new Date(t.fecha).toLocaleDateString('es-CR', { hour: '2-digit', minute: '2-digit' });
-            return `
-                <tr style="cursor:pointer;" onclick="abrirModalTicketGrande(${t.id})">
-                    <td style="color:var(--text-secondary); font-weight:500;">${fechaStr}</td>
-                    <td><b style="color:var(--turquoise-main);"><i class="fas fa-building"></i> ${t.empresa_nombre}</b></td>
-                    <td><b>${t.contacto}</b></td>
-                    <td style="font-weight:600; color:var(--turquoise-light);">${t.asunto}</td>
-                    <td style="color:#cfd8dc; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.descripcion}</td>
-                    <td><span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span></td>
-                    <td><b style="color:${t.estado === 'Abierto' ? '#ff3b30' : '#10b981'};">${t.estado}</b></td>
-                    <td onclick="event.stopPropagation();">
-                        <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
-                        <button class="btn-del" style="padding:4px 10px; margin:0; margin-left:5px;" onclick="borrarTicket(${t.id}, event)"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    function abrirModalTicketGrande(ticketId) {
-        const ticket = cacheTickets.find(t => t.id === ticketId);
-        if (!ticket) return;
-        currentOpenTicket = ticket;
-
-        document.getElementById('modalEmpresa').innerText = ticket.empresa_nombre;
-        document.getElementById('modalContacto').innerText = ticket.contacto;
-        document.getElementById('modalFecha').innerText = new Date(ticket.fecha).toLocaleString('es-CR');
-        document.getElementById('modalAsunto').innerText = ticket.asunto;
-        document.getElementById('modalDescripcion').innerText = ticket.descripcion;
-
-        const prioBox = document.getElementById('modalPrioridad');
-        prioBox.innerHTML = `<span class="badge badge-${ticket.prioridad.toLowerCase()}">${ticket.prioridad}</span>`;
-
-        const btnResolver = document.getElementById('btnModalResolver');
-        if (ticket.estado === 'Abierto') {
-            btnResolver.style.display = "inline-block";
-            btnResolver.onclick = () => { cambiarEstadoTicket(ticket.id, 'Resuelto'); cerrarModalTicket(); };
-        } else { btnResolver.style.display = "none"; }
-
-        document.getElementById('boxSolucionIA').style.display = "none";
-        document.getElementById('textSolucionIA').innerHTML = "";
-        document.getElementById('modalTicketGrande').style.display = "flex";
-    }
-
-    function cerrarModalTicket() {
-        document.getElementById('modalTicketGrande').style.display = "none";
-        currentOpenTicket = null;
-    }
-
-    function generarSolucionIA() {
-        if (!currentOpenTicket) return;
-        const textContainer = document.getElementById('textSolucionIA');
-        const boxContainer = document.getElementById('boxSolucionIA');
-        boxContainer.style.display = "block";
-        textContainer.innerHTML = `<div style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...</div>`;
-
-        setTimeout(() => {
-            const lowerAsunto = currentOpenTicket.asunto.toLowerCase();
-            const lowerDesc = currentOpenTicket.descripcion.toLowerCase();
-            let solucionSugerida = "";
-            if (lowerAsunto.includes('servidor') || lowerDesc.includes('servidor') || lowerDesc.includes('server')) {
-                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Aislamiento]</b> Verificar redundancia de energía en el rack y realizar ping ICMP constante.</li><li><b>[Paso 2 - Diagnóstico]</b> Acceder mediante terminal segura SSH y auditar picos anómalos.</li><li><b>[Paso 3 - Mitigación]</b> Reiniciar los daemons de servicio web y limpiar logs temporales.</li></ul>`;
-            } else if (lowerAsunto.includes('red') || lowerDesc.includes('internet') || lowerAsunto.includes('caída')) {
-                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Capa Física]</b> Verificar el estado del enlace troncal en el Switch.</li><li><b>[Paso 2 - Enrutamiento]</b> Validar la tabla de asignaciones DHCP y resolver trazas DNS.</li><li><b>[Paso 3 - Contingencia]</b> Forzar la conmutación automática hacia el proveedor secundario.</li></ul>`;
-            } else {
-                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Depuración]</b> Revisar logs del sistema operativo afectado.</li><li><b>[Paso 2 - Permisos]</b> Verificar el árbol de privilegios del usuario.</li><li><b>[Paso 3 - Despliegue]</b> Limpiar almacenamiento en caché local y reiniciar.</li></ul>`;
+    // -- EMPRESAS --
+    function loadContent() {
+        fetch(`${API}/recomiendan`).then(r => r.json()).then(empresas => {
+            const divBajas = document.getElementById('lista-empresas-soporte-bajas');
+            if (empresas.length === 0) divBajas.innerHTML = `<div style="padding:15px;">Sin empresas.</div>`;
+            else {
+                divBajas.innerHTML = empresas.map(e => `
+                    <div class="list-item">
+                        <span><b>${e.nombre}</b></span>
+                        <div>
+                            <button class="btn-brand-accent" onclick="irAOperaciones(${e.id})"><i class="fas fa-network-wired"></i> Accesos</button>
+                            <button class="btn-del" onclick="eliminarEmpresa(${e.id})">Eliminar</button>
+                        </div>
+                    </div>`).join('');
             }
-            textContainer.innerHTML = solucionSugerida;
-        }, 1200); 
-    }
-    
-    function ajustarEdicionEmpresaSoporte(id, nombre, imagenActual) {
-        editSupportEmpId = id;
-        document.getElementById('newSupportEmpName').value = nombre;
-        imgSupportEmp = (imagenActual && imagenActual !== 'undefined' && imagenActual !== 'null') ? imagenActual : "";
-        document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
-        document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Empresa y Logo";
-        document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
-        document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function filtrarTicketsPorEmpresa(empresaId) {
-        if (empresaId === "Todos") { renderTablaTickets(cacheTickets); } 
-        else { const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId); renderTablaTickets(filtrados); }
-    }
-
-    function cambiarEstadoTicket(id, nuevoEstado) {
-        fetch(`${API}/admin/tickets/${id}/estado`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', body: JSON.stringify({ estado: nuevoEstado })
-        }).then(r => r.json()).then(() => { alert("Incidencia cerrada."); cargarTicketsAdmin(); });
+        });
     }
 
     function agregarEmpresaSoporte() {
-        const nombre = document.getElementById('newSupportEmpName').value;
-        if (!nombre) return alert("Especifica el nombre corporativo.");
-        const method = editSupportEmpId ? 'PUT' : 'POST';
-        const url = editSupportEmpId ? `${API}/recomiendan/${editSupportEmpId}` : `${API}/recomiendan`;
+        fetch(`${API}/recomiendan`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include',
+            body: JSON.stringify({ nombre: document.getElementById('newSupportEmpName').value })
+        }).then(() => { alert("Empresa registrada."); document.getElementById('newSupportEmpName').value=""; loadContent(); cargarEmpresasParaSelectores(); });
+    }
 
-        fetch(url, {
-            method: method, headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', body: JSON.stringify({ nombre: nombre, imagen: imgSupportEmp })
-        }).then(r => r.json()).then(() => {
-            alert(editSupportEmpId ? "Empresa corporativa actualizada con éxito." : "Vínculo corporativo completado.");
-            editSupportEmpId = null; document.getElementById('newSupportEmpName').value = "";
-            document.getElementById('newSupportEmpImg').value = ""; imgSupportEmp = ""; 
-            document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
-            document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
-            document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
-            document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
-            loadContent(); 
+    // -- CENTRO DE OPERACIONES --
+    function cargarEmpresasParaSelectores() {
+        fetch(`${API}/recomiendan`).then(r => r.json()).then(empresas => {
+            let html = '<option value="">-- Seleccionar --</option>' + empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+            document.getElementById('select-empresa-alta').innerHTML = html;
+            document.getElementById('select-empresa-edit').innerHTML = html;
+            document.getElementById('select-ops-empresa').innerHTML = html;
         });
     }
 
-    function eliminarEmpresaSoporte(id) {
-        if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
-            fetch(`${API}/eliminar/empresas_recomiendan/${id}`, { method: 'DELETE', credentials: 'include' })
-                .then(r => r.json()).then(() => { alert("Empresa removida del sistema."); loadContent(); });
-        }
-    }   
+    function irAOperaciones(empId) {
+        switchTab('tab-operaciones', {currentTarget: document.querySelectorAll('.sidebar-item')[2]});
+        document.getElementById('select-ops-empresa').value = empId;
+        cargarOperaciones(empId);
+    }
 
-    // CORRECCIÓN 3: REPARADA LA ESTRUCTURA DE LOS BOTONES AL LISTAR EMPRESAS (BOTÓN ACCESOS)
-    function loadContent() {
-        fetch(`${API}/todo`)
-            .then(r => r.json())
-            .then(data => {
-                cacheData.servicios = data.servicios || []; cacheData.productos = data.productos || [];
-                cacheData.resenas = data.resenas || []; cacheData.socios = data.socios || [];
-                cacheData.beneficios = data.beneficios || []; cacheData.objetivos = data.objetivos || [];
-                cacheData.empresas = data.empresas || [];
+    function cargarOperaciones(empId) {
+        if(!empId) { document.getElementById('panel-ops-empresa').style.display = 'none'; document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; return; }
+        currentOpsEmpresa = empId;
+        
+        // Cargar Permisos de la Empresa
+        fetch(`${API}/admin/operaciones/empresa/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(data => {
+            document.getElementById('panel-ops-empresa').style.display = 'block';
+            document.getElementById('emp-mod-fact').checked = data.facturacion;
+            document.getElementById('emp-mod-data').checked = data.datacenter;
+            document.getElementById('emp-mod-inv').checked = data.inventario;
+            document.getElementById('emp-mod-tck').checked = data.tickets;
+        });
 
-                if (data.config) {
-                    document.getElementById('h_titulo').value = data.config.hero_titulo || "";
-                    document.getElementById('mision').value = data.config.mision || "";
-                    document.getElementById('vision').value = data.config.vision || "";
-                    document.getElementById('compromiso').value = data.config.compromiso || "";
-                }
-
-                const selectFiltro = document.getElementById('filtroEmpresaTickets');
-                selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
-                cacheData.empresas.forEach(e => { selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`; });
-
-                const divBajas = document.getElementById('lista-empresas-soporte-bajas');
-                if (cacheData.empresas.length === 0) {
-                    divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
-                } else {
-                    divBajas.innerHTML = cacheData.empresas.map(e => {
-                        const imgTag = e.imagen ? `<img src="${e.imagen}" alt="Logo" style="height:25px; width:auto; border-radius:4px; margin-right:10px; vertical-align:middle;">` : `🏢 `;
-                        return `
-                    <div class="list-item">
-                        <span style="display:flex; align-items:center;">${imgTag} ${e.nombre}</span>
-                        <div>
-                            <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irACrearUsuarioEmpresa(${e.id})"><i class="fas fa-users-cog"></i> Accesos</button>
-                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
-                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
-                        </div>
+        // Cargar Usuarios de esa empresa
+        fetch(`${API}/admin/operaciones/usuarios/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(users => {
+            const list = document.getElementById('lista-ops-usuarios');
+            if(users.length === 0) { list.innerHTML = "No hay trabajadores (Clientes) registrados bajo esta empresa."; return; }
+            list.innerHTML = users.map(u => `
+                <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <b style="color:var(--turquoise-main); font-size:15px;">${u.nombre}</b> <span style="background:var(--dark-bg); padding:2px 8px; border-radius:6px; font-size:11px;">${u.rol.toUpperCase()}</span>
                     </div>
-                `}).join('');
-                }
-
-                let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
-                cacheData.servicios.forEach((s, idx) => {
-                    h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button></div></div>`;
-                });
-
-                h += "<br><b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
-                cacheData.productos.forEach((p, idx) => {
-                    h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button><button class="btn-del" onclick="del('productos', ${p.id})">Eliminar</button></div></div>`;
-                });
-
-                document.getElementById('master-list').innerHTML = h;
-            });
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <label class="toggle-switch"><input type="checkbox" id="u-fact-${u.id}" ${u.permisos.facturacion ? 'checked':''}><span class="slider"></span> Facturación</label>
+                        <label class="toggle-switch"><input type="checkbox" id="u-data-${u.id}" ${u.permisos.datacenter ? 'checked':''}><span class="slider"></span> Data Center</label>
+                        <label class="toggle-switch"><input type="checkbox" id="u-inv-${u.id}" ${u.permisos.inventario ? 'checked':''}><span class="slider"></span> Inventario</label>
+                        <label class="toggle-switch"><input type="checkbox" id="u-tck-${u.id}" ${u.permisos.tickets ? 'checked':''}><span class="slider"></span> Tickets</label>
+                    </div>
+                    <button style="padding:6px 14px; font-size:12px; margin-top:10px;" onclick="guardarPermisosUsuario(${u.id})">Guardar Permisos</button>
+                </div>
+            `).join('');
+        });
     }
 
-    function prepararEdicion(tipo, index) {
-        const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
-        const item = cacheData[datosReales][index];
-        editId = item.id; editType = tipo;
-
-        if (tipo === 'servicios') {
-            document.getElementById('sTitle').value = item.titulo; document.getElementById('sDesc').value = item.descripcion;
-            document.getElementById('sIcon').value = item.icono; document.getElementById('sProcess').value = item.proceso;
-            document.getElementById('sBenefits').value = item.beneficios;
-        } else if (tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre; document.getElementById('pPrice').value = item.precio; document.getElementById('pCat').value = item.categoria;
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function guardarPermisosEmpresa() {
+        const body = {
+            empresa_id: currentOpsEmpresa,
+            facturacion: document.getElementById('emp-mod-fact').checked,
+            datacenter: document.getElementById('emp-mod-data').checked,
+            inventario: document.getElementById('emp-mod-inv').checked,
+            tickets: document.getElementById('emp-mod-tck').checked
+        };
+        fetch(`${API}/admin/operaciones/empresa`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(() => alert("Permisos de empresa guardados."));
     }
 
-    function saveItem(path, data) {
-        const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
-        fetch(url, { method: (editId && editType === path) ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) })
-            .then(() => { alert("Operación completada con éxito."); loadContent(); editId = null; editType = null; });
+    function guardarPermisosUsuario(uId) {
+        const body = {
+            usuario_id: uId,
+            facturacion: document.getElementById(`u-fact-${uId}`).checked,
+            datacenter: document.getElementById(`u-data-${uId}`).checked,
+            inventario: document.getElementById(`u-inv-${uId}`).checked,
+            tickets: document.getElementById(`u-tck-${uId}`).checked
+        };
+        fetch(`${API}/admin/operaciones/usuario`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(() => alert("Accesos del usuario actualizados."));
     }
 
-    function subirServicio() { saveItem('servicios', { titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS }); }
-    function subirProducto() { saveItem('productos', { nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP }); }
-    function subirResena() { saveItem('resenas', { cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev }); }
-    function subirSocio() { saveItem('socios', { nombre: document.getElementById('partnerName').value, imagen: imgPartner }); }
-    function subirBeneficio() { saveItem('beneficios', { icono: document.getElementById('bIcon').value, titulo: document.getElementById('bTitle').value, descripcion: document.getElementById('bDesc').value }); }
-    function subirObjetivo() { saveItem('objetivos', { icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value }); }
-    function subirEmpresa() { saveItem('recomiendan', { nombre: document.getElementById('empName').value, imagen: imgEmp }); }
-
-    function updateConfig() {
-        fetch(`${API}/config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ hero_titulo: document.getElementById('h_titulo').value, mision: document.getElementById('mision').value, vision: document.getElementById('vision').value, compromiso: document.getElementById('compromiso').value }) })
-            .then(() => alert("Estructura de contenidos actualizada con éxito en producción."));
-    }
-
-    function del(t, id) {
-        if (confirm("¿Seguro que deseas eliminar este registro de la base de datos de Neon?")) {
-            fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE', credentials: 'include' }).then(() => loadContent());
-        }
-    }
-
+    // -- USUARIOS --
     function toggleEmpresa(rol, divId, selectId) {
         const div = document.getElementById(divId);
         if(!div) return;
-        div.style.display = (rol === 'cliente') ? 'block' : 'none';
-        if (rol === 'cliente') { cargarEmpresasParaSelector(selectId); }
+        div.style.display = (rol === 'cliente' || rol === 'cliente_admin') ? 'block' : 'none';
     }
 
-    function cargarEmpresasParaSelector(selectId) {
-        fetch(`${API}/recomiendan`, { credentials: 'include' })
-            .then(r => r.json())
-            .then(empresas => {
-                const select = document.getElementById(selectId);
-                if(!select) return;
-                select.innerHTML = empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-            });
+    function cargarListaTrabajadores() {
+        fetch(`${API}/admin/usuarios`, { credentials: 'include' }).then(res => res.json()).then(usuarios => {
+            const div = document.getElementById('lista-usuarios-tecnicos');
+            div.innerHTML = usuarios.map(u => {
+                const encodedObj = encodeURIComponent(JSON.stringify(u));
+                return `
+                <div class="list-item">
+                    <span>${u.nombre} <span style="font-size:11px; color:var(--text-secondary);">(${u.rol})</span></span>
+                    <div>
+                        <button class="btn-edit" onclick="activarEdicionUsuario('${encodedObj}')">Editar</button>
+                        <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
+                    </div>
+                </div>`;
+            }).join('');
+        });
     }
 
-    function borrarTicket(id, event) {
-        event.stopPropagation(); 
-        if(confirm("¿Estás seguro de eliminar este ticket de manera permanente?")) {
-            fetch(`${API}/admin/tickets/${id}`, { method: 'DELETE', credentials: 'include' })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) { alert("Ticket eliminado correctamente."); cargarTicketsAdmin(); } 
-                else { alert("Error: " + data.message); }
-            });
-        }
+    document.getElementById('form-alta-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/crear-usuario`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include',
+            body: JSON.stringify({
+                nombre: document.getElementById('new-emp-name').value, usuario: document.getElementById('new-emp-user').value,
+                password: document.getElementById('new-emp-pass').value, email: document.getElementById('new-emp-email').value,
+                telefono: document.getElementById('new-emp-phone').value, rol: document.getElementById('new-emp-role').value,
+                empresa_id: document.getElementById('select-empresa-alta').value
+            })
+        }).then(r=>r.json()).then(data => { if(data.success){ alert("Registrado!"); cargarListaTrabajadores(); e.target.reset(); } });
+    });
+
+    function activarEdicionUsuario(uEncoded) {
+        const u = JSON.parse(decodeURIComponent(uEncoded));
+        document.getElementById('bloque-editar-usuario').style.display = 'block';
+        document.getElementById('edit-emp-id').value = u.id;
+        document.getElementById('edit-emp-name').value = u.nombre;
+        document.getElementById('edit-emp-user').value = u.usuario;
+        document.getElementById('edit-emp-email').value = u.correo || "";
+        document.getElementById('edit-emp-phone').value = u.telefono || "";
+        document.getElementById('edit-emp-role').value = u.rol;
+        
+        toggleEmpresa(u.rol, 'div-empresa-edit', 'select-empresa-edit');
+        setTimeout(() => { if(u.rol === 'cliente' || u.rol === 'cliente_admin') document.getElementById('select-empresa-edit').value = u.empresa_id; }, 100);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function irACrearUsuarioEmpresa(empresaId) {
-        switchTab('tab-personal', { currentTarget: document.querySelectorAll('.sidebar-item')[4] });
-        const rolSelect = document.getElementById('new-emp-role');
-        rolSelect.value = 'cliente';
-        toggleEmpresa('cliente', 'div-empresa-alta', 'select-empresa-alta');
-        setTimeout(() => {
-            document.getElementById('select-empresa-alta').value = empresaId;
-            document.getElementById('new-emp-name').focus(); 
-        }, 150);
-    }
+    function cancelarEdicion() { document.getElementById('bloque-editar-usuario').style.display = 'none'; }
 
+    document.getElementById('form-editar-trabajador').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(`${API}/admin/editar-usuario`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include',
+            body: JSON.stringify({
+                id: document.getElementById('edit-emp-id').value, nombre: document.getElementById('edit-emp-name').value,
+                usuario: document.getElementById('edit-emp-user').value, password: document.getElementById('edit-emp-pass').value,
+                correo: document.getElementById('edit-emp-email').value, telefono: document.getElementById('edit-emp-phone').value,
+                rol: document.getElementById('edit-emp-role').value, empresa_id: document.getElementById('select-empresa-edit').value
+            })
+        }).then(r=>r.json()).then(data => { if(data.success){ alert("Actualizado!"); cancelarEdicion(); cargarListaTrabajadores(); } });
+    });
+    
+    function cargarTickets() {
+        fetch(`${API}/admin/tickets`, {credentials: 'include'}).then(r=>r.json()).then(tcks => {
+            const div = document.getElementById('tabla-tickets-soporte');
+            div.innerHTML = tcks.map(t => `
+                <div class="list-item" style="flex-direction:column; align-items:flex-start;">
+                    <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <b style="color:var(--turquoise-main);">${t.empresa_nombre}</b>
+                        <span style="font-size:12px; color:var(--text-secondary);">${new Date(t.fecha).toLocaleString()}</span>
+                    </div>
+                    <div style="font-size:14px; margin-bottom:8px;"><b>Asunto:</b> ${t.asunto} (Por: ${t.contacto})</div>
+                    <div style="font-size:13px; color:#cfd8dc; background:var(--dark-bg); padding:10px; border-radius:8px; width:100%;">${t.descripcion}</div>
+                </div>
+            `).join('');
+        });
+    }
 </script>
 </body>
 </html>

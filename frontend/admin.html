@@ -134,6 +134,9 @@
         <li class="sidebar-item" onclick="switchTab('tab-contenidos', event)"><i class="fas fa-file-alt"></i> Landing & Contenidos</li>
         <li class="sidebar-item" onclick="switchTab('tab-personal', event)"><i class="fas fa-users"></i> Personal Técnico</li>
         <li class="sidebar-item" onclick="switchTab('tab-auditoria', event)"><i class="fas fa-history"></i> Auditoría</li>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border-smooth); margin: 10px 0;">
+        <li class="sidebar-item" onclick="irAlPortalEmpresarial()"><i class="fas fa-desktop"></i> Portal Empresarial</li>
     </ul>
 </aside>
 
@@ -194,7 +197,7 @@
             <div class="card">
                 <h2><i class="fas fa-building" style="color: var(--turquoise-main);"></i> 1. Selecciona un Cliente</h2>
                 <select id="select-ops-empresa" onchange="cargarOperaciones(this.value)">
-                    <option value="">-- Cargar Empresas --</option>
+                    <option value="">-- Seleccionar --</option>
                 </select>
                 
                 <div id="panel-ops-empresa" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border:1px solid var(--turquoise-main);">
@@ -440,6 +443,20 @@
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
     let currentOpenTicket = null;
+
+    // NUEVA FUNCIÓN MÁGICA: SIMULAR ACCESO EMPRESARIAL
+    function irAlPortalEmpresarial() {
+        fetch(`${API}/admin/acceso-empresarial`, { method: 'POST', credentials: 'include' })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) {
+                // Si tienes dashboard_empresarial.html úsalo, sino usa el dashboard_cliente.html
+                window.open('/dashboard_empresarial.html', '_blank');
+            } else {
+                alert("Error al intentar acceder al portal: " + data.error);
+            }
+        }).catch(e => alert("Error de comunicación."));
+    }
 
     window.onload = function () {
         fetch(`${API}/admin/tickets`, { method: 'GET', credentials: 'include' })

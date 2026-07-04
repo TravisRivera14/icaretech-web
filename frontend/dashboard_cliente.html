@@ -205,7 +205,6 @@
         } else if (nombre === 'Historial' || nombre === 'Tickets Activos') {
             const label = userDataCache.rol === 'cliente_admin' ? 'Tickets de toda la Empresa' : 'Mis tickets reportados';
             
-            // FILTRO INTELIGENTE: Si es "Tickets Activos", ocultamos los resueltos
             let listaTickets = userDataCache.tickets || [];
             if (nombre === 'Tickets Activos') {
                 listaTickets = listaTickets.filter(t => t.estado.toLowerCase() !== 'resuelto' && t.estado.toLowerCase() !== 'cerrado');
@@ -218,7 +217,6 @@
             
             let html = `<h2>${nombre} (${label})</h2><div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">`;
             listaTickets.forEach(t => {
-                // DISEÑO DE SEGUIMIENTO (Quién lo vio/solucionó)
                 let atendido = t.atendido_por || 'Pendiente revisión';
                 let infoAtencion = t.estado.toLowerCase() === 'resuelto' 
                     ? `<span style="color:#10b981; font-weight:bold;"><i class="fas fa-check-circle"></i> Solucionado por: ${atendido}</span>` 
@@ -234,6 +232,41 @@
             });
             cont.innerHTML = html + "</div>";
 
+        } else if (nombre === 'Datos de la empresa') {
+            // NUEVO MÓDULO: CONFIGURACIÓN HACIENDA (ATV)
+            cont.innerHTML = `
+                <h2>Configuración del Contribuyente (Hacienda)</h2>
+                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
+                    <p style="color:#8a99ad; margin-bottom:20px;">Ingresa las credenciales de tu Llave Criptográfica (.p12) para enlazar el facturador con el Ministerio de Hacienda.</p>
+                    
+                    <form id="form-hacienda" style="max-width: 600px;">
+                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Usuario (ATV - IDP):</label>
+                        <input type="text" id="h-user" placeholder="Ej: cpj-3-101-123456@stag.comprobanteselectronicos.go.cr" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
+                        
+                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Contraseña (ATV - IDP):</label>
+                        <input type="password" id="h-pass" placeholder="Ingresa la contraseña generada en ATV" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
+                        
+                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">PIN de la Llave Criptográfica:</label>
+                        <input type="password" id="h-pin" placeholder="PIN de 4 dígitos" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
+                        
+                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Archivo de Llave (.p12):</label>
+                        <input type="file" id="h-p12" accept=".p12" required style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white;">
+                        
+                        <label style="color:white; font-size:14px; display:flex; align-items:center; gap:10px; margin-bottom:25px; cursor:pointer;">
+                            <input type="checkbox" id="h-prod" style="width:18px; height:18px; margin:0;"> Activar en Ambiente de PRODUCCIÓN
+                        </label>
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button type="submit" style="padding:12px 25px; background:var(--accent); border:none; border-radius:6px; font-weight:bold; cursor:pointer; color:black;"><i class="fas fa-save"></i> Guardar Credenciales</button>
+                            <button type="button" onclick="probarConexionHacienda()" style="padding:12px 25px; background:#11141a; border:1px solid var(--accent); border-radius:6px; font-weight:bold; cursor:pointer; color:var(--accent);"><i class="fas fa-plug"></i> Probar Conexión</button>
+                        </div>
+                    </form>
+                    
+                    <div id="hacienda-status" style="margin-top:20px; font-size:14px; padding:15px; border-radius:6px; display:none;"></div>
+                </div>
+            `;
+            document.getElementById('form-hacienda').addEventListener('submit', guardarHacienda);
+
         } else if (nombre === 'Inicio') {
             cont.innerHTML = `
                 <h2>Inicio - Facturación</h2>
@@ -244,7 +277,7 @@
                         <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
                         <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
                         <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
-                        <li><strong>Facturación y Proformas:</strong> Emite nuevos documentos.</li>
+                        <li><strong>Configuración -> Datos de la Empresa:</strong> Configura tus llaves de Hacienda.</li>
                     </ul>
                 </div>
             `;
@@ -268,6 +301,89 @@
                     <p>Módulo de ${nombre} en línea.</p>
                 </div>
             `;
+        }
+    }
+
+    // --- FUNCIONES NUEVAS PARA HACIENDA ---
+    async function guardarHacienda(event) {
+        event.preventDefault();
+        
+        const form = new FormData();
+        form.append('usuario_idp', document.getElementById('h-user').value);
+        form.append('password_idp', document.getElementById('h-pass').value);
+        form.append('pin_p12', document.getElementById('h-pin').value);
+        form.append('ambiente', document.getElementById('h-prod').checked ? 'true' : 'false');
+        
+        const fileInput = document.getElementById('h-p12');
+        if (fileInput.files.length > 0) {
+            form.append('archivo_p12', fileInput.files[0]);
+        }
+
+        const btn = event.submitter;
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Guardando...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/admin/configuracion-hacienda', {
+                method: 'POST',
+                credentials: 'include',
+                body: form
+            });
+            const data = await res.json();
+            
+            const statusBox = document.getElementById('hacienda-status');
+            statusBox.style.display = 'block';
+            
+            if (data.success) {
+                statusBox.style.background = 'rgba(16, 185, 129, 0.2)';
+                statusBox.style.border = '1px solid #10b981';
+                statusBox.style.color = '#10b981';
+                statusBox.innerHTML = "<i class='fas fa-check-circle'></i> " + data.message;
+            } else {
+                statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
+                statusBox.style.border = '1px solid #ff3b30';
+                statusBox.style.color = '#ff3b30';
+                statusBox.innerHTML = "<i class='fas fa-times-circle'></i> Error: " + data.message;
+            }
+        } catch (error) {
+            alert("Error de red al guardar las credenciales.");
+        } finally {
+            btn.innerHTML = "<i class='fas fa-save'></i> Guardar Credenciales";
+            btn.disabled = false;
+        }
+    }
+
+    async function probarConexionHacienda() {
+        const statusBox = document.getElementById('hacienda-status');
+        statusBox.style.display = 'block';
+        statusBox.style.background = 'rgba(0, 180, 216, 0.1)';
+        statusBox.style.border = '1px solid var(--accent)';
+        statusBox.style.color = 'var(--text)';
+        statusBox.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Contactando a los servidores del Ministerio de Hacienda...";
+
+        try {
+            const res = await fetch('/api/admin/facturacion/probar-conexion', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            
+            if (res.ok && data.status === "Conexión Exitosa") {
+                statusBox.style.background = 'rgba(16, 185, 129, 0.2)';
+                statusBox.style.border = '1px solid #10b981';
+                statusBox.style.color = '#10b981';
+                statusBox.innerHTML = `<i class='fas fa-check-circle'></i> <b>¡Conexión Exitosa!</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">El facturador logró autenticarse con Hacienda correctamente. El token de seguridad fue generado.</span>`;
+            } else {
+                statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
+                statusBox.style.border = '1px solid #ff3b30';
+                statusBox.style.color = '#ff3b30';
+                statusBox.innerHTML = `<i class='fas fa-times-circle'></i> <b>Fallo de Autenticación:</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">Hacienda rechazó las credenciales. Verifica que el Usuario y Contraseña sean correctos y pertenezcan al ambiente seleccionado (Pruebas o Producción).</span>`;
+            }
+        } catch (error) {
+            statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
+            statusBox.style.border = '1px solid #ff3b30';
+            statusBox.style.color = '#ff3b30';
+            statusBox.innerHTML = "<i class='fas fa-wifi'></i> Error de red. No se pudo conectar con el servidor.";
         }
     }
 

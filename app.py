@@ -107,6 +107,17 @@ def es_admin():
     rol = str(session.get('rol', '')).lower().strip()
     return rol in ['admin', 'personal', 'personal_admin', 'administrador']
 
+# ---- NUEVA FUNCIÓN AUXILIAR PARA SACAR EL ID DE LA EMPRESA DESDE LA SESIÓN ----
+def get_empresa_id_from_session():
+    empresa_val = session.get('empresa')
+    if not empresa_val: return None
+    if str(empresa_val).isdigit(): return int(empresa_val)
+    
+    res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_val,), fetch=True)
+    if res_emp: return res_emp[0][0]
+    return None
+# -------------------------------------------------------------------------------
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
@@ -142,11 +153,8 @@ def obtener_datos_operativos():
     if not empresa_val: return jsonify({"error": "No asociado a empresa"}), 403
     
     try:
-        if str(empresa_val).isdigit(): id_empresa = int(empresa_val)
-        else:
-            res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_val,), fetch=True)
-            if not res_emp: return jsonify({"error": "Empresa no registrada"}), 404
-            id_empresa = res_emp[0][0]
+        id_empresa = get_empresa_id_from_session()
+        if not id_empresa: return jsonify({"error": "Empresa no registrada"}), 404
             
         try: perm_emp = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (id_empresa,), fetch=True)
         except: perm_emp = None
@@ -276,7 +284,6 @@ def eliminar_usuario(id):
 def get_logs():
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
     try:
-        # CORRECCIÓN DE AUDITORÍA: str(l[0]) soluciona la caída del servidor por culpa de las fechas
         logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 100", fetch=True) or []
         return jsonify([{"fecha": str(l[0]), "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
     except Exception as e:
@@ -353,47 +360,42 @@ def obtener_oauth_token_hacienda(id_empresa):
     except Exception as e:
         return {"success": False, "error_detalle": f"No se pudo conectar con Hacienda: {str(e)}"}
 
-def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
-    token_data = obtener_oauth_token_hacienda(id_empresa)
-    if not token_data["success"]: return {"success": False, "message": "Error autenticando con Hacienda: " + token_data.get("error_detalle", "")}
-    token = token_data["access_token"]
-    payload = {
-        "clave": datos_xml['clave'], "fecha": datetime.now().isoformat(),
-        "emisor": {"tipoIdentificacion": "02", "numeroIdentificacion": datos_xml['emisor_cedula']},
-        "receptor": {"tipoIdentificacion": "01", "numeroIdentificacion": datos_xml['cliente_cedula']},
-        "comprobanteXml": base64.b64encode(xml_firmado_o_raw.encode()).decode()
-    }
-    url_recepcion = "https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        resp = requests.post(url_recepcion, json=payload, headers=headers)
-        if resp.status_code == 202: return {"success": True}
-        else: return {"success": False, "message": f"Hacienda respondió: {resp.status_code} - {resp.text}"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-@app.route('/api/admin/facturacion/probar-conexion/1', methods=['GET'])
+# ---- NUEVA RUTA: PROBAR CONEXIÓN DINÁMICA (DETECTA LA EMPRESA AUTOMÁTICAMENTE) ----
+@app.route('/api/admin/facturacion/probar-conexion', methods=['GET'])
 @login_required
-def probar_conexion_hacienda_test():
+def probar_conexion_hacienda():
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual:
+        return jsonify({"status": "Error", "mensaje": "Usuario no tiene empresa asignada."}), 400
+        
     try:
-        resultado = obtener_oauth_token_hacienda(1)
-        if resultado["success"]: return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente con Hacienda.", "token": resultado["access_token"][:15] + "..."})
-        else: return jsonify({"status": "Error de Autenticación", "mensaje": "Hacienda rechazó las credenciales.", "detalles_tecnicos": resultado}), 400
+        resultado = obtener_oauth_token_hacienda(id_empresa_actual)
+        if resultado["success"]: 
+            return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente con Hacienda.", "token": resultado["access_token"][:15] + "..."})
+        else: 
+            return jsonify({"status": "Error de Autenticación", "mensaje": "Hacienda rechazó las credenciales.", "detalles_tecnicos": resultado}), 400
     except Exception as e:
         return jsonify({"status": "Error Interno", "error": str(e)}), 500
 
+# ---- NUEVA RUTA: GUARDAR CONFIGURACIÓN DINÁMICA ----
 @app.route('/api/admin/configuracion-hacienda', methods=['POST'])
 @login_required
 def guardar_configuracion_hacienda():
-    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    # Permite a admins y cliente_admins configurar esto
+    rol = str(session.get('rol', '')).lower().strip()
+    if rol not in ['admin', 'personal', 'personal_admin', 'cliente_admin']:
+        return jsonify({"message": "Acceso denegado"}), 403
+        
     usuario_idp = request.form.get('usuario_idp')
     password_idp = request.form.get('password_idp')
     pin_p12 = request.form.get('pin_p12')
     ambiente = request.form.get('ambiente')
     ambiente_produccion = True if ambiente in ['true', 'on', True] else False
     archivo_p12 = request.files.get('archivo_p12')
-    id_empresa_actual = request.form.get('id_empresa', 1)
+    
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual:
+        return jsonify({"success": False, "message": "Tu cuenta no está vinculada a una empresa."}), 400
 
     if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12:
         return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
@@ -407,7 +409,7 @@ def guardar_configuracion_hacienda():
         else:
             db_query("""INSERT INTO configuracionhacienda (id_empresa, hacienda_usuario_idp, hacienda_password_idp, ruta_llave_p12, pin_llave_p12, ambiente_produccion) VALUES (%s, %s, %s, %s, %s, %s)""", (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
         registrar_cambio("Configuró Hacienda", f"Credenciales actualizadas para Empresa ID: {id_empresa_actual}")
-        return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en Neon"})
+        return jsonify({"success": True, "message": "Configuración de Hacienda guardada correctamente en el servidor."})
     except Exception as e:
         return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
 
@@ -487,6 +489,26 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
     ET.SubElement(resumen, "TotalImpuesto").text = f"{total_iva:.5f}"
     ET.SubElement(resumen, "TotalComprobante").text = f"{(total_serv_gravados + total_iva):.5f}"
     return ET.tostring(root, encoding="utf-8").decode("utf-8")
+
+def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado_o_raw):
+    token_data = obtener_oauth_token_hacienda(id_empresa)
+    if not token_data["success"]: return {"success": False, "message": "Error autenticando con Hacienda: " + token_data.get("error_detalle", "")}
+    token = token_data["access_token"]
+    payload = {
+        "clave": datos_xml['clave'], "fecha": datetime.now().isoformat(),
+        "emisor": {"tipoIdentificacion": "02", "numeroIdentificacion": datos_xml['emisor_cedula']},
+        "receptor": {"tipoIdentificacion": "01", "numeroIdentificacion": datos_xml['cliente_cedula']},
+        "comprobanteXml": base64.b64encode(xml_firmado_o_raw.encode()).decode()
+    }
+    url_recepcion = "https://api.comprobanteselectronicos.go.cr/recepcion/v1/recepcion"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    
+    try:
+        resp = requests.post(url_recepcion, json=payload, headers=headers)
+        if resp.status_code == 202: return {"success": True}
+        else: return {"success": False, "message": f"Hacienda respondió: {resp.status_code} - {resp.text}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
 
 @app.route('/api/facturacion/emitir', methods=['POST'])
 @login_required
@@ -817,7 +839,6 @@ def eliminar_ticket_admin(id):
 def cambiar_estado_ticket(id):
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
     estado = request.json.get('estado')
-    # REGISTRAMOS QUIÉN HACE EL CAMBIO
     admin_nombre = session.get('usuario', 'Soporte Técnico')
     try:
         try:

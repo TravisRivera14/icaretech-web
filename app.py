@@ -218,15 +218,21 @@ def editar_usuario():
 @app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_usuario(id):
-    # CORRECCIÓN: Manejo de llave foránea y excepciones para borrado exitoso.
-    if session.get('rol') not in ['admin', 'personal_admin']: return jsonify({"message": "denegado"}), 403
+    if session.get('rol') not in ['admin', 'personal_admin']: 
+        return jsonify({"message": "denegado"}), 403
     try:
-        # 1. Desvincular usuario de los tickets sin borrar el ticket para no perder historial
-        db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
-        # 2. Borrar permisos
+        # 1. Intentar desvincular tickets (si la columna existe en la BD)
+        try:
+            db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
+        except Exception:
+            pass # Si la columna no existe aún, ignoramos este paso silenciosamente
+            
+        # 2. Borrar permisos del Centro de Operaciones
         db_query("DELETE FROM permisos_usuario WHERE usuario_id = %s", (id,))
-        # 3. Borrar usuario
+        
+        # 3. Borrar la cuenta del usuario
         db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+        
         registrar_cambio("Eliminó Usuario", f"ID {id}")
         return jsonify({"success": True})
     except Exception as e:

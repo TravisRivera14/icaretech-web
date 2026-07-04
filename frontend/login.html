@@ -224,8 +224,8 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    // SI ES ADMINISTRADOR O PERSONAL -> PANEL MAESTRO
-                    if (data.rol === 'admin' || data.rol === 'personal') {
+                    // SI ES ADMINISTRADOR O PERSONAL -> PANEL MAESTRO (Se agregó personal_admin)
+                    if (data.rol === 'admin' || data.rol === 'personal' || data.rol === 'personal_admin') {
                         window.location.href = '/admin.html';
                     } 
                     // SI ES CLIENTE Y DEBE CAMBIAR CONTRASEÑA OBLIGATORIAMENTE
@@ -285,32 +285,6 @@
                 }
             } catch (error) {
                 alert("Error de conexión al guardar la contraseña.");
-            }
-        }
-
-        async function guardarNuevaPassword() {
-            // ... (tu lógica de validación de contraseñas es correcta)
-            
-            try {
-                const res = await fetch('/api/cambiar_password_provisional', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        usuario_id: tempUsuarioId, // Aquí usamos el ID que guardamos arriba
-                        nueva_password: document.getElementById('new-password').value
-                    })
-                });
-
-                const data = await res.json();
-                
-                if (data.success) {
-                    alert("¡Excelente! Tu contraseña ha sido actualizada.");
-                    window.location.href = '/dashboard_cliente.html';
-                } else {
-                    alert("Error: " + data.message);
-                }
-            } catch (error) {
-                alert("Error de conexión al guardar.");
             }
         }
     </script>

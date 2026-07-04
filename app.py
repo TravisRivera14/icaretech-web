@@ -67,12 +67,13 @@ def init_db():
     c.close()
     conn.close()
 
-    # MIGRACIÓN SEGURA: Fuerza la creación de columnas faltantes una por una
+    # MIGRACIÓN SEGURA Y AUTOMÁTICA
     migraciones = [
         "ALTER TABLE usuarios ADD COLUMN correo VARCHAR(150)",
         "ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20)",
         "ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT",
-        "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)"
+        "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)",
+        "ALTER TABLE tickets_soporte ADD COLUMN atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión'"
     ]
     for mig in migraciones:
         try: db_query(mig)
@@ -102,7 +103,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Función auxiliar para permitir acceso a cualquier rol de equipo técnico
 def es_admin():
     rol = str(session.get('rol', '')).lower().strip()
     return rol in ['admin', 'personal', 'personal_admin', 'administrador']
@@ -166,16 +166,24 @@ def obtener_datos_operativos():
         tickets = []
         try:
             if rol == 'cliente_admin':
-                tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+                try: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+                except: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
             else:
-                tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
-        except Exception:
-            try: tickets = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
-            except Exception: tickets = []
+                try: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+                except: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+            
+            for t in tickets_raw:
+                atendido = t[5] if len(t) > 5 and t[5] else "Pendiente revisión"
+                tickets.append({
+                    "id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3], 
+                    "fecha": str(t[4]), "atendido_por": atendido
+                })
+        except Exception as e:
+            print("Error parsing tickets:", e)
         
         return jsonify({
             "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
-            "tickets": [{"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3], "fecha": str(t[4])} for t in tickets],
+            "tickets": tickets,
             "permisos": permisos_finales,
             "rol": rol
         })
@@ -262,6 +270,17 @@ def eliminar_usuario(id):
         registrar_cambio("Eliminó Usuario", f"ID {id}")
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/logs', methods=['GET'])
+@login_required
+def get_logs():
+    if not es_admin(): return jsonify({"message": "Denegado"}), 403
+    try:
+        # CORRECCIÓN DE AUDITORÍA: str(l[0]) soluciona la caída del servidor por culpa de las fechas
+        logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 100", fetch=True) or []
+        return jsonify([{"fecha": str(l[0]), "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/admin/operaciones/empresa/<int:empresa_id>', methods=['GET'])
 @login_required
@@ -724,19 +743,30 @@ def eliminar_item(tabla, id):
 def listar_tickets_admin():
     if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     try:
-        query = """
-            SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
-                   t.descripcion, t.prioridad, t.estado, t.fecha 
-            FROM tickets_soporte t 
-            LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
-            ORDER BY t.fecha DESC
-        """
-        tickets_raw = db_query(query, fetch=True) or []
+        try:
+            query = """
+                SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
+                       t.descripcion, t.prioridad, t.estado, t.fecha, t.atendido_por 
+                FROM tickets_soporte t 
+                LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
+                ORDER BY t.fecha DESC
+            """
+            tickets_raw = db_query(query, fetch=True) or []
+        except Exception:
+            query = """
+                SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
+                       t.descripcion, t.prioridad, t.estado, t.fecha 
+                FROM tickets_soporte t 
+                LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
+                ORDER BY t.fecha DESC
+            """
+            tickets_raw = db_query(query, fetch=True) or []
         
         return jsonify([{
             "id": r[0], "empresa_id": r[1], "empresa_nombre": r[2] or "Sin Empresa", 
             "contacto": r[3], "asunto": r[4], "descripcion": r[5], 
-            "prioridad": r[6], "estado": r[7], "fecha": r[8]
+            "prioridad": r[6], "estado": r[7], "fecha": str(r[8]),
+            "atendido_por": r[9] if len(r) > 9 and r[9] else "Pendiente revisión"
         } for r in tickets_raw])
     except Exception as e: return jsonify({"error": str(e)}), 500
 
@@ -787,8 +817,14 @@ def eliminar_ticket_admin(id):
 def cambiar_estado_ticket(id):
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
     estado = request.json.get('estado')
+    # REGISTRAMOS QUIÉN HACE EL CAMBIO
+    admin_nombre = session.get('usuario', 'Soporte Técnico')
     try:
-        db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (estado, id))
+        try:
+            db_query("UPDATE tickets_soporte SET estado = %s, atendido_por = %s WHERE id = %s", (estado, admin_nombre, id))
+        except Exception:
+            db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (estado, id))
+            
         registrar_cambio("Actualizó Ticket", f"Ticket ID {id} marcado como {estado}")
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500

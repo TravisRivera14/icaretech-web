@@ -32,6 +32,14 @@
 </head>
 <body>
 
+<div id="splash-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.6s ease-out;">
+    <div style="width:120px; height:120px; border-radius:50%; background:var(--card); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 10px 30px rgba(0, 180, 216, 0.2);">
+        <i class="fas fa-building" style="font-size:50px; color:var(--accent);"></i>
+    </div>
+    <h2 style="color:white; margin:0; font-size:24px;">Cargando Portal...</h2>
+    <p style="color:#8a99ad; font-size:14px; margin-top:10px;">Sincronizando información de iCare Tech CR</p>
+</div>
+
 <header>
     <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
     <nav class="top-nav" id="top-nav">
@@ -52,7 +60,6 @@
 </div>
 
 <script>
-    // Estructura completa de tus categorías
     const menuData = {
         'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
         'facturacion': [
@@ -68,7 +75,6 @@
         'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
     };
 
-    // Función para mostrar el menú lateral (Con soporte para submenús)
     function showSection(sec) {
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
@@ -83,29 +89,35 @@
         });
     }
 
-    // Despliega o contrae los submenús
     function toggleSub(el) { 
         el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; 
     }
 
-    // Punto de entrada al cargar la página
-    window.onload = function() {
+    window.onload = async function() {
         const urlParams = new URLSearchParams(window.location.search);
         const seccion = urlParams.get('seccion');
         const accion = urlParams.get('accion');
 
+        // Espera de manera síncrona a que se carguen los datos
         if (seccion === 'tickets' && accion === 'nuevo') {
             showSection('tickets');
-            render('Crear Nuevo Ticket'); 
+            await render('Crear Nuevo Ticket'); 
         } else {
-            showSection('facturacion'); // Inicia en facturación por defecto
-            render('Inicio');
+            showSection('facturacion'); 
+            await render('Inicio');
         }
+
+        // Una vez que toda la página esté inyectada, desaparece el cargando de forma fluida
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 600);
+            }
+        }, 500);
     };
 
-    // Función principal para decidir qué renderizar
     async function render(opcion) {
-        // Lista de módulos que tienen un diseño a medida
         const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Nueva proforma', 'Cargar documento', 'Reportes', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
         
         if (modulosEspeciales.includes(opcion)) {
@@ -115,7 +127,6 @@
         const cont = document.getElementById('contenido-dinamico');
         cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
         
-        // Módulos que cargan datos del servidor (como las tablas)
         try {
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             const data = await res.json();
@@ -136,7 +147,6 @@
         }
     }
 
-    // Función para inyectar los formularios e interfaces visuales específicos
     async function renderModulo(nombre) {
         const cont = document.getElementById('contenido-dinamico');
         
@@ -146,7 +156,7 @@
                 <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
                     <div class="form-group">
                         <label style="color:#8a99ad; font-size:13px; margin-bottom:5px; display:block;">Empresa</label>
-                        <input type="text" value="${sessionStorage.getItem('empresa') || 'Tu Empresa'}" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
+                        <input type="text" value="Empresa Autorizada" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
                     </div>
                     <input type="text" id="ticketContacto" placeholder="Nombre completo del contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
                     <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
@@ -193,7 +203,6 @@
             `;
             
         } else {
-            // Plantilla por defecto para los módulos visuales que iremos armando
             cont.innerHTML = `
                 <h2>${nombre}</h2>
                 <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
@@ -203,7 +212,6 @@
         }
     }
 
-    // Función para crear el ticket conectada a la API
     async function crearTicket(event) {
         event.preventDefault();
         const ticketData = {

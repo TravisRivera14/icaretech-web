@@ -1,479 +1,100 @@
-<!-- DEFINE EL DOCUMENTO COMO HTML5 -->
 <!DOCTYPE html>
-<!-- INICIA EL HTML Y DEFINE EL IDIOMA EN ESPAÑOL -->
 <html lang="es">
 <head>
-    <!-- ESTABLECE LA CODIFICACIÓN DE CARACTERES PARA TILDES Y Ñ -->
     <meta charset="UTF-8">
-    <!-- ASEGURA QUE LA PÁGINA SE ADAPTE A DISPOSITIVOS MÓVILES -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- TÍTULO DE LA PESTAÑA EN EL NAVEGADOR -->
     <title>Admin iCare | Control Maestro</title>
-    <!-- CARGA EL LOGO (FAVICON) DE LA PESTAÑA -->
     <link rel="icon" href="Logo_Admin_v2.png">
     
-    <!-- IMPORTA LOS ICONOS DE FONT-AWESOME -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- PRECONECTA Y DESCARGA LA FUENTE 'PLUS JAKARTA SANS' DESDE GOOGLE -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-
-        /* ... todos tus estilos actuales ... */
-
-        /* 📱 OPTIMIZACIÓN MÓVIL PARA EL ENCABEZADO */
         @media (max-width: 768px) {
-            header {
-                padding: 10px 15px !important;
-            }
-            .nav-bar {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-            .logo-img {
-                height: 50px !important;
-                width: auto;
-            }
-            .nav-links {
-                display: flex;
-                justify-content: center;
-                gap: 15px;
-                font-size: 14px;
-            }
+            header { padding: 10px 15px !important; }
+            .nav-bar { flex-direction: column; gap: 10px; text-align: center; }
+            .logo-img { height: 50px !important; width: auto; }
+            .nav-links { display: flex; justify-content: center; gap: 15px; font-size: 14px; }
         }
         
-        /* DEFINE LAS VARIABLES GLOBALES DE COLOR, SOMBRAS Y ANIMACIONES */
         :root { 
-            --dark-bg: #0b0c10;
-            --card-bg: #1f2833;
-            --turquoise-main: #00b4d8;
-            --turquoise-dark: #0077b6;
-            --turquoise-light: #90e0ef;
-            --del: #ff3b30; 
-            --text-light: #f5f5f7;
-            --text-secondary: #8a99ad;
-            --border-smooth: rgba(255, 255, 255, 0.05);
-            --radius-premium: 16px;
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --dark-bg: #0b0c10; --card-bg: #1f2833; --turquoise-main: #00b4d8; 
+            --turquoise-dark: #0077b6; --turquoise-light: #90e0ef; --del: #ff3b30; 
+            --text-light: #f5f5f7; --text-secondary: #8a99ad; 
+            --border-smooth: rgba(255, 255, 255, 0.05); --radius-premium: 16px; 
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         
-        /* RESETEA MARGENES Y APLICA LA FUENTE PRINCIPAL AL PANEL */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
-            letter-spacing: -0.2px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px; }
+        body { background: var(--dark-bg); color: var(--text-light); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; }
+
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .login-card { background: var(--card-bg); padding: 45px 35px; border-radius: 24px; box-shadow: var(--shadow-premium); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-smooth); }
+
+        .sidebar { width: 280px; background: #11141a; border-right: 1px solid var(--border-smooth); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
+        .sidebar-brand { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 35px; padding-left: 10px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-brand span { color: var(--turquoise-main); }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .sidebar-item { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: var(--transition-smooth); }
+        .sidebar-item:hover, .sidebar-item.active { background: var(--card-bg); color: #ffffff; }
+        .sidebar-item.active i { color: var(--turquoise-main); }
+
+        .main-content { margin-left: 280px; flex: 1; padding: 40px 50px; max-width: 1200px; }
+        .header-area { margin-bottom: 35px; }
+        .header-area h1 { font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.8px; }
+        .header-area p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+
+        .tab-section { display: none; animation: techFadeIn 0.5s ease forwards; }
+        .tab-section.active { display: grid; grid-template-columns: 1fr; gap: 25px; }
+
+        @keyframes techFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-two-columns { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        @media (min-width: 901px) { .grid-two-columns { grid-template-columns: 1fr 1fr; } }
+
+        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); box-shadow: var(--shadow-premium); border: 1px solid var(--border-smooth); box-sizing: border-box; }
+        .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #ffffff; display: flex; align-items: center; gap: 10px; }
+
+        input, textarea, button, select { width: 100%; padding: 14px; margin: 6px 0 16px 0; border-radius: 10px; border: 1px solid transparent; background: var(--dark-bg); color: var(--text-light); box-sizing: border-box; font-size: 14.5px; outline: none; transition: var(--transition-smooth); }
+        input:focus, textarea:focus, select:focus { background: #11141a; border-color: var(--turquoise-main); box-shadow: 0 0 10px rgba(0, 180, 216, 0.2); }
+        label { font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-top: 4px; }
         
-        /* ESTILOS BASE DEL CUERPO DE LA PÁGINA (PANTALLA OSCURA) */
-        body { 
-            background: var(--dark-bg); 
-            color: var(--text-light); 
-            -webkit-font-smoothing: antialiased; 
-            display: flex;
-            min-height: 100vh;
-        }
+        button { background: var(--turquoise-main); color: #000000; border: none; cursor: pointer; font-weight: 700; margin-bottom: 0; border-radius: 22px; padding: 12px 24px; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15); }
+        button:hover { background: var(--turquoise-light); transform: translateY(-1px); }
+        .btn-brand-accent { background: var(--turquoise-dark); color: white; }
+        .btn-brand-accent:hover { background: var(--turquoise-main); color: black; }
 
-        /* OVERLAY DE LOGIN ESTILO GLASS NEÓN OSCURO (BLOQUEA LA PANTALLA) */
-        #login-overlay {
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(11, 12, 16, 0.9); 
-            z-index: 99999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
+        .list-container { max-height: 400px; overflow-y: auto; background: #11141a; border: 1px solid var(--border-smooth); border-radius: 12px; padding: 8px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border-smooth); font-size: 13.5px; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item span { font-weight: 600; color: var(--text-light); }
         
-        /* DISEÑO DE LA CAJA CENTRAL DE INICIO DE SESIÓN */
-        .login-card {
-            background: var(--card-bg); 
-            padding: 45px 35px; 
-            border-radius: 24px; 
-            box-shadow: var(--shadow-premium); 
-            width: 100%; 
-            max-width: 400px; 
-            text-align: center;
-            border: 1px solid var(--border-smooth);
-        }
-
-        /* COMPONENTE INTERACTIVO SIDEBAR OSCURO (MENÚ LATERAL) */
-        .sidebar {
-            width: 280px;
-            background: #11141a;
-            border-right: 1px solid var(--border-smooth);
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            left: 0; top: 0;
-            z-index: 100;
-        }
-
-        /* TÍTULO Y LOGO EN LA PARTE SUPERIOR DEL MENÚ LATERAL */
-        .sidebar-brand {
-            font-size: 18px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 35px;
-            padding-left: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* DA COLOR TURQUESA AL PUNTO FINAL DEL TÍTULO EN LA BARRA LATERAL */
-        .sidebar-brand span {
-            color: var(--turquoise-main);
-        }
-
-        /* CONTENEDOR DE LA LISTA DE ENLACES DEL MENÚ */
-        .sidebar-menu {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        /* ESTILO PARA CADA BOTÓN/ENLACE DEL MENÚ LATERAL */
-        .sidebar-item {
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition-smooth);
-        }
-
-        /* CAMBIA EL FONDO Y COLOR AL PASAR EL MOUSE O ESTAR ACTIVO */
-        .sidebar-item:hover, .sidebar-item.active {
-            background: var(--card-bg);
-            color: #ffffff;
-        }
-        
-        /* PINTA DE TURQUESA EL ICONO EXCLUSIVAMENTE DEL BOTÓN SELECCIONADO */
-        .sidebar-item.active i {
-            color: var(--turquoise-main);
-        }
-
-        /* CONTENEDOR PRINCIPAL DE CONTENIDO (DEJA ESPACIO PARA EL MENÚ) */
-        .main-content {
-            margin-left: 280px;
-            flex: 1;
-            padding: 40px 50px;
-            max-width: 1200px;
-        }
-
-        /* ÁREA DEL TÍTULO PRINCIPAL EN LA PARTE SUPERIOR */
-        .header-area {
-            margin-bottom: 35px;
-        }
-
-        /* TÍTULO PRINCIPAL (H1) DEL DASHBOARD */
-        .header-area h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: -0.8px;
-        }
-
-        /* PÁRRAFO DESCRIPTIVO DEBAJO DEL TÍTULO PRINCIPAL */
-        .header-area p {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        /* SECCIONES DINÁMICAS (TAB CONTENT) - OCULTAS POR DEFECTO */
-        .tab-section {
-            display: none;
-            animation: techFadeIn 0.5s ease forwards;
-        }
-
-        /* HACE VISIBLE ÚNICAMENTE LA PESTAÑA CHE TIENE LA CLASE 'ACTIVE' */
-        .tab-section.active {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-        }
-
-        /* ANIMACIÓN DE DESVANECIMIENTO HACIA ARRIBA */
-        @keyframes techFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* CREA UNA ESTRUCTURA DE CUADRÍCULA (GRID) PARA FORMULARIOS */
-        .grid-two-columns {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-        }
-        /* DOS COLUMNAS SOLAMENTE EN PANTALLAS GRANDES */
-        @media (min-width: 901px) {
-            .grid-two-columns { grid-template-columns: 1fr 1fr; }
-        }
-
-        /* TARJETAS ESTILO CYBERPUNK CARD (CONTENEDORES GRISES) */
-        .card { 
-            background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: var(--radius-premium); 
-            box-shadow: var(--shadow-premium); 
-            border: 1px solid var(--border-smooth); 
-            box-sizing: border-box; 
-        }
-        
-        /* TÍTULOS SECUNDARIOS DENTRO DE LAS TARJETAS */
-        .card h2 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* COMPONENTES DE FORMULARIO LIMPIOS Y OSCUROS */
-        input, textarea, button, select { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 6px 0 16px 0; 
-            border-radius: 10px; 
-            border: 1px solid transparent; 
-            background: var(--dark-bg);
-            color: var(--text-light);
-            box-sizing: border-box; 
-            font-size: 14.5px;
-            outline: none;
-            transition: var(--transition-smooth);
-        }
-        
-        /* BORDE TURQUESA AL ESCRIBIR DENTRO DE UN CAMPO */
-        input:focus, textarea:focus, select:focus {
-            background: #11141a;
-            border-color: var(--turquoise-main);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
-        }
-        
-        /* ETIQUETAS PEQUEÑAS DE TEXTO ARRIBA DE LOS CAMPOS */
-        label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            display: block;
-            margin-top: 4px;
-        }
-        
-        /* BOTONES INTERACTIVOS TURQUESAS */
-        button { 
-            background: var(--turquoise-main); 
-            color: #000000; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: 700; 
-            margin-bottom: 0;
-            border-radius: 22px;
-            padding: 12px 24px;
-            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15);
-        }
-        
-        /* EFECTO HOVER DE BOTONES */
-        button:hover { 
-            background: var(--turquoise-light);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
-        }
-
-        /* VARIANTE DE BOTÓN TURQUESA OSCURO */
-        .btn-brand-accent {
-            background: var(--turquoise-dark);
-            color: white;
-        }
-        .btn-brand-accent:hover {
-            background: var(--turquoise-main);
-            color: black;
-        }
-
-        /* TABLAS Y LISTADOS MINIMALISTAS OSCUROS (CON SCROLL) */
-        .list-container {
-            max-height: 400px; 
-            overflow-y: auto; 
-            background: #11141a; 
-            border: 1px solid var(--border-smooth); 
-            border-radius: 12px; 
-            padding: 8px;
-        }
-
-        /* FILAS DENTRO DE LAS LISTAS */
-        .list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 14px 16px; 
-            border-bottom: 1px solid var(--border-smooth); 
-            font-size: 13.5px; 
-        }
-        
-        /* QUITA EL BORDE A LA ÚLTIMA FILA */
-        .list-item:last-child {
-            border-bottom: none;
-        }
-        
-        /* TEXTO PRINCIPAL DE LA FILA EN NEGRITA */
-        .list-item span {
-            font-weight: 600;
-            color: var(--text-light);
-        }
-        
-        /* BOTÓN PEQUEÑO ESTILO PÍLDORA TURQUESA PARA EDITAR */
-        .btn-edit { 
-            background: rgba(0, 180, 216, 0.15); 
-            color: var(--turquoise-main);
-            width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
-            box-shadow: none;
-        }
+        .btn-edit { background: rgba(0, 180, 216, 0.15); color: var(--turquoise-main); width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
         .btn-edit:hover { background: var(--turquoise-main); color: #000; }
-
-        /* BOTÓN PEQUEÑO ESTILO PÍLDORA ROJO PARA ELIMINAR */
-        .btn-del { 
-            background: rgba(255, 59, 48, 0.15); 
-            color: var(--del);
-            width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600;
-            box-shadow: none;
-        }
+        .btn-del { background: rgba(255, 59, 48, 0.15); color: var(--del); width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
         .btn-del:hover { background: var(--del); color: #fff; }
         
-        /* TABLA DE TICKETS INTERACTIVA (ENVOLTORIO PARA SCROLL HORIZONTAL) */
-        .ticket-table-wrapper {
-            overflow-x: auto;
-            border: 1px solid var(--border-smooth);
-            border-radius: 12px;
-            background: #11141a;
-        }
-
-        /* ESTRUCTURA DE LA TABLA DE INCIDENCIAS */
-        .ticket-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13.5px;
-        }
+        .ticket-table-wrapper { overflow-x: auto; border: 1px solid var(--border-smooth); border-radius: 12px; background: #11141a; }
+        .ticket-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .ticket-table th, .ticket-table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border-smooth); }
+        .ticket-table th { background: #161a22; font-weight: 700; color: #ffffff; }
+        .ticket-table tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
         
-        /* ESPACIADO Y BORDES DE CELDAS DE TABLA */
-        .ticket-table th, .ticket-table td {
-            text-align: left;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-smooth);
-        }
-        
-        /* ESTILO DE LOS TÍTULOS DE COLUMNAS DE LA TABLA */
-        .ticket-table th {
-            background: #161a22;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        /* HOVER DE FILAS DE LA TABLA */
-        .ticket-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        /* ETIQUETAS REDONDEADAS DE URGENCIA (BADGES) */
-        .badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 11px;
-            display: inline-block;
-        }
+        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; }
         .badge-alta { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
         .badge-media { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
         .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 
-        /* 🤖 MODAL DE DETALLE MAESTRO INTELIGENTE (FONDO BORROSO APPLE) */
-        .apple-modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            z-index: 50000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+        .apple-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); z-index: 50000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .apple-modal-content { background: var(--card-bg); width: 100%; max-width: 680px; border-radius: 20px; padding: 35px; box-shadow: 0 30px 70px rgba(0,0,0,0.5); border: 1px solid var(--border-smooth); animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; max-height: 90vh; overflow-y: auto; }
+        @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* CAJA PRINCIPAL DE LA VENTANA EMERGENTE (MODAL) */
-        .apple-modal-content {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 680px;
-            border-radius: 20px;
-            padding: 35px;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.5);
-            border: 1px solid var(--border-smooth);
-            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        /* ANIMACIÓN POP DEL MODAL */
-        @keyframes modalPop {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        /* PARTE SUPERIOR DEL MODAL CON LÍNEA SEPARADORA */
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-smooth);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* BOTÓN DE CERRAR EL MODAL */
-        .modal-close-btn {
-            background: var(--dark-bg);
-            color: var(--text-light);
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            font-size: 14px;
-            transition: var(--transition-smooth);
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-smooth); padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-close-btn { background: var(--dark-bg); color: var(--text-light); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 14px; transition: var(--transition-smooth); }
         .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
-
-        /* CAJA PARA LA SOLUCIÓN DE INTELIGENCIA ARTIFICIAL */
-        .ai-bulletin-box {
-            background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02));
-            border: 1px dashed var(--turquoise-main);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 25px;
-            display: none;
-        }
+        .ai-bulletin-box { background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02)); border: 1px dashed var(--turquoise-main); border-radius: 12px; padding: 20px; margin-top: 25px; display: none; }
         
-        /* ADAPTA LA ESTRUCTURA PARA PANTALLAS PEQUEÑAS (TABLETS/MÓVILES) */
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: auto; position: relative; padding: 20px; }
@@ -483,7 +104,6 @@
 </head>
 <body>
 
-<!-- PANTALLA DE INICIO DE SESIÓN (LOGIN OVERLAY) -->
 <div id="login-overlay">
     <div class="login-card">
         <h2 style="margin-bottom:6px; font-weight:800; color:var(--turquoise-main); font-size: 24px;">Control Maestro</h2>
@@ -497,7 +117,6 @@
     </div>
 </div>
 
-<!-- BARRA LATERAL (SIDEBAR) CON MENÚ DE NAVEGACIÓN -->
 <aside class="sidebar">
     <div class="sidebar-brand">iCare Admin<span>.</span></div>
     <ul class="sidebar-menu">
@@ -516,27 +135,17 @@
         <p>Aprobar o denegar solicitudes de registro de nuevos usuarios.</p>
     </div>
     
-    <!-- PESTAÑA 0: GESTIÓN DE SOLICITUDES DE REGISTRO -->
     <section id="tab-solicitudes" class="tab-section active">
         <div class="card">
             <h2>Solicitudes de Registro</h2>
             <button class="btn-del" onclick="eliminarSeleccionados('solicitudes_registro')">🗑️ Eliminar Seleccionados</button>
             <table class="ticket-table">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="select-all-solicitudes" onclick="toggleSelectAll(this, 'check-sol')"></th>
-                        <th>Empresa</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
+                <thead><tr><th><input type="checkbox" id="select-all-solicitudes" onclick="toggleSelectAll(this, 'check-sol')"></th><th>Empresa</th><th>Nombre</th><th>Correo</th><th>Acción</th></tr></thead>
                 <tbody id="tabla-solicitudes"><tr><td colspan="5">Cargando...</td></tr></tbody>
             </table>
         </div>
     </section>
     
-    <!-- PESTAÑA 1: GESTIÓN DE TICKETS DE SOPORTE -->
     <section id="tab-tickets" class="tab-section">
         <div class="card">
             <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
@@ -547,18 +156,7 @@
             
             <div class="ticket-table-wrapper">
                 <table class="ticket-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Empresa</th>
-                            <th>Contacto</th>
-                            <th>Asunto</th>
-                            <th>Descripción</th>
-                            <th>Urgencia</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Fecha</th><th>Empresa</th><th>Contacto</th><th>Asunto</th><th>Descripción</th><th>Urgencia</th><th>Estado</th><th>Acciones</th></tr></thead>
                     <tbody id="tabla-tickets-soporte">
                         <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Cargando flujos de datos...</td></tr>
                     </tbody>
@@ -567,7 +165,6 @@
         </div>
     </section>
 
-    <!-- PESTAÑA 2: CLIENTES CORPORATIVOS (ALTA DE EMPRESAS Y LISTADO) -->
     <section id="tab-empresas" class="tab-section">
         <div class="grid-two-columns">
             <div class="card">
@@ -584,7 +181,6 @@
         </div>
     </section>
 
-    <!-- PESTAÑA 3: LANDING & CONTENIDOS (MÓDULOS, PRODUCTOS, TEXTOS, SOCIOS, TESTIMONIOS) -->
     <section id="tab-contenidos" class="tab-section">
         <div class="grid-two-columns">
             <div>
@@ -668,7 +264,6 @@
         </div>
     </section>
 
-    <!-- PESTAÑA 4: PERSONAL TÉCNICO Y USUARIOS (CREAR, EDITAR Y LISTAR CUENTAS) -->
     <section id="tab-personal" class="tab-section">
         <div id="seccion-usuarios-admin" class="grid-two-columns">
             <div class="card">
@@ -730,7 +325,6 @@
         </div>
     </section>
 
-    <!-- PESTAÑA 5: AUDITORÍA Y REGISTRO DE EVENTOS (LOGS) -->
     <section id="tab-auditoria" class="tab-section">
         <div class="card" id="seccion-logs-admin">
             <h2><i class="fas fa-history" style="color: var(--turquoise-main);"></i> Auditoría y Trazabilidad Global (Neon Logs)</h2>
@@ -741,7 +335,6 @@
     </section>
 </main>
 
-<!-- MODAL POPUP PARA VER EL DETALLE COMPLETO DEL TICKET SELECCIONADO -->
 <div id="modalTicketGrande" class="apple-modal">
     <div class="apple-modal-content">
         <div class="modal-header">
@@ -781,97 +374,64 @@
 </div>
 
 <script>
-    // VARIABLE CONSTANTE QUE DEFINE LA RUTA BASE DE LA API
     const API = '/api';
 
-    // VARIABLES GLOBALES PARA ALMACENAR IMÁGENES TEMPORALMENTE Y DATOS DE EDICIÓN EN MEMORIA
     let imgS = "", imgP = "", imgRev = "", imgPartner = "", imgEmp = "", imgSupportEmp = "", editId = null, editType = null;
     let editSupportEmpId = null;
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
     let cacheTickets = [];
     let currentOpenTicket = null;
 
-    // 1. VERIFICACIÓN DE SEGURIDAD Y CARGA INICIAL AL ABRIR LA PÁGINA
     window.onload = function () {
-        // Primero, verificamos que el admin esté realmente logueado consultando la API
-        fetch(`${API}/admin/tickets`, {
-            method: 'GET',
-            credentials: 'include'
-        })
+        fetch(`${API}/admin/tickets`, { method: 'GET', credentials: 'include' })
         .then(res => {
-            // Si el servidor rechaza la petición (no logueado), expulsa al usuario al login
-            if (!res.ok) {
-                window.location.href = '/login.html';
-                return null;
-            }
+            if (!res.ok) { window.location.href = '/login.html'; return null; }
             return res.json();
         })
         .then(tickets => {
             if (tickets) {
-                // Si el servidor responde con éxito, ocultamos el fondo negro de login
                 document.getElementById('login-overlay').style.display = 'none';
-
-                // Habilitamos y mostramos las secciones ocultas de administración
                 const seccionUsuarios = document.getElementById('seccion-usuarios-admin');
                 if (seccionUsuarios) seccionUsuarios.style.display = 'grid';
-                
                 const seccionLogs = document.getElementById('seccion-logs-admin');
                 if(seccionLogs) seccionLogs.style.display = 'block';
 
-                // Cargamos y guardamos en memoria los tickets obtenidos
                 cacheTickets = tickets;
-                renderTablaTickets(tickets); // Dibuja la tabla con los tickets
-                loadContent(); // Llama a la función que descarga el resto de la web
-                cargarListaTrabajadores(); // Descarga la lista del personal
-                cargarHistorialLogs(); // Descarga el registro de eventos
-                cargarSolicitudes(); // Carga las solicitudes de registro
+                renderTablaTickets(tickets); 
+                loadContent(); 
+                cargarListaTrabajadores(); 
+                cargarHistorialLogs(); 
+                cargarSolicitudes(); 
                 
-                // CARGA AUTOMÁTICA DE SELECTORES DE EMPRESAS (Llena los desplegables)
                 cargarEmpresasParaSelector('select-empresa-alta');
                 cargarEmpresasParaSelector('select-empresa-edit');
             }
-        })
-        .catch(err => {
+        }).catch(err => {
             console.error("Error crítico de autenticación:", err);
             window.location.href = '/login.html';
         });
     };
 
-    // FUNCIÓN PARA ALTERNAR ENTRE LAS DISTINTAS PESTAÑAS DEL PANEL LATERAL
     function switchTab(tabId, event) {
         document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        
         const currentTab = document.getElementById(tabId);
         if (currentTab) currentTab.classList.add('active');
-        
-        if (event && event.currentTarget) {
-            event.currentTarget.classList.add('active');
-        }
+        if (event && event.currentTarget) { event.currentTarget.classList.add('active'); }
 
         const titles = {
-            'tab-tickets': 'Tickets de Soporte',
-            'tab-solicitudes': 'Gestión de Solicitudes de Registro',
-            'tab-empresas': 'Clientes Corporativos',
-            'tab-contenidos': 'Landing & Contenidos',
-            'tab-personal': 'Personal Técnico',
-            'tab-auditoria': 'Auditoría'
+            'tab-tickets': 'Tickets de Soporte', 'tab-solicitudes': 'Gestión de Solicitudes de Registro',
+            'tab-empresas': 'Clientes Corporativos', 'tab-contenidos': 'Landing & Contenidos',
+            'tab-personal': 'Personal Técnico', 'tab-auditoria': 'Auditoría'
         };
-        
         const titleElement = document.getElementById('main-panel-title');
-        if(titleElement) {
-            titleElement.innerText = titles[tabId] || 'Panel de Administración';
-        }
+        if(titleElement) { titleElement.innerText = titles[tabId] || 'Panel de Administración'; }
     }
 
-    // FUNCIÓN PARA MARCAR/DESMARCAR TODOS LOS CHECKBOXES
     function toggleSelectAll(source, className) {
         document.querySelectorAll(`.${className}`).forEach(cb => cb.checked = source.checked);
     }
     
-    // --- GESTIÓN DE SOLICITUDES ---
-    
-    // CARGA SOLICITUDES CON MANEJO DE ERRORES
     function cargarSolicitudes() {
         fetch(`${API}/admin/solicitudes`)
             .then(r => r.ok ? r.json() : Promise.resolve([]))
@@ -894,51 +454,31 @@
             }).catch(e => console.error("Error cargando solicitudes:", e));
     }
 
-    // APRUEBA UNA SOLICITUD DE REGISTRO
     function aprobarSolicitud(id) {
         if (!confirm("¿Aprobar este usuario? Se creará una cuenta de cliente.")) return;
         fetch(`${API}/admin/aprobar_solicitud`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ id: id })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Usuario aprobado y registrado.");
-                    cargarSolicitudes();
-                    cargarListaTrabajadores(); // Refresca la lista de usuarios para que aparezca el nuevo
-                } else {
-                    alert("Error: " + data.message);
-                }
-            });
-    }
-    
-    // BORRADO MASIVO DE SOLICITUDES
-    function eliminarSeleccionados(tabla) {
-        const ids = Array.from(document.querySelectorAll('.check-sol:checked')).map(c => c.value);
-        if (ids.length === 0) return alert("Selecciona uno o más ítems para eliminar.");
-
-        if (!confirm(`¿Seguro que deseas eliminar ${ids.length} registro(s)?`)) return;
-
-        fetch(`${API}/admin/eliminar-varios`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tabla: tabla, ids: ids })
-        }).then((res) => {
-            if(res.ok){
-                alert("Registros eliminados.");
-                cargarSolicitudes();
-            } else {
-                alert("Error al eliminar los registros.");
-            }
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ id: id })
+        }).then(r => r.json()).then(data => {
+            if (data.success) { alert("Usuario aprobado y registrado."); cargarSolicitudes(); cargarListaTrabajadores(); } 
+            else { alert("Error: " + data.message); }
         });
     }
     
-    // --- GESTIÓN DE ARCHIVOS ---
+    function eliminarSeleccionados(tabla) {
+        const ids = Array.from(document.querySelectorAll('.check-sol:checked')).map(c => c.value);
+        if (ids.length === 0) return alert("Selecciona uno o más ítems para eliminar.");
+        if (!confirm(`¿Seguro que deseas eliminar ${ids.length} registro(s)?`)) return;
 
-    // FUNCIÓN REUTILIZABLE PARA LEER ARCHIVOS DE IMAGEN SUBIDOS POR EL USUARIO Y CONVERTIRLOS A BASE64
+        fetch(`${API}/admin/eliminar-varios`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tabla: tabla, ids: ids })
+        }).then((res) => {
+            if(res.ok){ alert("Registros eliminados."); cargarSolicitudes(); } 
+            else { alert("Error al eliminar los registros."); }
+        });
+    }
+    
     const handleFile = (id, cb) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -951,17 +491,10 @@
         };
     };
 
-    // ASIGNACIÓN DE LA FUNCIÓN DE ARCHIVOS A CADA UNO DE LOS INPUTS TIPO FILE
-    handleFile('sImgFile', res => imgS = res);
-    handleFile('pImgFile', res => imgP = res);
-    handleFile('revImgFile', res => imgRev = res);
-    handleFile('partnerImgFile', res => imgPartner = res);
-    handleFile('empImgFile', res => imgEmp = res);
-    handleFile('newSupportEmpImg', res => imgSupportEmp = res);
+    handleFile('sImgFile', res => imgS = res); handleFile('pImgFile', res => imgP = res);
+    handleFile('revImgFile', res => imgRev = res); handleFile('partnerImgFile', res => imgPartner = res);
+    handleFile('empImgFile', res => imgEmp = res); handleFile('newSupportEmpImg', res => imgSupportEmp = res);
 
-    // --- GESTIÓN DE LOGIN ---
-    
-    // FUNCIÓN QUE MANEJA EL ENVÍO DEL FORMULARIO DE INICIO DE SESIÓN MAESTRO
     const loginForm = document.getElementById('form-login-master');
     if (loginForm) {
         loginForm.addEventListener('submit', function (e) {
@@ -969,20 +502,14 @@
             const user = document.getElementById('login-user').value;
             const pass = document.getElementById('login-pass').value;
 
-            // Envía las credenciales introducidas a la API de validación
             fetch(`${API}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ usuario: user, password: pass })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', body: JSON.stringify({ usuario: user, password: pass })
             })
             .then(res => res.json())
             .then(data => {
-                // Si la clave es correcta, simplemente recarga la página. El `window.onload` se encargará del resto.
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    // Si falla, muestra el mensaje rojo de error
+                if (data.success) { window.location.reload(); } 
+                else {
                     const errorDiv = document.getElementById('login-error');
                     if(errorDiv) errorDiv.style.display = 'block';
                 }
@@ -990,44 +517,35 @@
         });
     }
     
-    // --- GESTIÓN DE AUDITORÍA ---
-
-    // FUNCIÓN QUE DESCARGA Y PINTA EL HISTORIAL DE ACCIONES (LOGS DE AUDITORÍA)
     function cargarHistorialLogs() {
         fetch(`${API}/admin/logs`, { credentials: 'include' })
             .then(res => res.ok ? res.json() : [])
             .then(logs => {
                 const container = document.getElementById('lista-logs-auditoria');
                 if(!container) return;
-                // Mapea la información de la base de datos a formato HTML tipo consola
                 container.innerHTML = logs.map(l => `<div style="padding:10px; border-bottom:1px solid var(--border-smooth);">[${new Date(l.fecha).toLocaleString()}] <b style="color:var(--turquoise-main);">${l.usuario}</b>: ${l.accion} → <span style="color:var(--text-secondary);">${l.detalle}</span></div>`).join('');
             });
     }
 
-    // --- GESTIÓN DE PERSONAL ---
-    
-    // FUNCIÓN QUE SOLICITA LA LISTA DE PERSONAL Y USUARIOS AL SERVIDOR
+    // CORRECCIÓN 1: LOS BOTONES CORRECTOS DE EDICIÓN Y ELIMINACIÓN DE USUARIO
     function cargarListaTrabajadores() {
         fetch(`${API}/admin/usuarios`, { credentials: 'include' })
             .then(res => res.ok ? res.json() : [])
             .then(usuarios => {
                 const div = document.getElementById('lista-usuarios-tecnicos');
                 if(!div) return;
-                // Dibuja un ítem de lista por cada usuario encontrado con sus respectivos botones de borrar y editar
                 div.innerHTML = usuarios.map(u => `
                 <div class="list-item">
                     <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
                     <div>
-                        <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irACrearUsuarioEmpresa(${e.id})"><i class="fas fa-users-cog"></i> Accesos</button>
-                        <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
-                        <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
+                        <button class="btn-edit" onclick="activarEdicionUsuario(${u.id}, '${u.nombre}', '${u.usuario}', '${u.rol}', '${u.empresa_id || ''}')">Editar</button>
+                        <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
                     </div>
                 </div>
             `).join('');
             });
     }
 
-    // FUNCIÓN PARA ELIMINAR A UN USUARIO DEL SISTEMA CONFIRMANDO PREVIAMENTE
     function eliminarUsuario(id, nombre) {
         if (confirm(`¿Eliminar de forma permanente al usuario ${nombre}?`)) {
             fetch(`${API}/admin/eliminar-usuario/${id}`, { method: 'DELETE', credentials: 'include' })
@@ -1035,13 +553,12 @@
                 .then(data => {
                     if (data.success) {
                         alert('Usuario removido del servidor maestro.');
-                        cargarListaTrabajadores(); // Refresca la lista al borrar
+                        cargarListaTrabajadores(); 
                     } else { alert(data.message); }
                 });
         }
     }
 
-    // FUNCIÓN QUE ABRE EL BLOQUE DE EDICIÓN Y PRECARGA LOS DATOS DE UN USUARIO EXISTENTE
     function activarEdicionUsuario(id, nombre, usuario, rol, empresa_id) {
         document.getElementById('bloque-editar-usuario').style.display = 'block';
         document.getElementById('edit-emp-id').value = id;
@@ -1049,118 +566,74 @@
         document.getElementById('edit-emp-user').value = usuario;
         document.getElementById('edit-emp-role').value = rol;
 
-        // Si es cliente, mostramos su empresa actual
         if (rol === 'cliente') {
             toggleEmpresa('cliente', 'div-empresa-edit', 'select-empresa-edit');
-            // Timeout para darle tiempo al DOM de procesar el toggleEmpresa antes de forzar el valor asignado
             setTimeout(() => { document.getElementById('select-empresa-edit').value = empresa_id; }, 100);
         } else {
             toggleEmpresa('otro', 'div-empresa-edit', 'select-empresa-edit');
         }
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    // FUNCIÓN QUE DESCARTA LA EDICIÓN Y OCULTA EL FORMULARIO
-    function cancelarEdicion() {
-        document.getElementById('bloque-editar-usuario').style.display = 'none';
-    }
+    function cancelarEdicion() { document.getElementById('bloque-editar-usuario').style.display = 'none'; }
 
-    // LISTENER QUE MANEJA EL EVENTO DE GUARDAR UNA EDICIÓN DE USUARIO
     const editForm = document.getElementById('form-editar-trabajador');
     if (editForm) {
         editForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const rol = document.getElementById('edit-emp-role').value;
-
-            // Construye el payload (datos a enviar a la API)
             fetch(`${API}/admin/editar-usuario`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    id: document.getElementById('edit-emp-id').value,
-                    nombre: document.getElementById('edit-emp-name').value,
-                    usuario: document.getElementById('edit-emp-user').value,
-                    password: document.getElementById('edit-emp-pass').value,
-                    rol: rol,
-                    // Si es un cliente, se le envía el ID de la empresa a la que pertenece
-                    empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-edit').value : null
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', body: JSON.stringify({
+                    id: document.getElementById('edit-emp-id').value, nombre: document.getElementById('edit-emp-name').value,
+                    usuario: document.getElementById('edit-emp-user').value, password: document.getElementById('edit-emp-pass').value,
+                    rol: rol, empresa_id: (rol === 'cliente') ? document.getElementById('select-empresa-edit').value : null
                 })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Credenciales actualizadas!');
-                    cancelarEdicion();
-                    cargarListaTrabajadores(); // Refresca la lista
-                }
+            .then(res => res.json()).then(data => {
+                if (data.success) { alert('Credenciales actualizadas!'); cancelarEdicion(); cargarListaTrabajadores(); }
             });
         });
     }
     
-    // LISTENER QUE MANEJA LA CREACIÓN (ALTA) DE UN USUARIO TOTALMENTE NUEVO
     const altaForm = document.getElementById('form-alta-trabajador');
     if (altaForm) {
         altaForm.addEventListener('submit', function (e) {
             e.preventDefault();
-
-            // Capturamos todos los datos escritos en el formulario
             const datos = {
-                nombre: document.getElementById('new-emp-name').value,
-                usuario: document.getElementById('new-emp-user').value,
-                password: document.getElementById('new-emp-pass').value,
-                email: document.getElementById('new-emp-email').value,
-                telefono: document.getElementById('new-emp-phone').value,
-                rol: document.getElementById('new-emp-role').value,
+                nombre: document.getElementById('new-emp-name').value, usuario: document.getElementById('new-emp-user').value,
+                password: document.getElementById('new-emp-pass').value, email: document.getElementById('new-emp-email').value,
+                telefono: document.getElementById('new-emp-phone').value, rol: document.getElementById('new-emp-role').value,
                 empresa_id: document.getElementById('select-empresa-alta') ? document.getElementById('select-empresa-alta').value : null
             };
 
-            // Petición a la API para insertarlo en Base de Datos
             fetch(`${API}/admin/crear-usuario`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(datos)
-            })
-            .then(res => res.json())
-            .then(data => {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', body: JSON.stringify(datos)
+            }).then(res => res.json()).then(data => {
                 if (data.success) {
                     alert('Usuario registrado con éxito.');
-                    document.getElementById('form-alta-trabajador').reset(); // Limpia los inputs
+                    document.getElementById('form-alta-trabajador').reset(); 
                     cargarListaTrabajadores();
-                } else {
-                    alert("Error: " + (data.message || "No se pudo registrar"));
-                }
-            })
-            .catch(err => {
-                console.error("Error:", err);
-                alert("Error de conexión con el servidor.");
-            });
+                } else { alert("Error: " + (data.message || "No se pudo registrar")); }
+            }).catch(err => { alert("Error de conexión con el servidor."); });
         });
     }
-    
-    // --- GESTIÓN DE TICKETS ---
 
     function cargarTicketsAdmin() {
         fetch(`${API}/admin/tickets`, { credentials: 'include' })
         .then(res => res.ok ? res.json() : [])
-        .then(tickets => {
-            cacheTickets = tickets;
-            renderTablaTickets(tickets);
-        });
+        .then(tickets => { cacheTickets = tickets; renderTablaTickets(tickets); });
     }
 
-    // FUNCIÓN QUE DIBUJA FILA POR FILA LA TABLA DE TICKETS DE SOPORTE TÉCNICO
+    // CORRECCIÓN 2: AÑADIDO EL BOTÓN ROJO DE ELIMINAR EL TICKET
     function renderTablaTickets(lista) {
         const tbody = document.getElementById('tabla-tickets-soporte');
         if(!tbody) return;
-        // Si no hay reportes, muestra un mensaje centralizado
         if (lista.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding: 30px;">No hay reportes levantados en esta partición.</td></tr>`;
             return;
         }
-        // Itera la lista construyendo el HTML de las celdas y añadiendo el evento onClick a toda la fila
         tbody.innerHTML = lista.map(t => {
             const fechaStr = new Date(t.fecha).toLocaleDateString('es-CR', { hour: '2-digit', minute: '2-digit' });
             return `
@@ -1174,208 +647,126 @@
                     <td><b style="color:${t.estado === 'Abierto' ? '#ff3b30' : '#10b981'};">${t.estado}</b></td>
                     <td onclick="event.stopPropagation();">
                         <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
+                        <button class="btn-del" style="padding:4px 10px; margin:0; margin-left:5px;" onclick="borrarTicket(${t.id}, event)"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         }).join('');
     }
 
-    // FUNCIÓN QUE LLENA Y ABRE EL MODAL FLOTANTE (POPUP) AL CLICAR SOBRE UN TICKET
     function abrirModalTicketGrande(ticketId) {
-        // Busca el ticket exacto en la memoria cache
         const ticket = cacheTickets.find(t => t.id === ticketId);
         if (!ticket) return;
         currentOpenTicket = ticket;
 
-        // Rellena el HTML del modal con la información del ticket
         document.getElementById('modalEmpresa').innerText = ticket.empresa_nombre;
         document.getElementById('modalContacto').innerText = ticket.contacto;
         document.getElementById('modalFecha').innerText = new Date(ticket.fecha).toLocaleString('es-CR');
         document.getElementById('modalAsunto').innerText = ticket.asunto;
         document.getElementById('modalDescripcion').innerText = ticket.descripcion;
 
-        // Pinta la insignia del color correcto según la urgencia
         const prioBox = document.getElementById('modalPrioridad');
         prioBox.innerHTML = `<span class="badge badge-${ticket.prioridad.toLowerCase()}">${ticket.prioridad}</span>`;
 
-        // Condiciona el botón 'Resolver'. Si ya está cerrado el ticket, oculta el botón
         const btnResolver = document.getElementById('btnModalResolver');
         if (ticket.estado === 'Abierto') {
             btnResolver.style.display = "inline-block";
-            btnResolver.onclick = () => {
-                cambiarEstadoTicket(ticket.id, 'Resuelto');
-                cerrarModalTicket();
-            };
-        } else {
-            btnResolver.style.display = "none";
-        }
+            btnResolver.onclick = () => { cambiarEstadoTicket(ticket.id, 'Resuelto'); cerrarModalTicket(); };
+        } else { btnResolver.style.display = "none"; }
 
-        // Resetea la caja de la IA por si tenía info del ticket anterior
         document.getElementById('boxSolucionIA').style.display = "none";
         document.getElementById('textSolucionIA').innerHTML = "";
-
-        // Hace visible el modal final
         document.getElementById('modalTicketGrande').style.display = "flex";
     }
 
-    // FUNCIÓN PARA CERRAR EL POPUP MODAL DEL TICKET
     function cerrarModalTicket() {
         document.getElementById('modalTicketGrande').style.display = "none";
         currentOpenTicket = null;
     }
 
-    // FUNCIÓN QUE SIMULA O PROCESA UNA PREDICCIÓN DE INTELIGENCIA ARTIFICIAL SEGÚN PALABRAS CLAVE DEL TICKET
     function generarSolucionIA() {
         if (!currentOpenTicket) return;
-
         const textContainer = document.getElementById('textSolucionIA');
         const boxContainer = document.getElementById('boxSolucionIA');
-
-        // Muestra la caja y pone un loader giratorio temporal
         boxContainer.style.display = "block";
-        textContainer.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);">
-                <i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...
-            </div>`;
+        textContainer.innerHTML = `<div style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> iCare IA está analizando la falla y estructurando la viñeta profesional...</div>`;
 
-        // Timeout simulando el procesamiento de la IA
         setTimeout(() => {
             const lowerAsunto = currentOpenTicket.asunto.toLowerCase();
             const lowerDesc = currentOpenTicket.descripcion.toLowerCase();
             let solucionSugerida = "";
-
-            // Lógica predictiva sencilla: Busca palabras clave en el texto y arroja una plantilla de resolución
             if (lowerAsunto.includes('servidor') || lowerDesc.includes('servidor') || lowerDesc.includes('server')) {
-                solucionSugerida = `
-                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
-                        <li><b>[Paso 1 - Aislamiento]</b> Verificar redundancia de energía en el rack y realizar ping ICMP constante al host de la base de datos Neon.</li>
-                        <li><b>[Paso 2 - Diagnóstico]</b> Acceder mediante terminal segura SSH y ejecutar <code>top</code> o <code>htop</code> para auditar picos anómalos de CPU/RAM.</li>
-                        <li><b>[Paso 3 - Mitigación]</b> Reiniciar los daemons de servicio web y limpiar logs temporales que saturen la partición raíz (/) del volumen de almacenamiento masivo.</li>
-                    </ul>`;
+                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Aislamiento]</b> Verificar redundancia de energía en el rack y realizar ping ICMP constante.</li><li><b>[Paso 2 - Diagnóstico]</b> Acceder mediante terminal segura SSH y auditar picos anómalos.</li><li><b>[Paso 3 - Mitigación]</b> Reiniciar los daemons de servicio web y limpiar logs temporales.</li></ul>`;
             } else if (lowerAsunto.includes('red') || lowerDesc.includes('internet') || lowerAsunto.includes('caída')) {
-                solucionSugerida = `
-                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
-                        <li><b>[Paso 1 - Capa Física]</b> Verificar el estado del enlace troncal en el Switch administrador y descartar alertas de bucles mediante Spanning Tree (STP).</li>
-                        <li><b>[Paso 2 - Enrutamiento]</b> Validar la tabla de asignaciones DHCP y comprobar que el Gateway corporativo resuelva trazas DNS hacia servidores raíz.</li>
-                        <li><b>[Paso 3 - Contingencia]</b> Si el fallo persiste, forzar la conmutación automática (Failover) hacia el proveedor de fibra óptica secundario de iCare.</li>
-                    </ul>`;
+                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Capa Física]</b> Verificar el estado del enlace troncal en el Switch.</li><li><b>[Paso 2 - Enrutamiento]</b> Validar la tabla de asignaciones DHCP y resolver trazas DNS.</li><li><b>[Paso 3 - Contingencia]</b> Forzar la conmutación automática hacia el proveedor secundario.</li></ul>`;
             } else {
-                solucionSugerida = `
-                    <ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;">
-                        <li><b>[Paso 1 - Depuración]</b> Revisar logs de la aplicación o sistema operativo afectado para detectar excepciones de punteros o fallas de dependencias de software.</li>
-                        <li><b>[Paso 2 - Permisos]</b> Verificar el árbol de privilegios del usuario solicitante en el Active Directory o base de datos local.</li>
-                        <li><b>[Paso 3 - Despliegue]</b> Limpiar almacenamiento en caché local, reiniciar la estación de trabajo y verificar conectividad directa con los endpoints de la API de iCare Tech.</li>
-                    </ul>`;
+                solucionSugerida = `<ul style="padding-left:15px; margin:0; display:flex; flex-direction:column; gap:6px;"><li><b>[Paso 1 - Depuración]</b> Revisar logs del sistema operativo afectado.</li><li><b>[Paso 2 - Permisos]</b> Verificar el árbol de privilegios del usuario.</li><li><b>[Paso 3 - Despliegue]</b> Limpiar almacenamiento en caché local y reiniciar.</li></ul>`;
             }
-
             textContainer.innerHTML = solucionSugerida;
-        }, 1200); // Demora de 1.2 segundos
+        }, 1200); 
     }
     
-    // --- GESTIÓN DE CLIENTES CORPORATIVOS ---
-
-    // FUNCIÓN PARA PREPARAR EL FORMULARIO DE 'DAR DE ALTA EMPRESA' PARA EDITAR UNA EXISTENTE
     function ajustarEdicionEmpresaSoporte(id, nombre, imagenActual) {
         editSupportEmpId = id;
         document.getElementById('newSupportEmpName').value = nombre;
-        // Magia: Si ya hay imagen, la guardamos en memoria para no borrarla al hacer update
         imgSupportEmp = (imagenActual && imagenActual !== 'undefined' && imagenActual !== 'null') ? imagenActual : "";
-
-        // Cambia visualmente el formulario para indicar que ahora está en 'Modo Edición'
         document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-pen-to-square" style="color: var(--turquoise-main);"></i> Editar Empresa Soporte`;
         document.getElementById('btn-guardar-empresa-soporte').innerText = "Actualizar Empresa y Logo";
         document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-dark)";
         document.getElementById('btn-guardar-empresa-soporte').style.color = "white";
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // FUNCIÓN DEL SELECTOR PARA FILTRAR LA TABLA PRINCIPAL DE TICKETS POR UNA EMPRESA
     function filtrarTicketsPorEmpresa(empresaId) {
-        if (empresaId === "Todos") {
-            renderTablaTickets(cacheTickets); // Si se selecciona Todos, carga array completo
-        } else {
-            // Filtra el arreglo y re-dibuja la tabla
-            const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId);
-            renderTablaTickets(filtrados);
-        }
+        if (empresaId === "Todos") { renderTablaTickets(cacheTickets); } 
+        else { const filtrados = cacheTickets.filter(t => t.empresa_id == empresaId); renderTablaTickets(filtrados); }
     }
 
-    // FUNCIÓN PARA CAMBIAR EL ESTADO EN BASE DE DATOS DE UN TICKET Y CERRARLO
     function cambiarEstadoTicket(id, nuevoEstado) {
         fetch(`${API}/admin/tickets/${id}/estado`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ estado: nuevoEstado })
-        })
-            .then(r => r.json())
-            .then(() => {
-                alert("Incidencia cerrada en servidor de alta disponibilidad.");
-                cargarTicketsAdmin();
-            });
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ estado: nuevoEstado })
+        }).then(r => r.json()).then(() => { alert("Incidencia cerrada."); cargarTicketsAdmin(); });
     }
 
-    // FUNCIÓN QUE GUARDA UNA NUEVA EMPRESA O ACTUALIZA UNA EXISTENTE EN EL MÓDULO DE SOPORTE
     function agregarEmpresaSoporte() {
         const nombre = document.getElementById('newSupportEmpName').value;
         if (!nombre) return alert("Especifica el nombre corporativo.");
-
-        // Usamos la ruta inteligente del backend que soporta imágenes
         const method = editSupportEmpId ? 'PUT' : 'POST';
         const url = editSupportEmpId ? `${API}/recomiendan/${editSupportEmpId}` : `${API}/recomiendan`;
 
         fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ nombre: nombre, imagen: imgSupportEmp })
-        })
-            .then(r => r.json())
-            .then(() => {
-                alert(editSupportEmpId ? "Empresa corporativa actualizada con éxito." : "Vínculo corporativo completado.");
-                editSupportEmpId = null;
-                document.getElementById('newSupportEmpName').value = "";
-                document.getElementById('newSupportEmpImg').value = ""; // Limpiamos el input file
-                imgSupportEmp = ""; // Limpiamos la memoria de la variable global
-
-                // Restaura el formulario a su estado normal de '+ Vincular'
-                document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
-                document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
-                document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
-                document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
-                loadContent(); // Recarga la info de la pantalla
-            });
+            method: method, headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ nombre: nombre, imagen: imgSupportEmp })
+        }).then(r => r.json()).then(() => {
+            alert(editSupportEmpId ? "Empresa corporativa actualizada con éxito." : "Vínculo corporativo completado.");
+            editSupportEmpId = null; document.getElementById('newSupportEmpName').value = "";
+            document.getElementById('newSupportEmpImg').value = ""; imgSupportEmp = ""; 
+            document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Dar de Alta Empresa`;
+            document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Vincular Cliente";
+            document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
+            document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
+            loadContent(); 
+        });
     }
 
-    // FUNCIÓN PARA BORRAR UNA EMPRESA DE SOPORTE
     function eliminarEmpresaSoporte(id) {
-    if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
-        // Se corrigió la URL apuntando al motor genérico de eliminación de tu app.py
-        fetch(`${API}/eliminar/empresas_recomiendan/${id}`, { method: 'DELETE', credentials: 'include' })
-            .then(r => r.json())
-            .then(() => {
-                alert("Empresa removida del sistema.");
-                loadContent(); // Refresca lista tras borrado
-            });
+        if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
+            fetch(`${API}/eliminar/empresas_recomiendan/${id}`, { method: 'DELETE', credentials: 'include' })
+                .then(r => r.json()).then(() => { alert("Empresa removida del sistema."); loadContent(); });
         }
     }   
 
-    // SÚPER FUNCIÓN MAESTRA QUE CARGA ABSOLUTAMENTE TODOS LOS CONTENIDOS DE LA PÁGINA PÚBLICA EN UN SOLO FETCH
+    // CORRECCIÓN 3: REPARADA LA ESTRUCTURA DE LOS BOTONES AL LISTAR EMPRESAS (BOTÓN ACCESOS)
     function loadContent() {
         fetch(`${API}/todo`)
             .then(r => r.json())
             .then(data => {
-                // Guarda los arreglos traídos de la API en el objeto caché global
-                cacheData.servicios = data.servicios || [];
-                cacheData.productos = data.productos || [];
-                cacheData.resenas = data.resenas || [];
-                cacheData.socios = data.socios || [];
-                cacheData.beneficios = data.beneficios || [];
-                cacheData.objetivos = data.objetivos || [];
+                cacheData.servicios = data.servicios || []; cacheData.productos = data.productos || [];
+                cacheData.resenas = data.resenas || []; cacheData.socios = data.socios || [];
+                cacheData.beneficios = data.beneficios || []; cacheData.objetivos = data.objetivos || [];
                 cacheData.empresas = data.empresas || [];
 
-                // Si hay textos maestros, los inyecta en los campos de texto
                 if (data.config) {
                     document.getElementById('h_titulo').value = data.config.hero_titulo || "";
                     document.getElementById('mision').value = data.config.mision || "";
@@ -1383,104 +774,63 @@
                     document.getElementById('compromiso').value = data.config.compromiso || "";
                 }
 
-                // Llena el selector (dropdown) del filtro de empresas de la primera pestaña
                 const selectFiltro = document.getElementById('filtroEmpresaTickets');
                 selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
-                cacheData.empresas.forEach(e => {
-                    selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
-                });
+                cacheData.empresas.forEach(e => { selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`; });
 
-                // Pinta la lista inferior de la pestaña 'Clientes Corporativos' (Las empresas dadas de alta)
                 const divBajas = document.getElementById('lista-empresas-soporte-bajas');
                 if (cacheData.empresas.length === 0) {
                     divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
                 } else {
                     divBajas.innerHTML = cacheData.empresas.map(e => {
-                        // Si la empresa tiene imagen, crea el <img> miniatura, si no, pon un emoji genérico 🏢
                         const imgTag = e.imagen ? `<img src="${e.imagen}" alt="Logo" style="height:25px; width:auto; border-radius:4px; margin-right:10px; vertical-align:middle;">` : `🏢 `;
                         return `
                     <div class="list-item">
                         <span style="display:flex; align-items:center;">${imgTag} ${e.nombre}</span>
                         <div>
-                            <button class="btn-edit" style="padding:4px 10px; margin:0;" onclick="abrirModalTicketGrande(${t.id})"><i class="fas fa-eye"></i> Ver</button>
-                            <button class="btn-del" style="padding:4px 10px; margin:0; margin-left:5px;" onclick="borrarTicket(${t.id}, event)"><i class="fas fa-trash"></i></button>
+                            <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irACrearUsuarioEmpresa(${e.id})"><i class="fas fa-users-cog"></i> Accesos</button>
+                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
+                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Dar de Baja</button>
                         </div>
                     </div>
                 `}).join('');
                 }
 
-                // INICIA LA CONSTRUCCIÓN DE LA SÚPER LISTA INFERIOR DE CONTENIDOS ('ÁRBOL ACTUAL DE CONTENIDOS')
                 let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
-
-                // Pinta primero la sección de servicios en esa súper lista
                 cacheData.servicios.forEach((s, idx) => {
-                    h += `
-                    <div class="list-item">
-                        <span>${s.titulo}</span>
-                        <div>
-                            <button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button>
-                            <button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button>
-                        </div>
-                    </div>`;
+                    h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button></div></div>`;
                 });
 
                 h += "<br><b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px; margin-top:10px;'>📦 COMPONENTES DEL CATÁLOGO:</b>";
-
-                // Pinta después la sección de productos en la misma súper lista
                 cacheData.productos.forEach((p, idx) => {
-                    h += `
-                    <div class="list-item">
-                        <span>${p.nombre}</span>
-                        <div>
-                            <button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button>
-                            <button class="btn-del" onclick="del('productos', ${p.id})">Eliminar</button>
-                        </div>
-                    </div>`;
+                    h += `<div class="list-item"><span>${p.nombre}</span><div><button class="btn-edit" onclick="prepararEdicion('productos', ${idx})">Editar</button><button class="btn-del" onclick="del('productos', ${p.id})">Eliminar</button></div></div>`;
                 });
 
-                // Inyecta el gran bloque HTML generado en el div contenedor correspondiente
                 document.getElementById('master-list').innerHTML = h;
             });
     }
 
-    // FUNCIÓN PREVIA ANTES DE EDITAR. LLENA LOS FORMULARIOS SEGÚN LO QUE QUIERAS MODIFICAR Y HACE SCROLL HACIA ARRIBA
     function prepararEdicion(tipo, index) {
-        // Validación técnica por la forma en que se llamaba una tabla u otra
         const datosReales = tipo === 'empresas_recomiendan' ? 'empresas' : tipo;
         const item = cacheData[datosReales][index];
-        // Setea variables globales informando qué se está editando
         editId = item.id; editType = tipo;
 
-        // Si el usuario le dio a editar servicio, rellena el formulario de servicios
         if (tipo === 'servicios') {
-            document.getElementById('sTitle').value = item.titulo;
-            document.getElementById('sDesc').value = item.descripcion;
-            document.getElementById('sIcon').value = item.icono;
-            document.getElementById('sProcess').value = item.proceso;
+            document.getElementById('sTitle').value = item.titulo; document.getElementById('sDesc').value = item.descripcion;
+            document.getElementById('sIcon').value = item.icono; document.getElementById('sProcess').value = item.proceso;
             document.getElementById('sBenefits').value = item.beneficios;
-            // Si fue producto, rellena el catálogo
         } else if (tipo === 'productos') {
-            document.getElementById('pName').value = item.nombre;
-            document.getElementById('pPrice').value = item.precio;
-            document.getElementById('pCat').value = item.categoria;
+            document.getElementById('pName').value = item.nombre; document.getElementById('pPrice').value = item.precio; document.getElementById('pCat').value = item.categoria;
         }
-        // Transporta visualmente al administrador hacia arriba de la pantalla para ver el formulario lleno
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // FUNCIÓN MAESTRA QUE DETERMINA SI DEBE CREAR O ACTUALIZAR (POST VS PUT) DEPENDIENDO DE SI HAY ALGO EN EDICIÓN O NO
     function saveItem(path, data) {
-        // Concatena el ID en la URL si estamos en modo edición
         const url = (editId && editType === path) ? `${API}/${path}/${editId}` : `${API}/${path}`;
         fetch(url, { method: (editId && editType === path) ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) })
-            .then(() => {
-                alert("Operación completada con éxito.");
-                loadContent(); // Refresca todo
-                editId = null; editType = null; // Resetea el modo edición
-            });
+            .then(() => { alert("Operación completada con éxito."); loadContent(); editId = null; editType = null; });
     }
 
-    // CONJUNTO DE FUNCIONES "ATAJO" (WRAPPERS) PARA EJECUTAR SAVEITEM() SEGÚN EL FORMULARIO PRESIONADO
     function subirServicio() { saveItem('servicios', { titulo: document.getElementById('sTitle').value, descripcion: document.getElementById('sDesc').value, icono: document.getElementById('sIcon').value, proceso: document.getElementById('sProcess').value, beneficios: document.getElementById('sBenefits').value, imagen: imgS }); }
     function subirProducto() { saveItem('productos', { nombre: document.getElementById('pName').value, precio: document.getElementById('pPrice').value, categoria: document.getElementById('pCat').value, imagen: imgP }); }
     function subirResena() { saveItem('resenas', { cliente: document.getElementById('revClient').value, puesto: document.getElementById('revPos').value, comentario: document.getElementById('revText').value, imagen_cliente: imgRev }); }
@@ -1489,33 +839,24 @@
     function subirObjetivo() { saveItem('objetivos', { icono: document.getElementById('objIcon').value, titulo: document.getElementById('objTitle').value, descripcion: document.getElementById('objDesc').value }); }
     function subirEmpresa() { saveItem('recomiendan', { nombre: document.getElementById('empName').value, imagen: imgEmp }); }
 
-    // FUNCIÓN ÚNICA PARA MANDAR ACTUALIZAR LA CONFIGURACIÓN GLOBAL (TEXTOS DE MISIÓN/VISIÓN/HERO)
     function updateConfig() {
         fetch(`${API}/config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ hero_titulo: document.getElementById('h_titulo').value, mision: document.getElementById('mision').value, vision: document.getElementById('vision').value, compromiso: document.getElementById('compromiso').value }) })
             .then(() => alert("Estructura de contenidos actualizada con éxito en producción."));
     }
 
-    // FUNCIÓN GLOBAL GENÉRICA PARA BORRAR CUALQUIER ÍTEM DEL ÁRBOL DE CONTENIDOS
     function del(t, id) {
         if (confirm("¿Seguro que deseas eliminar este registro de la base de datos de Neon?")) {
             fetch(`${API}/eliminar/${t}/${id}`, { method: 'DELETE', credentials: 'include' }).then(() => loadContent());
         }
     }
 
-    // 1. Mostrar/Ocultar selector de empresa (Dentro de la Pestaña Personal)
     function toggleEmpresa(rol, divId, selectId) {
         const div = document.getElementById(divId);
         if(!div) return;
-        // Si eligen 'cliente', despliega el bloque, si no, lo oculta
         div.style.display = (rol === 'cliente') ? 'block' : 'none';
-
-        // Si es cliente, manda a llamar a la API para traer la lista de empresas disponibles
-        if (rol === 'cliente') {
-            cargarEmpresasParaSelector(selectId);
-        }
+        if (rol === 'cliente') { cargarEmpresasParaSelector(selectId); }
     }
 
-    // 2. Cargar empresas desde el API y llenar un "SELECT" <option> específico (Utilidad para los formularios de Alta y Edición)
     function cargarEmpresasParaSelector(selectId) {
         fetch(`${API}/recomiendan`, { credentials: 'include' })
             .then(r => r.json())
@@ -1527,36 +868,25 @@
     }
 
     function borrarTicket(id, event) {
-        event.stopPropagation(); // Evita que se abra el popup de detalle
+        event.stopPropagation(); 
         if(confirm("¿Estás seguro de eliminar este ticket de manera permanente?")) {
             fetch(`${API}/admin/tickets/${id}`, { method: 'DELETE', credentials: 'include' })
             .then(r => r.json())
             .then(data => {
-                if(data.success) { 
-                    alert("Ticket eliminado correctamente."); 
-                    cargarTicketsAdmin(); // Refresca la tabla
-                } else { 
-                    alert("Error: " + data.message); 
-                }
+                if(data.success) { alert("Ticket eliminado correctamente."); cargarTicketsAdmin(); } 
+                else { alert("Error: " + data.message); }
             });
         }
     }
 
     function irACrearUsuarioEmpresa(empresaId) {
-        // 1. Navega automáticamente a la pestaña de personal
         switchTab('tab-personal', { currentTarget: document.querySelectorAll('.sidebar-item')[4] });
-    
-        // 2. Establece el nivel de acceso como "Cliente Empresarial"
         const rolSelect = document.getElementById('new-emp-role');
         rolSelect.value = 'cliente';
-    
-        // 3. Despliega la caja de selección de empresas
         toggleEmpresa('cliente', 'div-empresa-alta', 'select-empresa-alta');
-    
-        // 4. Selecciona la empresa a la que le dimos clic
         setTimeout(() => {
             document.getElementById('select-empresa-alta').value = empresaId;
-            document.getElementById('new-emp-name').focus(); // Lleva el puntero al nombre para escribir
+            document.getElementById('new-emp-name').focus(); 
         }, 150);
     }
 

@@ -8,7 +8,7 @@ import psycopg2
 from psycopg2 import pool
 import requests
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 import base64
 import json
@@ -68,11 +68,13 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
-    
-    # NUEVAS TABLAS DE FACTURACIÓN (Ruta 2)
     c.execute('''CREATE TABLE IF NOT EXISTS clientes_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, nombre VARCHAR(150), identificacion VARCHAR(20), tipo_identificacion VARCHAR(2), correo VARCHAR(150), telefono VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
+    # NUEVAS TABLAS (Personalización e Proformas)
+    c.execute('''CREATE TABLE IF NOT EXISTS empresa_datos_visuales (id_empresa INT PRIMARY KEY, nombre_comercial VARCHAR(150), telefono VARCHAR(20), correo VARCHAR(150), logo_base64 TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT)''')
+
     conn.commit()
     c.close()
     conn.close()
@@ -82,7 +84,8 @@ def init_db():
         "ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20)",
         "ALTER TABLE tickets_soporte ADD COLUMN usuario_id INT",
         "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)",
-        "ALTER TABLE tickets_soporte ADD COLUMN atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión'"
+        "ALTER TABLE tickets_soporte ADD COLUMN atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión'",
+        "ALTER TABLE Facturas ADD COLUMN lineas_json TEXT" # Para guardar el detalle de la factura
     ]
     for mig in migraciones:
         try: db_query(mig)
@@ -218,10 +221,14 @@ def obtener_datos_operativos():
             permisos_finales = { "facturacion": perm_emp[0][0] and perm_usr[0][0], "datacenter": perm_emp[0][1] and perm_usr[0][1], "inventario": perm_emp[0][2] and perm_usr[0][2], "tickets": perm_emp[0][3] and perm_usr[0][3] }
 
         facturas = []
+        proformas = []
         if permisos_finales["facturacion"]:
-            try: facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s", (id_empresa,), fetch=True) or []
+            try: facturas = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado_hacienda FROM Facturas WHERE id_empresa = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
             except: facturas = []
             
+            try: proformas = db_query("SELECT p.id, p.consecutivo, p.fecha, p.total_comprobante, c.nombre FROM proformas p JOIN clientes_facturacion c ON p.id_cliente = c.id WHERE p.id_empresa = %s ORDER BY p.fecha DESC", (id_empresa,), fetch=True) or []
+            except: proformas = []
+
         tickets = []
         try:
             if rol == 'cliente_admin' or es_admin():
@@ -242,7 +249,7 @@ def obtener_datos_operativos():
         
         return jsonify({
             "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
-            "tickets": tickets,
+            "proformas": [{"id": p[0], "consecutivo": p[1], "fecha": str(p[2]), "monto": str(p[3]), "cliente": p[4]} for p in proformas],
             "permisos": permisos_finales,
             "rol": rol
         })
@@ -250,7 +257,7 @@ def obtener_datos_operativos():
 
 
 # ==============================================================================
-#                      RUTAS DE FACTURACIÓN (CLIENTES Y PRODUCTOS)
+#                      API FACTURACIÓN (CLIENTES, PRODUCTOS, PROFORMAS)
 # ==============================================================================
 
 @app.route('/api/facturacion/clientes', methods=['GET', 'POST', 'DELETE'])
@@ -258,10 +265,6 @@ def obtener_datos_operativos():
 def crud_clientes_facturacion():
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
-
-    # BLINDAJE ACTIVO: Fuerza la creación de la tabla si Vercel la omitió
-    try: db_query('''CREATE TABLE IF NOT EXISTS clientes_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, nombre VARCHAR(150), identificacion VARCHAR(20), tipo_identificacion VARCHAR(2), correo VARCHAR(150), telefono VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    except: pass
 
     if request.method == 'GET':
         try:
@@ -291,10 +294,6 @@ def crud_productos_facturacion():
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
 
-    # BLINDAJE ACTIVO: Fuerza la creación de la tabla si Vercel la omitió
-    try: db_query('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    except: pass
-
     if request.method == 'GET':
         try:
             res = db_query("SELECT id, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto FROM productos_facturacion WHERE id_empresa = %s ORDER BY descripcion ASC", (id_empresa,), fetch=True) or []
@@ -313,6 +312,48 @@ def crud_productos_facturacion():
         d = request.json
         try:
             db_query("DELETE FROM productos_facturacion WHERE id = %s AND id_empresa = %s", (d.get('id'), id_empresa))
+            return jsonify({"success": True})
+        except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+# --- NUEVAS RUTAS API PROFORMAS ---
+@app.route('/api/facturacion/proformas/emitir', methods=['POST'])
+@login_required
+def emitir_proforma():
+    d = request.json
+    id_empresa = get_empresa_id_from_session()
+    if not id_empresa: return jsonify({"success": False, "message": "Empresa no asociada"}), 403
+
+    try:
+        # Generar consecutivo interno (Ej: PRF-00001)
+        res_count = db_query("SELECT COUNT(*) FROM proformas WHERE id_empresa = %s", (id_empresa,), fetch=True)
+        count = res_count[0][0] + 1
+        consecutivo = f"PRF-{str(count).zfill(5)}"
+        
+        fecha_vencimiento = datetime.now() + timedelta(days=int(d.get('dias_validez', 30)))
+        lineas_json = json.dumps(d.get('lineas'))
+
+        db_query("""INSERT INTO proformas (id_empresa, id_cliente, consecutivo, fecha_vencimiento, condicion_venta, medio_pago, total_gravado, total_impuesto, total_comprobante, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                 (id_empresa, d.get('cliente_id'), consecutivo, fecha_vencimiento, d.get('condicion_venta'), d.get('medio_pago'), d.get('total_gravado'), d.get('total_impuesto'), d.get('total_comprobante'), lineas_json))
+        
+        return jsonify({"success": True, "message": "Proforma generada correctamente.", "consecutivo": consecutivo})
+    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/facturacion/config-empresa', methods=['GET', 'POST'])
+@login_required
+def config_visual_empresa():
+    id_empresa = get_empresa_id_from_session()
+    if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
+
+    if request.method == 'GET':
+        res = db_query("SELECT nombre_comercial, telefono, correo, logo_base64 FROM empresa_datos_visuales WHERE id_empresa = %s", (id_empresa,), fetch=True)
+        if res: return jsonify({"nombre_comercial": res[0][0], "telefono": res[0][1], "correo": res[0][2], "logo": res[0][3]})
+        return jsonify({})
+
+    if request.method == 'POST':
+        d = request.json
+        try:
+            db_query("""INSERT INTO empresa_datos_visuales (id_empresa, nombre_comercial, telefono, correo, logo_base64) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (id_empresa) DO UPDATE SET nombre_comercial = EXCLUDED.nombre_comercial, telefono = EXCLUDED.telefono, correo = EXCLUDED.correo, logo_base64 = EXCLUDED.logo_base64""", 
+                     (id_empresa, d.get('nombre'), d.get('telefono'), d.get('correo'), d.get('logo')))
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
@@ -696,8 +737,9 @@ def emitir_factura_electronica_api():
         total_serv_gravados = sum(float(l['monto_total']) for l in lineas_frontend)
         total_iva = total_serv_gravados * 0.13
         total_comprobante = total_serv_gravados + total_iva
+        lineas_json = json.dumps(lineas_frontend)
 
-        db_query("""INSERT INTO Facturas (Id_Empresa, Id_Cliente, Consecutivo, Clave_50_Digitos, Condicion_Venta, Medio_Pago, Total_Servicios_Gravados, Total_Impuesto, Total_Comprobante, Estado_Hacienda) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pendiente')""", (id_empresa_actual, cliente_id, consecutivo_sistema, clave_50, condicion_venta, medio_pago, total_serv_gravados, total_iva, total_comprobante))
+        db_query("""INSERT INTO Facturas (Id_Empresa, Id_Cliente, Consecutivo, Clave_50_Digitos, Condicion_Venta, Medio_Pago, Total_Servicios_Gravados, Total_Impuesto, Total_Comprobante, Estado_Hacienda, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pendiente', %s)""", (id_empresa_actual, cliente_id, consecutivo_sistema, clave_50, condicion_venta, medio_pago, total_serv_gravados, total_iva, total_comprobante, lineas_json))
 
         datos_xml_maestro = {'clave': clave_50, 'consecutivo': consecutivo_sistema, 'emisor_nombre': emisor_datos["nombre"], 'emisor_cedula': emisor_datos["cedula"], 'emisor_correo': emisor_datos["correo"], 'cliente_nombre': cliente_datos["nombre"], 'cliente_cedula': cliente_datos["cedula"], 'cliente_correo': cliente_datos["correo"], 'condicion_venta': condicion_venta, 'medio_pago': medio_pago}
         

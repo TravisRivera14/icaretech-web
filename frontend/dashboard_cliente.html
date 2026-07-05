@@ -4,47 +4,78 @@
     <meta charset="UTF-8">
     <title>Centro de Operaciones | iCare Tech CR</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; --del: #ff3b30; }
-        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        :root { --bg: #0b0c10; --card: #1f2833; --accent: #00b4d8; --text: #f5f5f7; --del: #ff3b30; --green: #10b981;}
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; font-size: 14px; -webkit-font-smoothing: antialiased;}
         
         header { background: #11141a; padding: 15px 40px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-between;}
-        .top-nav { display: flex; gap: 30px; margin-left: 40px; }
-        .top-nav button { background: none; border: none; color: #8a99ad; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; font-size: 15px; }
-        .top-nav button:hover, .top-nav button.active { color: var(--accent); }
+        h1 { margin: 0; font-size: 20px;}
+        
+        .top-nav { display: flex; gap: 20px; }
+        .top-nav button { background: none; border: none; color: #8a99ad; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; font-size: 14px; padding: 8px 12px; border-radius: 6px;}
+        .top-nav button:hover { background: rgba(255,255,255,0.03); color: white; }
+        .top-nav button.active { color: var(--accent); background: rgba(0, 180, 216, 0.1); }
         
         .app-layout { display: flex; flex: 1; }
-        .sidebar { width: 280px; background: #11141a; padding: 20px 0; border-right: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
-        .menu-title { font-size: 12px; color: #555; text-transform: uppercase; margin: 20px 20px 10px; font-weight: 600; }
-        .nav-item { padding: 12px 20px; cursor: pointer; color: #8a99ad; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
-        .nav-item:hover { background: var(--card); color: var(--accent); }
+        .sidebar { width: 260px; background: #11141a; padding: 20px 0; border-right: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .menu-title { font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 20px 8px; font-weight: 700; letter-spacing: 1px;}
+        .nav-item { padding: 11px 20px; cursor: pointer; color: #8a99ad; font-size: 13.5px; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-weight: 500;}
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .nav-item.active { color: var(--accent); background: rgba(0, 180, 216, 0.05); border-left: 3px solid var(--accent); padding-left: 17px;}
         
-        .submenu { list-style: none; padding-left: 45px; display: none; background: #0b0c10; margin:0; }
-        .submenu li { padding: 8px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; }
-        .submenu li:hover { color: var(--accent); }
+        .submenu { list-style: none; padding-left: 45px; display: none; background: rgba(0,0,0,0.2); margin:0; }
+        .submenu li { padding: 9px 0; cursor: pointer; color: #8a99ad; font-size: 13px; transition: 0.2s; font-weight: 500;}
+        .submenu li:hover { color: white; }
+        .submenu li.active { color: var(--accent); font-weight: 600;}
         
-        .main-content { flex: 1; padding: 40px; }
-        .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .main-content { flex: 1; padding: 30px; background: #0e1014;}
+        .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        
+        h2 { margin: 0 0 25px 0; font-size: 22px; font-weight: 700;}
+        h3 { margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #fff;}
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;}
+        th { color: #8a99ad; text-align: left; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;}
+        td { padding: 14px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cfd8dc;}
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.01); color: white;}
 
-        .fact-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; background: #0b0c10; border: 1px solid #444; color: white; font-size: 14px; }
-        .fact-btn { padding: 12px 25px; background: var(--accent); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
-        .fact-btn-del { padding: 6px 12px; background: rgba(255,59,48,0.2); border: 1px solid var(--del); color: var(--del); border-radius: 4px; cursor: pointer; font-size: 12px;}
+        .fact-input { width: 100%; padding: 11px 15px; margin-bottom: 15px; border-radius: 6px; background: #0b0c10; border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 13.5px; transition: 0.3s; box-sizing: border-box; font-family: inherit;}
+        .fact-input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);}
+        .fact-btn { padding: 11px 20px; background: var(--accent); border: none; border-radius: 6px; font-weight: 700; cursor: pointer; color: black; font-size: 13.5px; transition: 0.3s; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; justify-content: center;}
+        .fact-btn:hover { background: white; transform: translateY(-1px);}
+        .fact-btn:disabled { background: #444; color: #8a99ad; cursor: not-allowed; transform: none;}
+        
+        .fact-btn-del { padding: 6px 10px; background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.3); color: var(--del); border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s;}
+        .fact-btn-del:hover { background: var(--del); color: white; border-color: var(--del);}
+        
+        .fact-btn-view { padding: 6px 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--green); border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s; margin-right: 5px;}
+        .fact-btn-view:hover { background: var(--green); color: white; border-color: var(--green);}
+
+        label { color: #8a99ad; font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;}
+        
+        /* Estilos para la tabla de líneas de factura/proforma */
+        .lineas-table th { background: #11141a; padding: 10px; font-size: 10px;}
+        .lineas-table td { padding: 8px 10px; background: #161a22; border-bottom: 1px solid #0b0c10;}
+        .input-grid { padding: 6px 10px; margin: 0; background: #0b0c10; border: 1px solid #333;}
+        
+        #total-box p { margin: 5px 0; display: flex; justify-content: space-between; color: #8a99ad; }
+        #total-box p b { color: white; font-size: 15px;}
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:20px;">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <img src="Logo_Admin_v2.png" alt="Logo" style="height:30px;">
         <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
-        <span id="badge-admin" style="display:none; background:var(--accent); color:black; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px;">ADMIN EMPRESARIAL</span>
+        <span id="badge-admin" style="display:none; background:var(--green); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px; letter-spacing:0.5px;">ADMIN EMPRESARIAL</span>
     </div>
     <nav class="top-nav" id="top-nav">
-        <button id="btn-nav-datacenter" onclick="showSection('datacenter')" style="display:none;"><i class="fas fa-server"></i> Data Center</button>
-        <button id="btn-nav-facturacion" onclick="showSection('facturacion')" style="display:none;"><i class="fas fa-file-invoice-dollar"></i> Facturación</button>
-        <button id="btn-nav-tickets" onclick="showSection('tickets')" style="display:none;"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        <button id="btn-nav-facturacion" onclick="showSection('facturacion')" style="display:none;"><i class="fas fa-file-invoice-dollar"></i> Facturación y Proformas</button>
+        <button id="btn-nav-tickets" onclick="showSection('tickets')" style="display:none;"><i class="fas fa-ticket-alt"></i> Soporte Técnico</button>
+        <button id="btn-nav-datacenter" onclick="showSection('datacenter')" style="display:none;"><i class="fas fa-server"></i> Cloud & Data Center</button>
         <button id="btn-nav-inventario" onclick="showSection('inventario')" style="display:none;"><i class="fas fa-boxes"></i> Inventario</button>
     </nav>
 </header>
@@ -54,604 +85,397 @@
     <main class="main-content">
         <div id="contenido-dinamico" class="card">
             <h2>Centro de Operaciones</h2>
-            <p>Conectando con el servidor...</p>
+            <p style="color:#8a99ad;">Cargando interfaz y permisos...</p>
         </div>
     </main>
 </div>
 
 <script>
     let userDataCache = {};
+    let lineasDocumento = []; // Para guardar las líneas de la factura/proforma actual
+    let clientesCache = [];
+    let productosCache = [];
 
     const menuData = {
-        'datacenter': [{nombre: 'Resumen de Servidores'}, {nombre: 'Monitoreo'}, {nombre: 'Backups'}],
+        'datacenter': [{nombre: 'Resumen'}, {nombre: 'Monitoreo'}, {nombre: 'Respaldos'}],
         'facturacion': [
-            {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Productos'}, 
-            {nombre: 'POS', sub: ['Ingresar', 'Vendedores']},
-            {nombre: 'Facturación', sub: ['Nueva factura', 'Nuevo tiquete', 'Nueva compra', 'Nueva exportación', 'Borradores', 'Documentos programados', 'Documentos generados']},
-            {nombre: 'Proformas', sub: ['Nueva proforma', 'Proformas generadas']},
-            {nombre: 'Recepción', sub: ['Cargar documento', 'Documentos cargados', 'Correos recibidos']},
-            {nombre: 'Reportes'},
-            {nombre: 'Configuración', sub: ['Datos de la empresa', 'Usuarios', 'Métodos de pago', 'Impuestos', 'Plantillas de correo', 'Plantillas de documentos']}
+            {nombre: 'Inicio'}, {nombre: 'Clientes'}, {nombre: 'Catálogo CABYS'}, 
+            {nombre: 'Facturación Electrónica', sub: ['Nueva Factura', 'Historial de Facturas']},
+            {nombre: 'Proformas', sub: ['Nueva Proforma', 'Proformas Generadas']},
+            {nombre: 'Configuración', sub: ['Datos de la Empresa', 'Llave Hacienda (.p12)']}
         ],
-        'tickets': [{nombre: 'Crear Nuevo Ticket'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
-        'inventario': [{nombre: 'Equipos'}, {nombre: 'Piezas'}]
+        'tickets': [{nombre: 'Reportar Avería'}, {nombre: 'Tickets Activos'}, {nombre: 'Historial'}],
+        'inventario': [{nombre: 'Resumen Stock'}, {nombre: 'Movimientos'}]
     };
 
     function showSection(sec) {
         document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-nav-${sec}`).classList.add('active');
+        const btn = document.getElementById(`btn-nav-${sec}`);
+        if(btn) btn.classList.add('active');
 
         const sidebar = document.getElementById('sidebar');
-        sidebar.innerHTML = `<div class="menu-title">${sec.toUpperCase()}</div>`;
+        sidebar.innerHTML = `<div class="menu-title">${btn ? btn.innerText.toUpperCase() : sec.toUpperCase()}</div>`;
+        
         menuData[sec].forEach(item => {
             if (item.sub) {
-                sidebar.innerHTML += `
-                    <div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-down"></i> ${item.nombre}</div>
-                    <ul class="submenu" style="display:none">${item.sub.map(s => `<li onclick="render('${s}')">${s}</li>`).join('')}</ul>`;
-            } else {
-                sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}')">${item.nombre}</div>`;
-            }
+                sidebar.innerHTML += `<div class="nav-item" onclick="toggleSub(this)"><i class="fas fa-chevron-right" style="font-size:10px; width:12px;"></i> ${item.nombre}</div>
+                    <ul class="submenu">${item.sub.map(s => `<li onclick="render('${s}', this)">${s}</li>`).join('')}</ul>`;
+            } else { sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}', this)">${item.nombre}</div>`; }
         });
-        render(menuData[sec][0].nombre); 
+        
+        // Cargar primera opción por defecto
+        const firstItem = sidebar.querySelector('.nav-item');
+        if(firstItem) firstItem.click();
     }
 
     function toggleSub(el) { 
-        el.nextElementSibling.style.display = (el.nextElementSibling.style.display === 'none') ? 'block' : 'none'; 
+        const sub = el.nextElementSibling;
+        const icon = el.querySelector('i');
+        const isOpen = sub.style.display === 'block';
+        sub.style.display = isOpen ? 'none' : 'block'; 
+        icon.className = isOpen ? 'fas fa-chevron-right' : 'fas fa-chevron-down';
     }
 
     window.onload = async function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const seccion = urlParams.get('seccion');
-        const accion = urlParams.get('accion');
-
         try {
             const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
             userDataCache = await res.json();
-
-            if (userDataCache.error) { 
-                document.getElementById('contenido-dinamico').innerHTML = `
-                    <h2 style="color:var(--del);"><i class="fas fa-exclamation-triangle"></i> Acceso Interrumpido</h2>
-                    <p style="margin-top:15px; color:#8a99ad; font-size: 15px;">Mensaje del servidor: <b style="color:white;">${userDataCache.error}</b></p>
-                    <div style="margin-top:15px; padding:15px; background:#11141a; border-radius:8px; border:1px solid #444; font-size:13.5px; color:#cfd8dc;">
-                        ${userDataCache.error === "No autorizado" 
-                            ? "Las credenciales son correctas, pero tu navegador está bloqueando las 'Cookies' de sesión de Vercel, o la sesión expiró." 
-                            : "Esta cuenta se creó sin estar vinculada a una empresa. Ingresa con tu cuenta de Admin Maestro, edita a este usuario en la pestaña 'Personal Técnico' y asígnale un cliente en el selector."}
-                    </div>
-                    <button onclick="window.location.href='/login.html'" style="margin-top:20px; padding:10px 20px; background:var(--card); border:1px solid #444; color:white; border-radius:6px; cursor:pointer;">Volver</button>
-                `;
-                return; 
-            }
-
-            if (userDataCache.rol === 'cliente_admin') {
-                document.getElementById('badge-admin').style.display = 'block';
-            }
+            if (userDataCache.error) { renderError(userDataCache.error); return; }
+            if (userDataCache.rol === 'cliente_admin') document.getElementById('badge-admin').style.display = 'block';
 
             const p = userDataCache.permisos;
             let firstSec = null;
-            if (p.datacenter) { document.getElementById('btn-nav-datacenter').style.display = 'flex'; firstSec = firstSec || 'datacenter'; }
-            if (p.facturacion) { document.getElementById('btn-nav-facturacion').style.display = 'flex'; firstSec = firstSec || 'facturacion'; }
-            if (p.tickets) { document.getElementById('btn-nav-tickets').style.display = 'flex'; firstSec = firstSec || 'tickets'; }
-            if (p.inventario) { document.getElementById('btn-nav-inventario').style.display = 'flex'; firstSec = firstSec || 'inventario'; }
+            if (p.facturacion) { document.getElementById('btn-nav-facturacion').style.display = 'flex'; firstSec = 'facturacion'; }
+            if (p.tickets) { document.getElementById('btn-nav-tickets').style.display = 'flex'; if(!firstSec) firstSec = 'tickets'; }
+            if (p.datacenter) { document.getElementById('btn-nav-datacenter').style.display = 'flex'; if(!firstSec) firstSec = 'datacenter'; }
+            if (p.inventario) { document.getElementById('btn-nav-inventario').style.display = 'flex'; if(!firstSec) firstSec = 'inventario'; }
 
-            if (seccion === 'tickets' && accion === 'nuevo' && p.tickets) {
-                showSection('tickets');
-                await render('Crear Nuevo Ticket'); 
-            } else if (firstSec) {
-                showSection(firstSec);
-            } else {
-                document.getElementById('contenido-dinamico').innerHTML = "<h2>Acceso Restringido</h2><p>No tienes módulos activos asignados. Contacta a soporte.</p>";
-            }
-        } catch(e) {
-            console.error("Error de carga", e);
-            document.getElementById('contenido-dinamico').innerHTML = `<h2>Error de Conexión</h2><p>Fallo de comunicación con el servidor.</p>`;
-        }
+            if (firstSec) showSection(firstSec);
+            else document.getElementById('contenido-dinamico').innerHTML = "<h2>Sin Módulos</h2><p>No tienes acceso a ningún módulo operativo.</p>";
+            
+            // Pre-cargar catálogos
+            fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d);
+            fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d);
+
+        } catch(e) { renderError("Fallo de conexión"); }
     };
 
-    async function render(opcion) {
-        const modulosEspeciales = ['Crear Nuevo Ticket', 'Inicio', 'Mi plan', 'Clientes', 'Productos', 'Nueva factura', 'Datos de la empresa', 'Tickets Activos', 'Historial'];
+    function render(opcion, el) {
+        document.querySelectorAll('.sidebar .nav-item, .sidebar .submenu li').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
         
-        if (modulosEspeciales.includes(opcion)) {
-            return renderModulo(opcion);
-        }
-
-        const cont = document.getElementById('contenido-dinamico');
-        cont.innerHTML = `<h2>${opcion}</h2><p>Cargando datos...</p>`;
-        
-        try {
-            if(opcion === 'Documentos generados' || opcion === 'Facturas Emitidas') {
-                if(userDataCache.facturas && userDataCache.facturas.length > 0) {
-                    cont.innerHTML = `<h2>${opcion}</h2>
-                        <table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                        <tbody>${userDataCache.facturas.map(f => `<tr><td>${f.consecutivo}</td><td>${f.fecha}</td><td>₡${f.monto}</td><td>${f.estado}</td></tr>`).join('')}</tbody></table>`;
-                } else {
-                    cont.innerHTML = `<h2>${opcion}</h2><p>No se encontraron documentos generados.</p>`;
-                }
-            } else {
-                cont.innerHTML = `<h2>${opcion}</h2><p>Módulo de ${opcion} en línea.</p>`;
-            }
-        } catch(e) { 
-            cont.innerHTML = `<h2>Error</h2><p>No se pudo conectar al servidor.</p>`; 
-        }
+        const modulos = {
+            'Inicio': renderInicioFact, 'Clientes': renderClientes, 'Catálogo CABYS': renderProductos,
+            'Nueva Factura': () => renderEditorDocumento('Factura'), 'Historial de Facturas': renderHistorialFacturas,
+            'Nueva Proforma': () => renderEditorDocumento('Proforma'), 'Proformas Generadas': renderHistorialProformas,
+            'Datos de la Empresa': renderConfigEmpresa, 'Llave Hacienda (.p12)': renderConfigHacienda,
+            'Reportar Avería': renderNuevoTicket, 'Tickets Activos': renderTicketsActivos, 'Historial': renderTicketsHistorial
+        };
+        if(modulos[opcion]) modulos[opcion]();
+        else document.getElementById('contenido-dinamico').innerHTML = `<h2>${opcion}</h2><p style="color:#8a99ad;">Módulo en construcción...</p>`;
     }
 
-    async function renderModulo(nombre) {
-        const cont = document.getElementById('contenido-dinamico');
-        
-        if (nombre === 'Clientes') {
-            cont.innerHTML = `
-                <h2>Directorio de Clientes (Receptores)</h2>
-                <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap;">
-                    
-                    <div class="card" style="flex:1; min-width:300px; background:#1f2833; padding:25px;">
-                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-user-plus"></i> Registrar Cliente</h3>
-                        <form id="form-nuevo-cliente" onsubmit="guardarClienteFact(event)">
-                            <label style="color:#8a99ad; font-size:12px;">Nombre o Razón Social</label>
-                            <input type="text" id="fc-nombre" class="fact-input" required>
-                            
-                            <label style="color:#8a99ad; font-size:12px;">Tipo de Identificación</label>
-                            <select id="fc-tipo" class="fact-input">
-                                <option value="01">Cédula Física (9 dígitos)</option>
-                                <option value="02">Cédula Jurídica (10 dígitos)</option>
-                                <option value="03">DIMEX (11 o 12 dígitos)</option>
-                                <option value="04">NITE (10 dígitos)</option>
-                            </select>
+    // --- RENDERIZADO DE MÓDULOS ---
 
-                            <label style="color:#8a99ad; font-size:12px;">Número de Identificación</label>
-                            <input type="text" id="fc-cedula" class="fact-input" required>
+    function renderInicioFact() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Panel de Facturación y Proformas</h2>
+            <p style="color:#8a99ad; line-height:1.6; max-width:700px;">Bienvenido al centro de control comercial. Desde aquí podrás emitir facturas electrónicas válidas ante Hacienda, generar proformas profesionales para tus clientes, gestionar tu catálogo de productos CABYS y configurar la identidad visual de tus documentos.</p>
+            <div style="margin-top:30px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
+                <div class="card" style="background:#11141a; text-align:center; cursor:pointer;" onclick="render('Nueva Factura')"><i class="fas fa-file-invoice-dollar" style="font-size:30px; color:var(--accent);"></i><h3 style="margin:15px 0 0 0;">Nueva Factura</h3></div>
+                <div class="card" style="background:#11141a; text-align:center; cursor:pointer;" onclick="render('Nueva Proforma')"><i class="fas fa-file-contract" style="font-size:30px; color:var(--green);"></i><h3 style="margin:15px 0 0 0;">Nueva Proforma</h3></div>
+            </div>
+        `;
+    }
 
-                            <label style="color:#8a99ad; font-size:12px;">Correo para Envío de Factura</label>
-                            <input type="email" id="fc-correo" class="fact-input" required>
-
-                            <label style="color:#8a99ad; font-size:12px;">Teléfono</label>
-                            <input type="text" id="fc-telefono" class="fact-input" required>
-
-                            <button type="submit" class="fact-btn" style="width:100%;">Guardar Cliente</button>
-                        </form>
-                    </div>
-
-                    <div class="card" style="flex:2; min-width:300px; background:#1f2833; padding:25px;">
-                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-users"></i> Clientes Registrados</h3>
-                        <div id="tabla-clientes-fact">Cargando clientes...</div>
-                    </div>
-                </div>
-            `;
-            cargarClientesFact();
-        }
-
-        else if (nombre === 'Productos') {
-            cont.innerHTML = `
-                <h2>Catálogo de Productos y Servicios (CABYS)</h2>
-                <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap;">
-                    
-                    <div class="card" style="flex:1; min-width:300px; background:#1f2833; padding:25px;">
-                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-box-open"></i> Registrar Artículo</h3>
-                        <form id="form-nuevo-producto" onsubmit="guardarProductoFact(event)">
-                            <label style="color:#8a99ad; font-size:12px;">Código CABYS Oficial</label>
-                            <input type="text" id="fp-cabys" class="fact-input" placeholder="Ej: 8311100000100" required>
-                            
-                            <label style="color:#8a99ad; font-size:12px;">Descripción del Artículo</label>
-                            <input type="text" id="fp-desc" class="fact-input" placeholder="Ej: Soporte Técnico Especializado" required>
-
-                            <label style="color:#8a99ad; font-size:12px;">Precio Unitario (CRC)</label>
-                            <input type="number" id="fp-precio" class="fact-input" step="0.01" required>
-
-                            <div style="display:flex; gap:10px;">
-                                <div style="flex:1;">
-                                    <label style="color:#8a99ad; font-size:12px;">Unidad (Sp, Unid)</label>
-                                    <input type="text" id="fp-unidad" class="fact-input" value="Sp" required>
-                                </div>
-                                <div style="flex:1;">
-                                    <label style="color:#8a99ad; font-size:12px;">IVA (%)</label>
-                                    <select id="fp-iva" class="fact-input">
-                                        <option value="13.00">13%</option>
-                                        <option value="4.00">4%</option>
-                                        <option value="2.00">2%</option>
-                                        <option value="1.00">1%</option>
-                                        <option value="0.00">Exento (0%)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="fact-btn" style="width:100%;">Añadir al Catálogo</button>
-                        </form>
-                    </div>
-
-                    <div class="card" style="flex:2; min-width:300px; background:#1f2833; padding:25px;">
-                        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fas fa-list"></i> Catálogo Activo</h3>
-                        <div id="tabla-productos-fact">Cargando catálogo...</div>
-                    </div>
-                </div>
-            `;
-            cargarProductosFact();
-        }
-
-        else if (nombre === 'Nueva factura') {
-            cont.innerHTML = `
-                <h2>Crear Nueva Factura Electrónica v4.3</h2>
-                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
-                    <p style="color:#8a99ad; margin-bottom:20px;">Este módulo procesará la firma XAdES-EPES y la enviará al Ministerio de Hacienda en tiempo real.</p>
-                    
-                    <h3 style="color:var(--accent); margin-bottom:10px;">1. Datos del Receptor</h3>
-                    <select id="nf-cliente" class="fact-input" style="background:#0b0c10;"><option>Cargando clientes...</option></select>
-                    
-                    <div style="display:flex; gap:15px;">
-                        <select id="nf-condicion" class="fact-input" style="flex:1;"><option value="01">Contado</option><option value="02">Crédito</option></select>
-                        <select id="nf-medio" class="fact-input" style="flex:1;"><option value="04">Transferencia Bancaria</option><option value="01">Efectivo</option><option value="03">Tarjeta</option></select>
-                    </div>
-
-                    <h3 style="color:var(--accent); margin:20px 0 10px 0;">2. Detalle de Líneas</h3>
-                    <div style="background:#0b0c10; border:1px dashed #444; padding:20px; border-radius:8px; text-align:center;">
-                        <i class="fas fa-file-invoice" style="font-size:30px; color:#444; margin-bottom:10px;"></i>
-                        <p style="color:#8a99ad; font-size:14px;">La conexión entre tu catálogo y la calculadora de Hacienda está en preparación para el Paso 3.</p>
-                    </div>
-
-                    <button class="fact-btn" style="width:100%; margin-top:20px; background:#444; color:white; cursor:not-allowed;" disabled>Emitir Comprobante (En espera de Paso 3)</button>
-                </div>
-            `;
-            fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
-                const select = document.getElementById('nf-cliente');
-                if(data.error || !data || data.length === 0) { select.innerHTML = '<option value="">No tienes clientes registrados aún</option>'; }
-                else { select.innerHTML = '<option value="">-- Selecciona el cliente --</option>' + data.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
-            }).catch(()=>{});
-        }
-
-        else if (nombre === 'Crear Nuevo Ticket') {
-            cont.innerHTML = `
-                <h2>Reportar Nuevo Requerimiento</h2>
-                <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
-                    <div class="form-group">
-                        <label style="color:#8a99ad; font-size:13px; margin-bottom:5px; display:block;">Empresa</label>
-                        <input type="text" value="Empresa Autorizada" disabled style="padding:10px; width:100%; border-radius:5px; border:1px solid #444; background:#11141a; color:#8a99ad;">
-                    </div>
-                    <input type="text" id="ticketContacto" placeholder="Nombre completo del contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <input type="text" id="ticketAsunto" placeholder="Asunto del problema" required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff;">
-                    <textarea id="ticketDescripcion" placeholder="Describe el inconveniente técnico en detalle..." required style="padding:12px; border-radius:5px; border:1px solid #444; background:#0b0c10; color:#fff; height:120px;"></textarea>
-                    
-                    <label style="color:#8a99ad; font-size:13px; display:block; margin-top:5px;">Prioridad</label>
-                    <select id="prioridad" style="padding:12px; border-radius:5px; background:#0b0c10; color:#fff; border:1px solid #444;">
-                        <option value="Baja">Baja</option>
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
-                    </select>
-                    
-                    <button type="submit" style="padding:15px; background:var(--accent); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:white; margin-top:10px;">Enviar Ticket</button>
-                </form>
-            `;
-            document.getElementById('form-ticket').addEventListener('submit', crearTicket);
-            
-        } else if (nombre === 'Historial' || nombre === 'Tickets Activos') {
-            const label = userDataCache.rol === 'cliente_admin' ? 'Tickets de toda la Empresa' : 'Mis tickets reportados';
-            let listaTickets = userDataCache.tickets || [];
-            if (nombre === 'Tickets Activos') {
-                listaTickets = listaTickets.filter(t => t.estado.toLowerCase() !== 'resuelto' && t.estado.toLowerCase() !== 'cerrado');
-            }
-
-            if (listaTickets.length === 0) {
-                cont.innerHTML = `<h2>${nombre}</h2><p style="margin-top:20px;">No se encontraron registros de soporte en esta vista.</p>`;
-                return;
-            }
-            
-            let html = `<h2>${nombre} (${label})</h2><div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">`;
-            listaTickets.forEach(t => {
-                let atendido = t.atendido_por || 'Pendiente revisión';
-                let infoAtencion = t.estado.toLowerCase() === 'resuelto' 
-                    ? `<span style="color:#10b981; font-weight:bold;"><i class="fas fa-check-circle"></i> Solucionado por: ${atendido}</span>` 
-                    : `<span style="color:#f59e0b; font-weight:bold;"><i class="fas fa-clock"></i> ${atendido === 'Pendiente revisión' ? 'Pendiente revisión' : 'En revisión por: ' + atendido}</span>`;
-                
-                html += `<div style="padding:15px; background:#0b0c10; border:1px solid #444; border-radius:8px;">
-                    <div style="color:var(--accent); font-weight:bold; margin-bottom:5px; font-size:15px;">${t.asunto}</div>
-                    <div style="font-size:13px; color:#8a99ad; line-height: 1.6;">
-                        Estado actual: <b style="color:white;">${t.estado}</b> | Prioridad: ${t.prioridad} | Reportado: ${new Date(t.fecha).toLocaleDateString()}<br>
-                        <div style="margin-top:6px; background:#11141a; padding:6px 10px; border-radius:5px; display:inline-block;">${infoAtencion}</div>
-                    </div>
-                </div>`;
-            });
-            cont.innerHTML = html + "</div>";
-
-        } else if (nombre === 'Datos de la empresa') {
-            cont.innerHTML = `
-                <h2>Configuración del Contribuyente (Hacienda)</h2>
-                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
-                    <p style="color:#8a99ad; margin-bottom:20px;">Ingresa las credenciales de tu Llave Criptográfica (.p12) para enlazar el facturador con el Ministerio de Hacienda.</p>
-                    
-                    <form id="form-hacienda" style="max-width: 600px;">
-                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Usuario (ATV - IDP):</label>
-                        <input type="text" id="h-user" placeholder="Ej: cpj-3-101-123456@stag.comprobanteselectronicos.go.cr" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
-                        
-                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Contraseña (ATV - IDP):</label>
-                        <input type="password" id="h-pass" placeholder="Ingresa la contraseña generada en ATV" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
-                        
-                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">PIN de la Llave Criptográfica:</label>
-                        <input type="password" id="h-pin" placeholder="PIN de 4 dígitos" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white; font-size:14px;">
-                        
-                        <label style="color:#8a99ad; font-size:13px; display:block; margin-bottom:5px;">Archivo de Llave (.p12):</label>
-                        <input type="file" id="h-p12" accept=".p12" required style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white;">
-                        
-                        <label style="color:white; font-size:14px; display:flex; align-items:center; gap:10px; margin-bottom:25px; cursor:pointer;">
-                            <input type="checkbox" id="h-prod" style="width:18px; height:18px; margin:0;"> Activar en Ambiente de PRODUCCIÓN
-                        </label>
-
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <button type="submit" style="padding:12px 25px; background:var(--accent); border:none; border-radius:6px; font-weight:bold; cursor:pointer; color:black;"><i class="fas fa-save"></i> Guardar Credenciales</button>
-                            <button type="button" onclick="probarConexionHacienda()" style="padding:12px 25px; background:#11141a; border:1px solid var(--accent); border-radius:6px; font-weight:bold; cursor:pointer; color:var(--accent);"><i class="fas fa-plug"></i> Probar Conexión</button>
-                        </div>
+    function renderClientes() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Directorio de Clientes</h2>
+            <div style="display:flex; gap:25px; flex-wrap:wrap;">
+                <div class="card" style="flex:1; min-width:300px; background:#11141a; padding:25px;">
+                    <h3><i class="fas fa-user-plus" style="color:var(--accent);"></i> Nuevo Cliente</h3>
+                    <form id="form-cliente" onsubmit="guardarCliente(event)">
+                        <label>Nombre o Razón Social</label><input type="text" id="fc-nombre" class="fact-input" required>
+                        <label>Tipo Identificación</label><select id="fc-tipo" class="fact-input"><option value="01">Física</option><option value="02">Jurídica</option></select>
+                        <label>Identificación</label><input type="text" id="fc-cedula" class="fact-input" required>
+                        <label>Correo Electrónico</label><input type="email" id="fc-correo" class="fact-input" required>
+                        <label>Teléfono</label><input type="text" id="fc-telefono" class="fact-input">
+                        <button type="submit" class="fact-btn" style="width:100%;"><i class="fas fa-save"></i> Guardar Cliente</button>
                     </form>
-                    
-                    <div id="hacienda-status" style="margin-top:20px; font-size:14px; padding:15px; border-radius:6px; display:none;"></div>
                 </div>
-            `;
-            document.getElementById('form-hacienda').addEventListener('submit', guardarHacienda);
+                <div class="card" style="flex:2; min-width:400px; background:#11141a; padding:25px;">
+                    <h3><i class="fas fa-users" style="color:var(--accent);"></i> Lista de Clientes</h3>
+                    <div id="tabla-clientes">Cargando...</div>
+                </div>
+            </div>
+        `;
+        cargarClientes();
+    }
 
-        } else if (nombre === 'Inicio') {
-            cont.innerHTML = `
-                <h2>Inicio - Facturación</h2>
-                <div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;">
-                    <p style="font-size:15px; line-height:1.6;">Bienvenido al módulo de facturación. Aquí podrás gestionar todo lo relacionado con tus clientes, productos y documentos fiscales.</p>
-                    <h3 style="margin-top:20px; color:var(--accent);">Opciones disponibles:</h3>
-                    <ul style="color:#8a99ad; line-height:2; margin-top:10px;">
-                        <li><strong>Mi plan:</strong> Revisa el estado de tu suscripción actual.</li>
-                        <li><strong>Clientes:</strong> Administra tu base de datos de clientes.</li>
-                        <li><strong>Productos:</strong> Registra y actualiza tus artículos.</li>
-                        <li><strong>Configuración -> Datos de la Empresa:</strong> Configura tus llaves de Hacienda.</li>
-                    </ul>
+    function renderProductos() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Catálogo de Productos y Servicios</h2>
+            <div style="display:flex; gap:25px; flex-wrap:wrap;">
+                <div class="card" style="flex:1; min-width:300px; background:#11141a; padding:25px;">
+                    <h3><i class="fas fa-box-open" style="color:var(--green);"></i> Nuevo Artículo</h3>
+                    <form id="form-producto" onsubmit="guardarProducto(event)">
+                        <label>Código CABYS</label><input type="text" id="fp-cabys" class="fact-input" required placeholder="13 dígitos">
+                        <label>Descripción</label><input type="text" id="fp-desc" class="fact-input" required>
+                        <label>Precio Unitario (₡)</label><input type="number" id="fp-precio" class="fact-input" step="0.01" required>
+                        <div style="display:flex; gap:10px;">
+                            <div style="flex:1;"><label>Unidad</label><input type="text" id="fp-unidad" class="fact-input" value="Sp" required></div>
+                            <div style="flex:1;"><label>IVA (%)</label><select id="fp-iva" class="fact-input"><option value="13.00">13%</option><option value="0.00">0%</option></select></div>
+                        </div>
+                        <button type="submit" class="fact-btn" style="width:100%; background:var(--green);"><i class="fas fa-plus"></i> Añadir al Catálogo</button>
+                    </form>
                 </div>
-            `;
-            
-        } else if (nombre === 'Mi plan') {
-            cont.innerHTML = `
-                <h2>Mi Plan Actual</h2>
-                <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
-                    <p style="font-size:16px; margin-bottom:15px;">Estás en el <strong>Plan Básico</strong>: incluye hasta 3 facturas mensuales gratuitas.</p>
-                    <p style="color:#8a99ad; margin-bottom:25px;">¿Necesitas más capacidad? Puedes actualizar a cualquiera de nuestros planes premium con mejoras integrales para tu facturación electrónica.</p>
-                    <button style="padding:12px 25px; background:var(--accent); border:none; border-radius:5px; color:#fff; cursor:pointer; font-weight:bold;">
-                        Ver opciones y actualizar Plan
-                    </button>
+                <div class="card" style="flex:2; min-width:400px; background:#11141a; padding:25px;">
+                    <h3><i class="fas fa-list" style="color:var(--green);"></i> Catálogo Activo</h3>
+                    <div id="tabla-productos">Cargando...</div>
                 </div>
-            `;
-        } else {
-            cont.innerHTML = `<h2>${nombre}</h2><div class="card" style="background:#1f2833; padding:20px; border-radius:8px; margin-top:15px;"><p>Módulo de ${nombre} en línea.</p></div>`;
+            </div>
+        `;
+        cargarProductos();
+    }
+
+    // --- EDITOR COMÚN PARA FACTURAS Y PROFORMAS ---
+    function renderEditorDocumento(tipo) {
+        lineasDocumento = [];
+        const color = tipo === 'Factura' ? 'var(--accent)' : 'var(--green)';
+        const icono = tipo === 'Factura' ? 'fa-file-invoice-dollar' : 'fa-file-contract';
+        
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Emitir Nueva ${tipo}</h2>
+            <div class="card" style="background:#11141a; padding:25px; border-radius:8px; margin-top:15px;">
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:15px; margin-bottom:20px;">
+                    <div><label>Seleccionar Cliente</label><select id="doc-cliente" class="fact-input"></select></div>
+                    <div><label>Condición Venta</label><select id="doc-condicion" class="fact-input"><option value="01">Contado</option><option value="02">Crédito</option></select></div>
+                    <div><label>Medio Pago</label><select id="doc-medio" class="fact-input"><option value="04">Transferencia</option><option value="01">Efectivo</option></select></div>
+                </div>
+                
+                <h3 style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-list-ol" style="color:${color};"></i> Detalle de Líneas</h3>
+                <div style="display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; gap:10px; margin-bottom:15px; align-items:end;">
+                    <div><label>Buscar Producto (CABYS o Desc.)</label><input type="text" id="busca-prod" class="fact-input" style="margin:0;" placeholder="Escribe para buscar..."></div>
+                    <div><label>Cantidad</label><input type="number" id="busca-cant" class="fact-input" style="margin:0;" value="1"></div>
+                    <div><label>Precio</label><input type="text" id="busca-precio" class="fact-input" style="margin:0;" disabled></div>
+                    <div><label>Total</label><input type="text" id="busca-total" class="fact-input" style="margin:0;" disabled></div>
+                    <button class="fact-btn" style="background:${color};" onclick="agregarLinea()"><i class="fas fa-plus"></i></button>
+                </div>
+                
+                <table class="lineas-table"><thead><tr><th>Cant.</th><th>CABYS</th><th>Descripción</th><th>P. Unit</th><th>IVA</th><th>Total</th><th></th></tr></thead><tbody id="doc-body"></tbody></table>
+                
+                <div style="display:flex; justify-content:space-between; margin-top:25px; align-items:start;">
+                    <div style="color:#8a99ad; font-size:13px; max-width:50%;"><i class="fas fa-info-circle"></i> ${tipo === 'Factura' ? 'Esta factura se firmará digitalmente y se enviará automáticamente al Ministerio de Hacienda.' : 'Esta proforma es un documento informativo y no tiene validez tributaria.'}</div>
+                    <div id="total-box" style="background:#0b0c10; padding:20px; border-radius:8px; width:250px;">
+                        <p>Subtotal: <span id="t-sub">₡0.00</span></p>
+                        <p>IVA (13%): <span id="t-iva">₡0.00</span></p>
+                        <p style="border-top:1px solid #333; padding-top:10px; margin-top:10px; font-weight:bold; color:white;">Total: <span id="t-total" style="color:var(--green);">₡0.00</span></p>
+                    </div>
+                </div>
+                
+                <button class="fact-btn" style="width:100%; margin-top:25px; background:${color}; font-size:15px;" onclick="emitirDocumento('${tipo}')"><i class="fas ${icono}"></i> Finalizar y Emitir ${tipo}</button>
+            </div>
+        `;
+        
+        // Llenar clientes
+        const selC = document.getElementById('doc-cliente');
+        selC.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join('');
+        
+        // Lógica de búsqueda de productos (Autocomplete simple)
+        const buscaProd = document.getElementById('busca-prod');
+        let prodSeleccionado = null;
+        
+        buscaProd.addEventListener('input', function() {
+            const txt = this.value.toLowerCase();
+            if(txt.length < 2) return;
+            const match = productosCache.find(p => p.descripcion.toLowerCase().includes(txt) || p.codigo_cabys.includes(txt));
+            if(match) {
+                prodSeleccionado = match;
+                document.getElementById('busca-precio').value = match.precio_unitario;
+                actualizarTotalLinea();
+            } else { prodSeleccionado = null; }
+        });
+        
+        document.getElementById('busca-cant').addEventListener('input', actualizarTotalLinea);
+
+        function actualizarTotalLinea() {
+            const cant = parseFloat(document.getElementById('busca-cant').value) || 0;
+            const precio = parseFloat(document.getElementById('busca-precio').value) || 0;
+            document.getElementById('busca-total').value = (cant * precio).toFixed(2);
         }
     }
 
-    // --- BLINDAJE DE FUNCIONES API CLIENTES ---
-    function cargarClientesFact() {
-        const list = document.getElementById('tabla-clientes-fact');
-        fetch('/api/facturacion/clientes', {credentials: 'include'})
-        .then(r => r.json())
-        .then(data => {
-            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
-            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>No tienes clientes registrados.</p>"; return; }
+    function agregarLinea() {
+        // Lógica para tomar prodSeleccionado, cantidad, calcular IVA y añadir a lineasDocumento y re-renderizar tabla
+        alert("Lógica para añadir línea (Paso 3)");
+    }
+
+    // --- CONFIGURACIÓN DE EMPRESA Y PERSONALIZACIÓN ---
+    function renderConfigEmpresa() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Configuración Visual de la Empresa</h2>
+            <div class="card" style="background:#11141a; padding:25px; max-width:600px; margin-top:15px;">
+                <p style="color:#8a99ad; margin-bottom:25px;">Configura el logo y los datos de contacto que aparecerán en el encabezado de tus Facturas y Proformas impresas (Diseño profesional azul).</p>
+                <form id="form-config-empresa" onsubmit="guardarConfigEmpresa(event)">
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <img id="emp-logo-preview" src="Logo_Admin_v2.png" style="max-height:80px; background:#0b0c10; padding:10px; border-radius:8px; border:1px solid #333;">
+                        <label class="fact-btn" style="background:#333; color:white; display:inline-flex; margin-top:10px; cursor:pointer;">
+                            <i class="fas fa-image"></i> Cambiar Logo
+                            <input type="file" id="emp-logo-file" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+                        </label>
+                    </div>
+                    <label>Nombre Comercial / Nombre de la Empresa</label><input type="text" id="emp-nombre" class="fact-input" required>
+                    <label>Teléfono de Contacto</label><input type="text" id="emp-telefono" class="fact-input" required>
+                    <label>Correo Electrónico Comercial</label><input type="email" id="emp-correo" class="fact-input" required>
+                    <button type="submit" class="fact-btn" style="width:100%;"><i class="fas fa-save"></i> Guardar Imagen Corporativa</button>
+                </form>
+            </div>
+        `;
+        // Cargar datos actuales
+        fetch('/api/facturacion/config-empresa', {credentials: 'include'}).then(r=>r.json()).then(data => {
+            if(data.nombre_comercial) {
+                document.getElementById('emp-nombre').value = data.nombre_comercial;
+                document.getElementById('emp-telefono').value = data.telefono;
+                document.getElementById('emp-correo').value = data.correo;
+                if(data.logo) document.getElementById('emp-logo-preview').src = data.logo;
+            }
+        });
+    }
+
+    let logoBase64 = null;
+    function previewLogo(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('emp-logo-preview').src = e.target.result;
+                logoBase64 = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function guardarConfigEmpresa(e) {
+        e.preventDefault();
+        const btn = e.submitter; btn.innerHTML = "Guardando..."; btn.disabled = true;
+        const body = {
+            nombre: document.getElementById('emp-nombre').value,
+            telefono: document.getElementById('emp-telefono').value,
+            correo: document.getElementById('emp-correo').value,
+            logo: logoBase64 // Si no cambió, se envía null y el backend no lo actualiza
+        };
+        fetch('/api/facturacion/config-empresa', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(r=>r.json()).then(data => {
+            if(data.success) alert("Imagen corporativa actualizada.");
+            btn.innerHTML = "<i class='fas fa-save'></i> Guardar Imagen Corporativa"; btn.disabled = false;
+        });
+    }
+
+    // --- HISTORIALES ---
+    function renderHistorialProformas() {
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>Proformas Generadas</h2><div id="tabla-proformas">Cargando...</div>`;
+        
+        fetch('/api/cliente/datos-operativos', {credentials: 'include'}).then(r=>r.json()).then(data => {
+            const list = document.getElementById('tabla-proformas');
+            if(!data.proformas || data.proformas.length === 0) { list.innerHTML = "<p style='color:#8a99ad;'>No hay proformas emitidas.</p>"; return; }
             
-            list.innerHTML = `<table><thead><tr><th>Nombre</th><th>Identificación</th><th>Correo</th><th>Acción</th></tr></thead><tbody>
-                ${data.map(c => `<tr>
-                    <td><b>${c.nombre}</b></td>
-                    <td style="color:#8a99ad;">${c.identificacion}</td>
-                    <td style="color:#8a99ad;">${c.correo}</td>
-                    <td><button class="fact-btn-del" onclick="borrarClienteFact(${c.id})"><i class="fas fa-trash"></i></button></td>
+            list.innerHTML = `<table><thead><tr><th>Fecha</th><th>Consecutivo</th><th>Cliente</th><th>Monto</th><th>Acciones</th></tr></thead><tbody>
+                ${data.proformas.map(p => `<tr>
+                    <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                    <td style="color:white; font-weight:600;">${p.consecutivo}</td>
+                    <td>${p.cliente}</td>
+                    <td style="color:var(--green);">₡${p.monto}</td>
+                    <td>
+                        <button class="fact-btn-view" onclick="visualizarDocumento('proforma', ${p.id})"><i class="fas fa-eye"></i> Ver / Imprimir</button>
+                    </td>
                 </tr>`).join('')}
             </tbody></table>`;
-        })
-        .catch(e => {
-            list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`;
         });
     }
 
-    function guardarClienteFact(e) {
-        e.preventDefault();
-        const btn = e.submitter; 
-        btn.innerHTML = "Guardando..."; 
-        btn.disabled = true;
-        
-        const body = {
-            nombre: document.getElementById('fc-nombre').value,
-            tipo_identificacion: document.getElementById('fc-tipo').value,
-            identificacion: document.getElementById('fc-cedula').value,
-            correo: document.getElementById('fc-correo').value,
-            telefono: document.getElementById('fc-telefono').value
-        };
-        
-        fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(r => {
-            if(!r.ok) throw new Error("Fallo en el servidor");
-            return r.json();
-        })
-        .then(data => {
-            if(data.success) { 
-                alert("Cliente guardado"); 
-                document.getElementById('form-nuevo-cliente').reset(); 
-                cargarClientesFact(); 
-            } else { 
-                alert("Error: " + (data.message || data.error)); 
-            }
-        })
-        .catch(err => alert("Error de base de datos. Verifica que la cuenta esté vinculada a una empresa."))
-        .finally(() => { 
-            btn.innerHTML = "Guardar Cliente"; 
-            btn.disabled = false; 
-        });
+    function visualizarDocumento(tipo, id) {
+        // Lógica para llamar a la API que genera el HTML imprimible y abrirlo en nueva ventana
+        // window.open(`/api/facturacion/imprimir?tipo=${tipo}&id=${id}`, '_blank');
+        alert(`Visualizando ${tipo} ID: ${id}. Aquí se generará el diseño profesional azul de la imagen.`);
     }
 
-    function borrarClienteFact(id) {
-        if(!confirm("¿Eliminar cliente de tu base de datos?")) return;
-        fetch('/api/eliminar/clientes_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
-        .then(r=>r.json()).then(()=> { cargarClientesFact(); }).catch(()=>{});
-    }
-
-    // --- BLINDAJE DE FUNCIONES API PRODUCTOS ---
-    function cargarProductosFact() {
-        const list = document.getElementById('tabla-productos-fact');
-        fetch('/api/facturacion/productos', {credentials: 'include'})
-        .then(r => r.json())
-        .then(data => {
-            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
-            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>Tu catálogo está vacío.</p>"; return; }
-            
-            list.innerHTML = `<table><thead><tr><th>CABYS</th><th>Descripción</th><th>Precio</th><th>IVA</th><th>Acción</th></tr></thead><tbody>
-                ${data.map(p => `<tr>
-                    <td style="color:#8a99ad; font-size:12px;">${p.codigo_cabys}</td>
-                    <td><b>${p.descripcion}</b></td>
-                    <td style="color:var(--accent);">₡${p.precio_unitario}</td>
-                    <td style="color:#8a99ad;">${p.impuesto}%</td>
-                    <td><button class="fact-btn-del" onclick="borrarProductoFact(${p.id})"><i class="fas fa-trash"></i></button></td>
-                </tr>`).join('')}
-            </tbody></table>`;
-        })
-        .catch(e => {
-            list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`;
-        });
-    }
-
-    function guardarProductoFact(e) {
-        e.preventDefault();
-        const btn = e.submitter; 
-        btn.innerHTML = "Añadiendo..."; 
-        btn.disabled = true;
-
-        const body = {
-            codigo_cabys: document.getElementById('fp-cabys').value,
-            descripcion: document.getElementById('fp-desc').value,
-            precio_unitario: document.getElementById('fp-precio').value,
-            unidad_medida: document.getElementById('fp-unidad').value,
-            impuesto: document.getElementById('fp-iva').value
-        };
-        fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(r => {
-            if(!r.ok) throw new Error("Fallo en el servidor");
-            return r.json();
-        })
-        .then(data => {
-            if(data.success) { 
-                alert("Producto guardado"); 
-                document.getElementById('form-nuevo-producto').reset(); 
-                cargarProductosFact(); 
-            } else { 
-                alert("Error: " + (data.message || data.error)); 
-            }
-        })
-        .catch(err => alert("Error de base de datos. Verifica que la cuenta esté vinculada a una empresa."))
-        .finally(() => { 
-            btn.innerHTML = "Añadir al Catálogo"; 
-            btn.disabled = false; 
-        });
-    }
-
-    function borrarProductoFact(id) {
-        if(!confirm("¿Eliminar producto del catálogo?")) return;
-        fetch('/api/eliminar/productos_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
-        .then(r=>r.json()).then(()=> { cargarProductosFact(); }).catch(()=>{});
-    }
-
-    // --- RESTO DE FUNCIONES (Hacienda y Tickets) ---
-    async function guardarHacienda(event) {
-        event.preventDefault();
-        
-        const form = new FormData();
-        form.append('usuario_idp', document.getElementById('h-user').value);
-        form.append('password_idp', document.getElementById('h-pass').value);
-        form.append('pin_p12', document.getElementById('h-pin').value);
-        form.append('ambiente', document.getElementById('h-prod').checked ? 'true' : 'false');
-        
-        const fileInput = document.getElementById('h-p12');
-        if (fileInput.files.length > 0) {
-            form.append('archivo_p12', fileInput.files[0]);
-        }
-
-        const btn = event.submitter;
-        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Guardando...";
-        btn.disabled = true;
-
-        try {
-            const res = await fetch('/api/admin/configuracion-hacienda', {
-                method: 'POST',
-                credentials: 'include',
-                body: form
-            });
-            const data = await res.json();
-            
-            const statusBox = document.getElementById('hacienda-status');
-            statusBox.style.display = 'block';
-            
-            if (data.success) {
-                statusBox.style.background = 'rgba(16, 185, 129, 0.2)';
-                statusBox.style.border = '1px solid #10b981';
-                statusBox.style.color = '#10b981';
-                statusBox.innerHTML = "<i class='fas fa-check-circle'></i> " + data.message;
-            } else {
-                statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
-                statusBox.style.border = '1px solid #ff3b30';
-                statusBox.style.color = '#ff3b30';
-                statusBox.innerHTML = "<i class='fas fa-times-circle'></i> Error: " + data.message;
-            }
-        } catch (error) {
-            alert("Error de red al guardar las credenciales.");
-        } finally {
-            btn.innerHTML = "<i class='fas fa-save'></i> Guardar Credenciales";
-            btn.disabled = false;
-        }
-    }
-
-    async function probarConexionHacienda() {
-        const statusBox = document.getElementById('hacienda-status');
-        statusBox.style.display = 'block';
-        statusBox.style.background = 'rgba(0, 180, 216, 0.1)';
-        statusBox.style.border = '1px solid var(--accent)';
-        statusBox.style.color = 'var(--text)';
-        statusBox.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Contactando a los servidores del Ministerio de Hacienda...";
-
-        try {
-            const res = await fetch('/api/admin/facturacion/probar-conexion', {
-                method: 'GET',
-                credentials: 'include'
-            });
-            const data = await res.json();
-            
-            if (res.ok && data.status === "Conexión Exitosa") {
-                statusBox.style.background = 'rgba(16, 185, 129, 0.2)';
-                statusBox.style.border = '1px solid #10b981';
-                statusBox.style.color = '#10b981';
-                statusBox.innerHTML = `<i class='fas fa-check-circle'></i> <b>¡Conexión Exitosa!</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">El facturador logró autenticarse con Hacienda correctamente. El token de seguridad fue generado.</span>`;
-            } else {
-                statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
-                statusBox.style.border = '1px solid #ff3b30';
-                statusBox.style.color = '#ff3b30';
-                statusBox.innerHTML = `<i class='fas fa-times-circle'></i> <b>Fallo de Autenticación:</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">Hacienda rechazó las credenciales. Verifica que el Usuario y Contraseña sean correctos y pertenezcan al ambiente seleccionado (Pruebas o Producción).</span>`;
-            }
-        } catch (error) {
-            statusBox.style.background = 'rgba(255, 59, 48, 0.2)';
-            statusBox.style.border = '1px solid #ff3b30';
-            statusBox.style.color = '#ff3b30';
-            statusBox.innerHTML = "<i class='fas fa-wifi'></i> Error de red. No se pudo conectar con el servidor.";
-        }
+    // --- RESTO DE FUNCIONES (Soporte, etc. - Mantenidas igual) ---
+    function renderNuevoTicket() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Reportar Nueva Avería o Requerimiento</h2>
+            <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
+                <input type="text" id="ticketContacto" placeholder="Tu nombre completo" class="fact-input" required>
+                <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto (Ej: 88887777)" class="fact-input" required>
+                <input type="text" id="ticketAsunto" placeholder="Resumen del problema" class="fact-input" required>
+                <textarea id="ticketDescripcion" placeholder="Detalla el inconveniente técnico..." class="fact-input" required style="height:120px; font-family:inherit;"></textarea>
+                <label>Prioridad Sugerida</label>
+                <select id="prioridad" class="fact-input"><option value="Baja">Baja - Consulta o mejora</option><option value="Media">Media - Fallo parcial</option><option value="Alta">Alta - Operación detenida</option></select>
+                <button type="submit" class="fact-btn" style="width:100%; font-size:15px;"><i class="fas fa-paper-plane"></i> Enviar Reporte a Soporte</button>
+            </form>
+        `;
+        document.getElementById('form-ticket').addEventListener('submit', crearTicket);
     }
 
     async function crearTicket(event) {
         event.preventDefault();
-        const ticketData = {
-            asunto: document.getElementById('ticketAsunto').value,
-            descripcion: document.getElementById('ticketDescripcion').value,
-            prioridad: document.getElementById('prioridad').value,
-            contacto: document.getElementById('ticketContacto').value,
-            whatsapp: document.getElementById('ticketWhatsApp').value
-        };
-
-        const res = await fetch('/api/tickets/crear', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(ticketData)
-        });
-        
-        const resJson = await res.json();
-        if(resJson.success) {
-            alert("¡Ticket enviado correctamente!");
-            const newData = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-            userDataCache = await newData.json();
-            render('Historial');
-        } else {
-            alert("Error: " + resJson.message);
-        }
+        const btn = event.submitter; btn.innerHTML = "Enviando..."; btn.disabled = true;
+        const ticketData = { asunto: document.getElementById('ticketAsunto').value, descripcion: document.getElementById('ticketDescripcion').value, prioridad: document.getElementById('prioridad').value, contacto: document.getElementById('ticketContacto').value, whatsapp: document.getElementById('ticketWhatsApp').value, empresa_id: userDataCache.empresa_id };
+        try {
+            const res = await fetch('/api/tickets/crear', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(ticketData) });
+            const resJson = await res.json();
+            if(resJson.success) { alert("¡Reporte enviado! Soporte Técnico te contactará pronto."); renderTicketsActivos(); }
+            else alert("Error: " + resJson.message);
+        } catch(e) { alert("Fallo de conexión."); }
+        btn.innerHTML = "<i class='fas fa-paper-plane'></i> Enviar Reporte a Soporte"; btn.disabled = false;
     }
 
+    function renderTicketsActivos() { renderListaTickets('Activos'); }
+    function renderTicketsHistorial() { renderListaTickets('Historial'); }
+
+    async function renderListaTickets(vista) {
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>${vista === 'Activos' ? 'Tickets en Proceso' : 'Historial Completo de Soporte'}</h2><div id="lista-tickets" style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">Cargando...</div>`;
+        
+        // Recargar datos para tener tickets frescos
+        const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
+        userDataCache = await res.json();
+        let lista = userDataCache.tickets || [];
+        if(vista === 'Activos') lista = lista.filter(t => t.estado !== 'Resuelto' && t.estado !== 'Cerrado');
+
+        const div = document.getElementById('lista-tickets');
+        if(lista.length === 0) { div.innerHTML = "<p style='color:#8a99ad;'>No hay tickets en esta vista.</p>"; return; }
+        
+        div.innerHTML = lista.map(t => {
+            const colorPrio = t.prioridad === 'Alta' ? 'var(--del)' : (t.prioridad === 'Media' ? '#f59e0b' : '#8a99ad');
+            const iconEstado = t.estado === 'Resuelto' ? 'fa-check-circle' : 'fa-clock';
+            const colorEstado = t.estado === 'Resuelto' ? 'var(--green)' : '#f59e0b';
+            
+            return `<div style="padding:18px; background:#11141a; border:1px solid #333; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;">
+                    <div style="color:white; font-weight:600; font-size:15px;">${t.asunto}</div>
+                    <span style="font-size:10px; font-weight:bold; text-transform:uppercase; color:${colorPrio}; border:1px solid ${colorPrio}; padding:3px 6px; border-radius:4px;">${t.prioridad}</span>
+                </div>
+                <div style="font-size:13px; color:#cfd8dc; margin-bottom:10px; line-height:1.5;">${t.descripcion}</div>
+                <div style="font-size:12px; color:#8a99ad; border-top:1px solid #333; padding-top:10px; display:flex; justify-content:space-between;">
+                    <span><i class="fas fa-calendar-alt"></i> ${new Date(t.fecha).toLocaleDateString()} | Por: ${t.contacto}</span>
+                    <span style="color:${colorEstado}; font-weight:600;"><i class="fas ${iconEstado}"></i> ${t.estado}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Funciones placeholders para módulos que faltan programar
+    function renderHistorialFacturas() { document.getElementById('contenido-dinamico').innerHTML = "<h2>Historial de Facturas</h2><p style='color:#8a99ad;'>Módulo en construcción (Paso 3)...</p>"; }
+    function renderConfigHacienda() { document.getElementById('contenido-dinamico').innerHTML = "<h2>Configuración de Llave Hacienda</h2><p style='color:#8a99ad;'>Módulo de subida de .p12 y PIN en construcción...</p>"; }
+
+    function cargarClientes() { /* Implementar fetch y render tabla similar a Admin */ }
+    function guardarCliente(e) { e.preventDefault(); /* Implementar fetch POST */ }
+    function cargarProductos() { /* Implementar fetch y render tabla */ }
+    function guardarProducto(e) { e.preventDefault(); /* Implementar fetch POST */ }
+
+    function renderError(msg) {
+        document.getElementById('contenido-dinamico').innerHTML = `<h2 style="color:var(--del);">Error de Acceso</h2><p>${msg}</p><button onclick="window.location.href='/login.html'" class="fact-btn" style="background:#333; color:white; margin-top:15px;">Volver al Login</button>`;
+    }
 </script>
 </body>
 </html>

@@ -264,8 +264,18 @@
                 <h1 id="bienvenida-usuario">Bienvenido, Usuario</h1>
                 <p>Resumen de actividad corporativa</p>
             </div>
-            <div style="color: var(--neon-blue); font-size: 24px;">
-                <i class="fas fa-bell"></i>
+            
+            <div style="display:flex; align-items:center; gap: 20px;">
+                <div style="color: var(--neon-blue); font-size: 24px; cursor:pointer;" title="Notificaciones">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding-left:20px; border-left:1px solid var(--border-color);">
+                    <div style="text-align: right; display: flex; flex-direction: column;">
+                        <span id="header-user-name" style="color:white; font-weight:700; font-size:14px; margin-bottom: 2px;">Cargando...</span>
+                        <span onclick="logout()" style="color:#ff3b30; font-size:12px; font-weight: 600; cursor:pointer; transition: 0.3s;" onmouseover="this.style.color='#ff6b6b'" onmouseout="this.style.color='#ff3b30'"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</span>
+                    </div>
+                    <div id="header-user-initial" style="width:38px; height:38px; border-radius:50%; background:var(--neon-blue); display:flex; align-items:center; justify-content:center; color:black; font-weight:800; font-size:18px;">U</div>
+                </div>
             </div>
         </div>
 
@@ -354,19 +364,29 @@
                 if(data.usuario) {
                     document.getElementById('bienvenida-usuario').innerText = `Bienvenido, ${data.usuario}`;
                     document.getElementById('nombre-empresa-badge').innerText = data.empresa || "Cliente Corporativo";
+                    
+                    // Llenar el perfil superior derecho con el nombre real
+                    const headerUserName = document.getElementById('header-user-name');
+                    const headerUserInitial = document.getElementById('header-user-initial');
+                    if (headerUserName && headerUserInitial) {
+                        headerUserName.innerText = data.usuario;
+                        headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
+                    }
                 }
             } catch (e) {
                 console.warn("Modo desarrollo o sin conexión al backend");
             }
         };
 
-        // Función para cerrar sesión
+        // Función para cerrar sesión con alerta
         async function logout() {
-            try {
-                await fetch('/api/logout', { credentials: 'include' });
-                window.location.href = '/login.html';
-            } catch (e) {
-                window.location.href = '/login.html';
+            if(confirm('¿Seguro que deseas cerrar sesión?')) {
+                try {
+                    await fetch('/api/logout', { credentials: 'include' });
+                    window.location.href = '/login.html';
+                } catch (e) {
+                    window.location.href = '/login.html';
+                }
             }
         }
     </script>

@@ -82,11 +82,13 @@
             text-decoration: none; 
         }
         
+        /* NUEVO: Logo siempre visible (blanco puro) */
         .logo-img { 
             height: 75px; 
             width: auto; 
             object-fit: contain; 
             display: block; 
+            filter: brightness(0) invert(1); 
         } 
         
         .nav-links { 
@@ -125,7 +127,7 @@
             color: var(--neon-green); 
         }
 
-        /* COMPONENTE INTERACTIVO DE DROPDOWN DE CATEGORÍAS */
+        /* COMPONENTE INTERACTIVO DE DROPDOWN DE CATEGORÍAS Y CONTACTOS */
         .dropdown-menu-container {
             position: relative;
             display: inline-block;
@@ -156,7 +158,8 @@
             padding: 12px 24px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 15px;
             font-size: 14px;
             font-weight: 600;
         }
@@ -1214,7 +1217,7 @@
                 gap: 20px !important; 
                 align-items: center !important; 
             }
-            .logo-img { height: 45px; }
+            .logo-img { height: 45px; filter: brightness(0) invert(1); }
             
             /* Iconos Táctiles (Corporativo y Hacienda) */
             .icon-only-mobile { 
@@ -1275,6 +1278,7 @@
                 width: auto !important;
                 max-width: 120px !important;
                 object-fit: contain !important;
+                filter: brightness(0) invert(1);
             }
 
             /* 2. REPARACIÓN DEL CARRUSEL RESPONSIVO Y SECCIÓN DE SOCIOS */
@@ -1403,8 +1407,20 @@
                     <div class="dropdown-content">
                         <a href="tienda.html"><i class="fas fa-shopping-cart"></i> Tienda</a>
                         <a href="#nosotros"><i class="fas fa-building"></i> Sobre la Empresa</a>
-                        <a href="#contacto"><i class="fas fa-envelope"></i> Contáctanos</a>
                         <a href="#clientes"><i class="fas fa-star"></i> Reseñas</a>
+                    </div>
+                </div>
+
+                <div class="dropdown-menu-container">
+                    <a class="nav-link-corporate dropdown-trigger" title="Contáctanos" style="cursor:pointer;">
+                        <i class="fas fa-envelope" style="font-size: 18px;"></i> 
+                        <span class="hide-mobile-text">Contáctanos</span>
+                    </a>
+                    <div class="dropdown-content" style="min-width: 180px;">
+                        <a href="https://www.instagram.com/icaretechcr/" target="_blank"><i class="fab fa-instagram" style="color:#E1306C; font-size:18px;"></i> Instagram</a>
+                        <a href="https://www.facebook.com/iCareTechCR/" target="_blank"><i class="fab fa-facebook-f" style="color:#1877F2; font-size:18px;"></i> Facebook</a>
+                        <a href="https://www.tiktok.com/@icaretechcr" target="_blank"><i class="fab fa-tiktok" style="color:#fff; font-size:18px;"></i> TikTok</a>
+                        <a href="#" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp" style="color:#25D366; font-size:18px;"></i> WhatsApp</a>
                     </div>
                 </div>
             
@@ -1626,7 +1642,6 @@
         
         function openWA(m) { window.open(`https://wa.me/50686390631?text=${encodeURIComponent(m)}`, "_blank"); }
 
-        /* NUEVA LOGICA PARA MENUS DESPLEGABLES */
         document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
             trigger.addEventListener('click', function(e) {
                 if(window.innerWidth <= 900) {

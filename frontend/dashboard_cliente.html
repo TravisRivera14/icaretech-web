@@ -105,12 +105,23 @@
         <h1>iCare <span style="color:var(--accent)">OPS</span></h1>
         <span id="badge-admin" style="display:none; background:var(--green); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px; letter-spacing:0.5px;">ADMIN EMPRESARIAL</span>
     </div>
-    <nav class="top-nav" id="top-nav">
-        <button id="btn-nav-facturacion" onclick="showSection('facturacion')" style="display:none;"><i class="fas fa-file-invoice-dollar"></i> Facturación y Proformas</button>
-        <button id="btn-nav-tickets" onclick="showSection('tickets')" style="display:none;"><i class="fas fa-ticket-alt"></i> Soporte Técnico</button>
-        <button id="btn-nav-datacenter" onclick="showSection('datacenter')" style="display:none;"><i class="fas fa-server"></i> Cloud & Data Center</button>
-        <button id="btn-nav-inventario" onclick="showSection('inventario')" style="display:none;"><i class="fas fa-boxes"></i> Inventario</button>
-    </nav>
+    
+    <div style="display:flex; align-items:center; gap:20px;">
+        <nav class="top-nav" id="top-nav">
+            <button id="btn-nav-facturacion" onclick="showSection('facturacion')" style="display:none;"><i class="fas fa-file-invoice-dollar"></i> Facturación y Proformas</button>
+            <button id="btn-nav-tickets" onclick="showSection('tickets')" style="display:none;"><i class="fas fa-ticket-alt"></i> Soporte Técnico</button>
+            <button id="btn-nav-datacenter" onclick="showSection('datacenter')" style="display:none;"><i class="fas fa-server"></i> Cloud & Data Center</button>
+            <button id="btn-nav-inventario" onclick="showSection('inventario')" style="display:none;"><i class="fas fa-boxes"></i> Inventario</button>
+        </nav>
+        
+        <div style="display:flex; align-items:center; gap:12px; margin-left:15px; padding-left:20px; border-left:1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: right; display: flex; flex-direction: column;">
+                <span id="header-user-name" style="color:white; font-weight:700; font-size:14px; margin-bottom: 2px;">Cargando...</span>
+                <span onclick="logout()" style="color:var(--del); font-size:12px; font-weight: 600; cursor:pointer; transition: 0.3s;" onmouseover="this.style.color='#ff6b6b'" onmouseout="this.style.color='var(--del)'"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</span>
+            </div>
+            <div id="header-user-initial" style="width:38px; height:38px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:black; font-weight:800; font-size:18px;">U</div>
+        </div>
+    </div>
 </header>
 
 <div class="app-layout">
@@ -134,10 +145,17 @@
         window.open(`https://wa.me/50686390631?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    async function logout() {
+        if(confirm('¿Seguro que deseas cerrar sesión?')) {
+            await fetch('/api/logout', { credentials: 'include' });
+            window.location.href = '/login.html';
+        }
+    }
+
     const menuData = {
         'datacenter': [{nombre: 'Resumen'}, {nombre: 'Monitoreo'}, {nombre: 'Respaldos'}],
         'facturacion': [
-            {nombre: 'Inicio'}, {nombre: 'Clientes'}, {nombre: 'Catálogo CABYS'}, 
+            {nombre: 'Inicio'}, {nombre: 'Mi plan'}, {nombre: 'Clientes'}, {nombre: 'Catálogo CABYS'}, 
             {nombre: 'Facturación Electrónica', sub: ['Nueva Factura', 'Historial de Facturas']},
             {nombre: 'Proformas', sub: ['Nueva Proforma', 'Proformas Generadas']},
             {nombre: 'Configuración', sub: ['Datos de la Empresa', 'Llave Hacienda (.p12)']}
@@ -180,6 +198,11 @@
             if (userDataCache.error) { renderError(userDataCache.error); return; }
             if (userDataCache.rol === 'cliente_admin') document.getElementById('badge-admin').style.display = 'block';
 
+            if (userDataCache.usuario_nombre) {
+                document.getElementById('header-user-name').innerText = userDataCache.usuario_nombre;
+                document.getElementById('header-user-initial').innerText = userDataCache.usuario_nombre.charAt(0).toUpperCase();
+            }
+
             const p = userDataCache.permisos;
             let firstSec = null;
             if (p.facturacion) { document.getElementById('btn-nav-facturacion').style.display = 'flex'; firstSec = 'facturacion'; }
@@ -201,7 +224,7 @@
         if(el) el.classList.add('active');
         
         const modulos = {
-            'Inicio': renderInicioFact, 'Clientes': renderClientes, 'Catálogo CABYS': renderProductos,
+            'Inicio': renderInicioFact, 'Mi plan': renderMiPlan, 'Clientes': renderClientes, 'Catálogo CABYS': renderProductos,
             'Nueva Factura': () => renderEditorDocumento('Factura'), 'Historial de Facturas': renderHistorialFacturas,
             'Nueva Proforma': () => renderEditorDocumento('Proforma'), 'Proformas Generadas': renderHistorialProformas,
             'Datos de la Empresa': renderConfigEmpresa, 'Llave Hacienda (.p12)': renderConfigHacienda,
@@ -337,6 +360,8 @@
             </div>
         `;
     }
+
+    function renderMiPlan() { renderInicioFact(); }
 
     function renderClientes() {
         document.getElementById('contenido-dinamico').innerHTML = `

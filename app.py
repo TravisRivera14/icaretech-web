@@ -17,7 +17,6 @@ import io
 
 app = Flask(__name__)
 
-# BLINDAJE DE PROXY
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 CORS(app, supports_credentials=True)
@@ -71,6 +70,9 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS empresa_datos_visuales (id_empresa INT PRIMARY KEY, nombre_comercial VARCHAR(150), telefono VARCHAR(20), correo VARCHAR(150), logo_base64 TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS Facturas (id SERIAL PRIMARY KEY, Id_Empresa INT, Id_Cliente INT, Consecutivo VARCHAR(50), Clave_50_Digitos VARCHAR(50), Condicion_Venta VARCHAR(2), Medio_Pago VARCHAR(2), Total_Servicios_Gravados NUMERIC, Total_Impuesto NUMERIC, Total_Comprobante NUMERIC, Estado_Hacienda VARCHAR(50), Mensaje_Hacienda TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, lineas_json TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT)''')
+    
+    # NUEVA TABLA GLOBAL PARA LOS CODIGOS CABYS DE HACIENDA
+    c.execute('''CREATE TABLE IF NOT EXISTS cabys_maestro (id SERIAL PRIMARY KEY, codigo VARCHAR(20) UNIQUE, descripcion TEXT, impuesto NUMERIC(5,2))''')
     conn.commit()
     c.close()
     conn.close()
@@ -576,85 +578,75 @@ def crud_productos_facturacion():
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
 # =========================================================
-# RUTAS DE CARGA MASIVA DE CÓDIGOS CABYS (CSV)
+# RUTAS DE CARGA MASIVA Y BÚSQUEDA DE CÓDIGOS CABYS (CSV)
 # =========================================================
-@app.route('/api/facturacion/productos/importar', methods=['POST'])
+@app.route('/api/admin/cabys/importar', methods=['POST'])
 @login_required
-def importar_productos_facturacion():
-    id_empresa = get_empresa_id_from_session()
-    if not id_empresa: return jsonify({"success": False, "message": "No asociado a empresa"}), 403
-
-    if 'archivo' not in request.files:
+def importar_cabys_global():
+    if not es_admin(): 
+        return jsonify({"success": False, "message": "Acceso denegado"}), 403
+        
+    if 'archivo' not in request.files: 
         return jsonify({"success": False, "message": "No se envió ningún archivo"}), 400
-
+        
     file = request.files['archivo']
-    if file.filename == '':
+    if file.filename == '': 
         return jsonify({"success": False, "message": "Archivo vacío"}), 400
 
     try:
         content = file.read()
-        try:
-            decoded_content = content.decode('utf-8')
-        except UnicodeDecodeError:
-            decoded_content = content.decode('latin-1')
+        try: decoded_content = content.decode('utf-8')
+        except UnicodeDecodeError: decoded_content = content.decode('latin-1')
 
         stream = io.StringIO(decoded_content, newline=None)
         csv_input = csv.reader(stream, delimiter=',')
-        
         header = next(csv_input, None)
         
         conn = get_db_connection()
         cur = conn.cursor()
         count = 0
         
-        # Inteligencia para detectar si es el catálogo OFICIAL de Hacienda (tiene +18 columnas)
         is_hacienda_format = header and len(header) >= 19 and 'Categoría 8' in header
 
         for row in csv_input:
             if not row or len(row) == 0: continue
-            
             try:
-                # 1. Si es el Excel Oficial bajado del Ministerio de Hacienda:
                 if is_hacienda_format and len(row) >= 19:
                     cabys = str(row[16]).strip()
                     if not cabys.isdigit(): continue 
                     desc = str(row[17]).strip()
-                    precio = 0.0 # Se sube en 0, el cliente le pone su propio precio
-                    unidad = 'Sp'
-                    
                     imp_str = str(row[18]).strip().replace('%', '')
                     try:
                         imp_val = float(imp_str)
                         impuesto = imp_val * 100 if imp_val < 1.0 else imp_val
-                    except:
-                        impuesto = 0.0
-
-                # 2. Si es una lista sencilla de 5 columnas creada por el cliente:
-                elif len(row) >= 5:
+                    except: impuesto = 13.0
+                else:
                     cabys = str(row[0]).strip()
                     desc = str(row[1]).strip()
-                    precio = float(row[2].strip() or 0)
-                    unidad = str(row[3]).strip() or 'Sp'
-                    imp_str = str(row[4]).strip().replace('%', '')
-                    impuesto = float(imp_str)
-                else:
-                    continue 
+                    try: impuesto = float(str(row[4]).strip().replace('%', ''))
+                    except: impuesto = 13.0
                 
                 if cabys:
-                    cur.execute("""INSERT INTO productos_facturacion (id_empresa, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto) VALUES (%s, %s, %s, %s, %s, %s)""", 
-                             (id_empresa, cabys, desc, precio, unidad, impuesto))
+                    cur.execute("""INSERT INTO cabys_maestro (codigo, descripcion, impuesto) VALUES (%s, %s, %s) ON CONFLICT (codigo) DO UPDATE SET descripcion = EXCLUDED.descripcion, impuesto = EXCLUDED.impuesto""", (cabys, desc, impuesto))
                     count += 1
-            except Exception as e:
-                print(f"Fila omitida por error de formato: {e}")
-                continue
+            except Exception as e: continue
                 
         conn.commit()
         cur.close()
         db_pool.putconn(conn)
-        
-        return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {count} códigos CABYS a la base de datos."})
+        return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {count} códigos al diccionario global CABYS."})
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error procesando el archivo CSV: {str(e)}"}), 500
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/cabys/buscar', methods=['GET'])
+@login_required
+def buscar_cabys():
+    q = request.args.get('q', '').lower()
+    if not q or len(q) < 3: return jsonify([])
+    
+    # Busca tanto en el código como en la descripción del diccionario maestro
+    res = db_query("SELECT codigo, descripcion, impuesto FROM cabys_maestro WHERE LOWER(descripcion) LIKE %s OR codigo LIKE %s LIMIT 50", (f'%{q}%', f'%{q}%'), fetch=True)
+    return jsonify([{"codigo": r[0], "descripcion": r[1], "impuesto": float(r[2])} for r in (res or [])])
 
 
 @app.route('/api/facturacion/proformas/emitir', methods=['POST'])

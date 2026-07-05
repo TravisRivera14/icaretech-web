@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 import base64
 import json
+import csv
+import io
 
 app = Flask(__name__)
 
@@ -44,7 +46,7 @@ def db_query(query, params=(), fetch=False):
         c.close()
         return res
     except Exception as e:
-        conn.rollback() # BLINDAJE CONTRA CONGELAMIENTO DE BASE DE DATOS
+        conn.rollback() 
         print(f"Error DB: {e}")
         raise e
     finally:
@@ -235,7 +237,7 @@ def obtener_datos_operativos():
 
         tickets = []
         try:
-            if rol == 'cliente_admin' or es_admin():
+            if rol in ['cliente_admin', 'contador'] or es_admin():
                 try: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
                 except: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
             else:
@@ -284,13 +286,21 @@ def crear_usuario():
     if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     d = request.json or {}
     password_encriptada = generate_password_hash(d.get('password', '12345'))
+    rol_asignado = d.get('rol', 'cliente')
     try:
         db_query("""INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (d.get('nombre'), d.get('usuario'), password_encriptada, d.get('rol'), d.get('empresa_id'), d.get('email'), d.get('telefono')))
+            (d.get('nombre'), d.get('usuario'), password_encriptada, rol_asignado, d.get('empresa_id'), d.get('email'), d.get('telefono')))
         res = db_query("SELECT id FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
+        
         if res:
-            try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (res[0][0],))
-            except: pass
+            usuario_nuevo_id = res[0][0]
+            if rol_asignado == 'contador':
+                try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, false, false, false)", (usuario_nuevo_id,))
+                except: pass
+            else:
+                try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (usuario_nuevo_id,))
+                except: pass
+                
         registrar_cambio("Creó Usuario", f"Se registró a: {d.get('nombre')}")
         return jsonify({"success": True})
     except Exception as e:
@@ -361,20 +371,14 @@ def save_permisos_empresa():
     except: pass
     return jsonify({"success": True})
 
-# =============== BLINDAJE DE USUARIOS POR EMPRESA ==================
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
     if not es_admin(): return jsonify({"error": "Denegado"}), 403
-    
-    # 1. Obtener el nombre exacto de la empresa para evitar coincidencias
     res_emp = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (empresa_id,), fetch=True)
-    if not res_emp:
-        return jsonify([]) # Si la empresa no existe, retornar vacío
-        
+    if not res_emp: return jsonify([])
     nombre_empresa = res_emp[0][0]
     
-    # 2. Traer SOLO los usuarios que pertenezcan EXCLUSIVAMENTE a esa empresa
     users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s OR empresa = %s", (str(empresa_id), nombre_empresa), fetch=True) or []
     
     lista = []
@@ -384,15 +388,12 @@ def get_permisos_usuarios_empresa(empresa_id):
         except: p = None
         
         if not p:
-            # Asignar permisos seguros por defecto
             try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, false, false, false, true)", (u_id,))
             except: pass
             p = [(False, False, False, True)]
             
         lista.append({
-            "id": u_id, 
-            "nombre": u[1], 
-            "rol": u[2], 
+            "id": u_id, "nombre": u[1], "rol": u[2], 
             "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}
         })
     return jsonify(lista)
@@ -574,6 +575,88 @@ def crud_productos_facturacion():
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
+# =========================================================
+# RUTAS DE CARGA MASIVA DE CÓDIGOS CABYS (CSV)
+# =========================================================
+@app.route('/api/facturacion/productos/importar', methods=['POST'])
+@login_required
+def importar_productos_facturacion():
+    id_empresa = get_empresa_id_from_session()
+    if not id_empresa: return jsonify({"success": False, "message": "No asociado a empresa"}), 403
+
+    if 'archivo' not in request.files:
+        return jsonify({"success": False, "message": "No se envió ningún archivo"}), 400
+
+    file = request.files['archivo']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "Archivo vacío"}), 400
+
+    try:
+        content = file.read()
+        try:
+            decoded_content = content.decode('utf-8')
+        except UnicodeDecodeError:
+            decoded_content = content.decode('latin-1')
+
+        stream = io.StringIO(decoded_content, newline=None)
+        csv_input = csv.reader(stream, delimiter=',')
+        
+        header = next(csv_input, None)
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        count = 0
+        
+        # Inteligencia para detectar si es el catálogo OFICIAL de Hacienda (tiene +18 columnas)
+        is_hacienda_format = header and len(header) >= 19 and 'Categoría 8' in header
+
+        for row in csv_input:
+            if not row or len(row) == 0: continue
+            
+            try:
+                # 1. Si es el Excel Oficial bajado del Ministerio de Hacienda:
+                if is_hacienda_format and len(row) >= 19:
+                    cabys = str(row[16]).strip()
+                    if not cabys.isdigit(): continue 
+                    desc = str(row[17]).strip()
+                    precio = 0.0 # Se sube en 0, el cliente le pone su propio precio
+                    unidad = 'Sp'
+                    
+                    imp_str = str(row[18]).strip().replace('%', '')
+                    try:
+                        imp_val = float(imp_str)
+                        impuesto = imp_val * 100 if imp_val < 1.0 else imp_val
+                    except:
+                        impuesto = 0.0
+
+                # 2. Si es una lista sencilla de 5 columnas creada por el cliente:
+                elif len(row) >= 5:
+                    cabys = str(row[0]).strip()
+                    desc = str(row[1]).strip()
+                    precio = float(row[2].strip() or 0)
+                    unidad = str(row[3]).strip() or 'Sp'
+                    imp_str = str(row[4]).strip().replace('%', '')
+                    impuesto = float(imp_str)
+                else:
+                    continue 
+                
+                if cabys:
+                    cur.execute("""INSERT INTO productos_facturacion (id_empresa, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto) VALUES (%s, %s, %s, %s, %s, %s)""", 
+                             (id_empresa, cabys, desc, precio, unidad, impuesto))
+                    count += 1
+            except Exception as e:
+                print(f"Fila omitida por error de formato: {e}")
+                continue
+                
+        conn.commit()
+        cur.close()
+        db_pool.putconn(conn)
+        
+        return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {count} códigos CABYS a la base de datos."})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error procesando el archivo CSV: {str(e)}"}), 500
+
+
 @app.route('/api/facturacion/proformas/emitir', methods=['POST'])
 @login_required
 def emitir_proforma():
@@ -675,13 +758,13 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
         ET.SubElement(linea_nodo, "PrecioUnitario").text = f"{float(linea['precio_unitario']):.5f}"
         ET.SubElement(linea_nodo, "MontoTotal").text = f"{float(linea['monto_total']):.5f}"
         ET.SubElement(linea_nodo, "SubTotal").text = f"{float(linea['monto_total']):.5f}"
-        monto_impuesto = float(linea['monto_total']) * 0.13
+        monto_impuesto = float(linea['monto_total']) * (float(linea['impuesto']) / 100)
         total_serv_gravados += float(linea['monto_total'])
         total_iva += monto_impuesto
         impuesto_nodo = ET.SubElement(linea_nodo, "Impuesto")
         ET.SubElement(impuesto_nodo, "Codigo").text = "01"
         ET.SubElement(impuesto_nodo, "CodigoTarifa").text = "08"
-        ET.SubElement(impuesto_nodo, "Tarifa").text = "13.00"
+        ET.SubElement(impuesto_nodo, "Tarifa").text = f"{float(linea['impuesto']):.2f}"
         ET.SubElement(impuesto_nodo, "Monto").text = f"{monto_impuesto:.5f}"
         ET.SubElement(linea_nodo, "MontoTotalLinea").text = f"{(float(linea['monto_total']) + monto_impuesto):.5f}"
     resumen = ET.SubElement(root, "ResumenFactura")
@@ -784,7 +867,7 @@ def emitir_factura_electronica_api():
         clave_50 = calcular_clave_50_digitos(emisor_datos["cedula"], consecutivo_sistema)
 
         total_serv_gravados = sum(float(l['monto_total']) for l in lineas_frontend)
-        total_iva = total_serv_gravados * 0.13
+        total_iva = sum((float(l['monto_total']) * (float(l['impuesto'])/100)) for l in lineas_frontend)
         total_comprobante = total_serv_gravados + total_iva
         lineas_json = json.dumps(lineas_frontend)
 

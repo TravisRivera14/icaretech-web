@@ -72,7 +72,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #8a99ad;
-            pointer-events: none; /* Evita que el icono bloquee el clic en el select */
+            pointer-events: none; 
         }
         
         input, select {
@@ -132,7 +132,6 @@
             color: var(--text-light);
         }
         
-        /* Modal de Éxito */
         #success-msg {
             display: none;
             color: #7cf5a6;
@@ -215,40 +214,28 @@
             const subtitle = document.getElementById('form-subtitle');
 
             if (tipo === 'empresa') {
-                // Mostrar campos de empresa
                 fieldEmpresa.style.display = 'block'; document.getElementById('regEmpresa').required = true;
                 fieldPuesto.style.display = 'block'; document.getElementById('regPuesto').required = true;
-                // Ocultar contraseña
                 fieldPassword.style.display = 'none'; document.getElementById('regPassword').required = false;
-                
-                // Cambiar textos
-                title.innerText = "Solicitud de Acceso Corporativo";
+                title.innerText = "Solicitud Corporativa";
                 subtitle.innerText = "Completa los datos para habilitar el portal de tu empresa en nuestra plataforma.";
                 btnSubmit.innerHTML = "Enviar Solicitud";
             } else {
-                // Ocultar campos de empresa
                 fieldEmpresa.style.display = 'none'; document.getElementById('regEmpresa').required = false;
                 fieldPuesto.style.display = 'none'; document.getElementById('regPuesto').required = false;
-                // Mostrar contraseña
                 fieldPassword.style.display = 'block'; document.getElementById('regPassword').required = true;
-                
-                // Cambiar textos
                 title.innerText = "Crear Cuenta Gratis";
                 subtitle.innerText = "Ingresa tus datos para empezar a facturar de inmediato.";
                 btnSubmit.innerHTML = "Registrarse y Entrar";
             }
         }
 
-        // Ejecutar una vez al cargar para establecer el estado inicial
-        window.onload = function() {
-            cambiarTipoCuenta();
-        };
+        window.onload = function() { cambiarTipoCuenta(); };
 
         async function enviarRegistro(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "Procesando...";
-            btn.disabled = true;
+            btn.innerText = "Procesando..."; btn.disabled = true;
 
             const tipo = document.getElementById('tipo_cuenta').value;
             let payload = {};
@@ -282,9 +269,9 @@
                 
                 const data = await res.json();
                 
-                if(data.success || res.ok) {
+                if(data.success) {
                     if (tipo === 'particular') {
-                        alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
+                        alert("¡Cuenta creada con éxito! Ahora inicia sesión con tu correo y contraseña.");
                         window.location.href = '/login.html';
                     } else {
                         document.getElementById('registroForm').style.display = 'none';

@@ -18,7 +18,7 @@
             --card-hover: #2a3645;
             --text-light: #f5f5f7;
             --text-muted: #8a99ad;
-            --neon-blue: #00b4d8;
+            --neon-blue: #55bbcc; /* Turquesa de la marca ajustado */
             --border-color: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s ease;
             --btn-green: #10b981;
@@ -49,11 +49,15 @@
             position: fixed;
             height: 100vh;
             z-index: 100;
+            overflow-y: auto;
         }
+        
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
         /* LOGOS DUALES EN EL SIDEBAR */
         .sidebar-header {
-            padding: 25px 20px;
+            padding: 25px 20px 15px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
         }
@@ -71,12 +75,12 @@
         }
         
         .logo-dual-container img {
-            height: 55px;
+            height: 35px;
             object-fit: contain;
         }
         
         .empresa-badge {
-            background: rgba(0, 180, 216, 0.1);
+            background: rgba(85, 187, 204, 0.1);
             color: var(--neon-blue);
             padding: 5px 10px;
             border-radius: 20px;
@@ -85,10 +89,10 @@
             display: inline-block;
         }
         
-        .nav-menu { padding: 20px 0; flex: 1; overflow-y: auto; }
+        .nav-menu { padding: 15px 0; }
         
         .nav-item {
-            padding: 15px 25px;
+            padding: 12px 25px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -97,7 +101,7 @@
             cursor: pointer;
             transition: var(--transition);
             font-weight: 500;
-            font-size: 14.5px;
+            font-size: 14px;
         }
         
         .nav-item:hover, .nav-item.active {
@@ -106,7 +110,7 @@
             border-left: 4px solid var(--neon-blue);
         }
         
-        .nav-item i.main-icon { width: 25px; font-size: 18px; }
+        .nav-item i.main-icon { width: 25px; font-size: 16px; }
 
         .dropdown-container {
             display: none;
@@ -115,11 +119,11 @@
         }
 
         .dropdown-container a {
-            padding: 12px 25px 12px 55px;
+            padding: 10px 25px 10px 55px;
             display: block;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 13.5px;
+            font-size: 13px;
             transition: var(--transition);
             cursor: pointer;
         }
@@ -128,9 +132,66 @@
             color: var(--text-light);
             background: rgba(255,255,255,0.03);
         }
+
+        /* MEJORA 2: TARJETAS DE SERVICIOS EN SIDEBAR (BURBUJA TURQUESA) */
+        .sidebar-upsell-title {
+            font-size: 10px; color: #64748b; text-transform: uppercase; margin: 15px 20px 5px; font-weight: 700; letter-spacing: 1px;
+        }
         
-        .logout-btn { padding: 20px; border-top: 1px solid var(--border-color); }
-        .logout-btn a { display: block; text-align: center; padding: 12px; background: rgba(255, 59, 48, 0.1); color: #ff3b30; border-radius: 8px; text-decoration: none; font-weight: 600; transition: var(--transition); cursor: pointer;}
+        .sidebar-upsell-card {
+            background: rgba(85, 187, 204, 0.15); /* Turquesa transparente */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(85, 187, 204, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: var(--transition);
+        }
+        
+        .sidebar-upsell-card:hover {
+            transform: translateY(-3px);
+            background: rgba(85, 187, 204, 0.25);
+            border-color: rgba(85, 187, 204, 0.5);
+        }
+        
+        .sidebar-upsell-card h3 {
+            color: #fff;
+            font-size: 13.5px;
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-upsell-card p {
+            color: rgba(255,255,255,0.8);
+            font-size: 11.5px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .sidebar-upsell-btn {
+            background: #fff;
+            color: var(--neon-blue);
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .sidebar-upsell-btn:hover {
+            background: var(--neon-blue);
+            color: #fff;
+        }
+        
+        .logout-btn { padding: 15px; border-top: 1px solid var(--border-color); margin-top: 10px; }
+        .logout-btn a { display: block; text-align: center; padding: 10px; background: rgba(255, 59, 48, 0.1); color: #ff3b30; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: var(--transition); cursor: pointer;}
         .logout-btn a:hover { background: #ff3b30; color: white; }
 
         /* CONTENIDO PRINCIPAL */
@@ -191,7 +252,7 @@
         }
 
         .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 2px solid #e2e8f0; cursor: pointer; }
-        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 16px; }
+        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
         .user-meta { display: flex; flex-direction: column; text-align: right; }
         .user-meta b { font-size: 14px; color: #1e293b; }
         .user-meta span { font-size: 11.5px; color: var(--del); font-weight: 600; transition: 0.3s;}
@@ -246,10 +307,10 @@
         /* Estilos Tarjetas de Precio */
         .pricing-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; justify-content: flex-start; align-items: flex-end;}
         .price-card { background: var(--card-bg); border-radius: 12px; width: 300px; overflow: hidden; text-align: center; color: var(--text-light); display: flex; flex-direction: column; border: 1px solid var(--border-color); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
-        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--btn-green); z-index: 10; margin: 0 10px;}
+        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--neon-blue); z-index: 10; margin: 0 10px;}
         .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px;}
         .bg-blue { background: #0077b6; color: white; }
-        .bg-green { background: var(--btn-green); color: white; }
+        .bg-green { background: var(--neon-blue); color: #fff; }
         .bg-dark { background: #11141a; color: white; }
         .price-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--del); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800;}
         .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid var(--border-color); }
@@ -263,9 +324,9 @@
         .price-btn-box { padding: 20px; background: #11141a; border-top: 1px solid var(--border-color);}
         .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
         .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
-        .btn-outline:hover { background: var(--neon-blue); color: #000; }
-        .btn-solid { border: 2px solid var(--btn-green); background: var(--btn-green); color: white; }
-        .btn-solid:hover { background: #059669; border-color: #059669; }
+        .btn-outline:hover { background: var(--neon-blue); color: #fff; }
+        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
+        .btn-solid:hover { opacity: 0.9; }
         .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
     </style>
 </head>
@@ -285,6 +346,26 @@
         
         <div class="nav-menu" id="sidebar-dynamic-menu">
             </div>
+
+        <div class="sidebar-upsell-title">Adquirir Servicios</div>
+        
+        <div class="sidebar-upsell-card">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Sistema de Facturación</h3>
+            <p>Planes contables desde $0 hasta $29.99/mes.</p>
+            <button class="sidebar-upsell-btn" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes</button>
+        </div>
+
+        <div class="sidebar-upsell-card">
+            <h3><i class="fas fa-server"></i> Cloud & Data Center</h3>
+            <p>Servidores VPS rápidos y Almacenamiento seguro.</p>
+            <button class="sidebar-upsell-btn" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
+        </div>
+
+        <div class="sidebar-upsell-card">
+            <h3><i class="fas fa-laptop-code"></i> Creación de Página Web</h3>
+            <p>Diseño y desarrollo web corporativo a la medida.</p>
+            <button class="sidebar-upsell-btn" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
+        </div>
         
         <div class="logout-btn">
             <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
@@ -324,54 +405,26 @@
             </div>
         </div>
 
-        <div id="vista-principal" style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 30px;">
+        <div id="vista-principal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
             
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <h2 style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Acceso a Módulos Operativos</h2>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-                    <div class="card" onclick="showSection('tickets')" style="cursor:pointer; margin:0; padding:25px;">
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 22px;"><i class="fas fa-ticket-alt"></i></div>
-                            <div><h3 style="margin:0 0 5px 0; font-size:16px;">Centro de Soporte</h3><p style="margin:0; color:var(--text-muted); font-size:13px;">Gestiona tus tickets.</p></div>
-                        </div>
-                    </div>
-                    
-                    <div class="card" onclick="showSection('facturacion')" style="cursor:pointer; margin:0; padding:25px;">
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 22px;"><i class="fas fa-file-invoice-dollar"></i></div>
-                            <div><h3 style="margin:0 0 5px 0; font-size:16px;">Módulo Contable</h3><p style="margin:0; color:var(--text-muted); font-size:13px;">Facturación y proformas.</p></div>
-                        </div>
-                    </div>
-                    
-                    <div class="card" onclick="showSection('datacenter')" style="cursor:pointer; margin:0; padding:25px;">
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 22px;"><i class="fas fa-server"></i></div>
-                            <div><h3 style="margin:0 0 5px 0; font-size:16px;">Data Center</h3><p style="margin:0; color:var(--text-muted); font-size:13px;">Monitoreo y servidores.</p></div>
-                        </div>
-                    </div>
+            <div class="card" onclick="showSection('tickets')" style="cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-ticket-alt"></i></div>
+                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Centro de Soporte</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Gestiona tickets y reporta averías.</p></div>
                 </div>
             </div>
-
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <h2 style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adquirir Servicios</h2>
-                
-                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
-                    <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-file-invoice-dollar"></i> Sistema de Facturación</h3>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Planes contables desde $0 hasta $29.99/mes.</p>
-                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes y Precios</button>
+            
+            <div class="card" onclick="showSection('facturacion')" style="cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Módulo Contable</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Facturación electrónica y proformas.</p></div>
                 </div>
-
-                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
-                    <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-server"></i> Cloud & Data Center</h3>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Servidores VPS rápidos y Almacenamiento seguro.</p>
-                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
-                </div>
-
-                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
-                    <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-laptop-code"></i> Creación de Página Web</h3>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Diseño y desarrollo web corporativo a la medida.</p>
-                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
+            </div>
+            
+            <div class="card" onclick="showSection('datacenter')" style="cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-server"></i></div>
+                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Cloud & Data Center</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Monitoreo y respaldos de servidores.</p></div>
                 </div>
             </div>
 
@@ -388,7 +441,6 @@
             window.open(`https://wa.me/50686390631?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // Menú lateral dinámico
         const menuData = {
             'datacenter': [
                 {nombre: 'Resumen Data Center', icon: 'fa-server'}, 
@@ -444,7 +496,7 @@
             }
 
             const contenedor = document.getElementById('vista-principal');
-            contenedor.style.display = 'block'; // Quitar el grid para las vistas internas
+            contenedor.style.display = 'block';
 
             // Mostrar botones del topbar solo si es módulo de facturación
             const isFacturacion = ['Inicio Facturador', 'Mi plan', 'Clientes', 'Catálogo CABYS', 'Nueva Factura', 'Historial de Facturas', 'Nueva Proforma', 'Proformas Generadas', 'Datos de la Empresa', 'Llave Hacienda (.p12)'].includes(opcion);
@@ -602,9 +654,9 @@
                         </div>
                         <div class="price-card recommended">
                             <div class="price-badge">RECOMENDADO</div>
-                            <div class="price-header bg-green" style="padding-top:25px;">PROFESIONAL</div>
+                            <div class="price-header bg-green">PROFESIONAL</div>
                             <div class="price-amount"><h2>$11.99</h2><div class="colones">₡5,472.48 <i class="fas fa-info-circle"></i></div><div class="period">Mensual + IVA</div></div>
-                            <ul class="price-features"><li>Documentos <b>ILIMITADOS</b></li><li>Usuarios <b>3</b> + Contador</li><li>Multi-Moneda – <b>USD/CRC</b></li><li>Logo propio en Facturas</li></ul>
+                            <ul class="price-features"><li>Documentos <b>ILIMITADOS</b></li><li>Usuarios <b>3</b> + Contador</li><li>Multi-Moneda – <b>USD/CRC</b></li><li>Soporte de Proformas</li></ul>
                             <div class="price-btn-box"><button class="price-btn btn-solid" onclick="window.open('https://wa.me/50686390631', '_blank')">ACTUALIZAR AHORA</button></div>
                         </div>
                     </div>
@@ -708,7 +760,7 @@
             }
         };
 
-        // --- FUNCIONALIDAD GLOBAL (Atada a window) ---
+        // --- FUNCIONALIDAD GLOBAL ---
 
         window.cargarClientesFact = function() {
             const list = document.getElementById('tabla-clientes-fact');
@@ -750,6 +802,7 @@
 
         window.renderEditorDocumento = function(tipo) {
             lineasDocumento = [];
+            const color = 'var(--neon-blue)';
             
             document.getElementById('vista-principal').innerHTML = `
                 <div class="breadcrumb">Modulo Contable / <span>Nueva ${tipo.toLowerCase()}</span></div>
@@ -768,7 +821,7 @@
                         <div><label>Cant.</label><input type="number" id="busca-cant" class="form-input" style="margin:0;" value="1" min="0.1"></div>
                         <div><label>P. Unit</label><input type="text" id="busca-precio" class="form-input" style="margin:0;" disabled></div>
                         <div><label>Total</label><input type="text" id="busca-total" class="form-input" style="margin:0;" disabled></div>
-                        <button class="btn-top btn-t-blue" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
+                        <button class="btn-top" style="background:${color};" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
                     </div>
                     
                     <table class="admin-table" style="margin-bottom:30px;">
@@ -780,11 +833,11 @@
                         <div style="background:#11141a; padding:20px; border-radius:12px; width:280px; border:1px solid var(--border-color);">
                             <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">Subtotal: <span id="t-sub" style="color:#fff; font-weight:600;">₡0.00</span></p>
                             <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">IVA: <span id="t-iva" style="color:#fff; font-weight:600;">₡0.00</span></p>
-                            <p style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:800; font-size:18px;">Total: <span id="t-total" style="color:var(--neon-blue);">₡0.00</span></p>
+                            <p style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:800; font-size:18px;">Total: <span id="t-total" style="color:${color};">₡0.00</span></p>
                         </div>
                     </div>
                     
-                    <button id="btn-emitir-doc" class="btn-top btn-t-blue" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
+                    <button id="btn-emitir-doc" class="btn-top" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; background:${color}; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
                 </div>
             `;
             
@@ -850,7 +903,7 @@
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'#10b981'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -975,8 +1028,8 @@
                     ${lista.map(t => `<tr>
                         <td>${new Date(t.fecha).toLocaleDateString()}</td>
                         <td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td>
-                        <td style="color:${t.prioridad === 'Alta' ? 'var(--del)' : 'var(--btn-yellow)'}">${t.prioridad}</td>
-                        <td style="color:${t.estado==='Resuelto'?'var(--btn-green)':'var(--neon-blue)'}">${t.estado}</td>
+                        <td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${t.prioridad}</td>
+                        <td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${t.estado}</td>
                         <td>${t.atendido_por}</td>
                     </tr>`).join('')}
                 </tbody></table>`;

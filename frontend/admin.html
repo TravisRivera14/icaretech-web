@@ -18,32 +18,43 @@
         }
         
         :root { 
-            --dark-bg: #0b0c10; --card-bg: #1f2833; --turquoise-main: #00b4d8; 
-            --turquoise-dark: #0077b6; --turquoise-light: #90e0ef; --del: #ff3b30; 
-            --text-light: #f5f5f7; --text-secondary: #8a99ad; 
-            --border-smooth: rgba(255, 255, 255, 0.05); --radius-premium: 16px; 
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.3);
+            /* NUEVO DISEÑO UNIFICADO AL DASHBOARD CLIENTE */
+            --bg-dark: #f8fafc; /* Fondo general claro */
+            --card-bg: #1f2833; /* Tarjetas oscuras premium */
+            --turquoise-main: #55bbcc; /* Turquesa de la marca */
+            --turquoise-dark: #0077b6; 
+            --turquoise-light: #90e0ef; 
+            --del: #ff3b30; 
+            --text-light: #f5f5f7; 
+            --text-secondary: #8a99ad; 
+            --border-smooth: rgba(255, 255, 255, 0.08); 
+            --radius-premium: 16px; 
+            --transition-smooth: all 0.3s ease; 
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.15); /* Sombra suave para fondo claro */
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px; }
-        body { background: var(--dark-bg); color: var(--text-light); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; }
+        
+        /* El body usa el color oscuro para textos fuera de las tarjetas */
+        body { background: var(--bg-dark); color: #1e293b; -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; }
 
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
-        .login-card { background: var(--card-bg); padding: 45px 35px; border-radius: 24px; box-shadow: var(--shadow-premium); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-smooth); }
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(248, 250, 252, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .login-card { background: var(--card-bg); padding: 45px 35px; border-radius: 24px; box-shadow: var(--shadow-premium); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-smooth); color: var(--text-light); }
 
-        .sidebar { width: 280px; background: #11141a; border-right: 1px solid var(--border-smooth); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; overflow-y: auto;}
+        .sidebar { width: 280px; background: #11141a; border-right: 1px solid #e2e8f0; padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; overflow-y: auto;}
         .sidebar-brand { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 35px; padding-left: 10px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand span { color: var(--turquoise-main); }
         .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; }
         .sidebar-item { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: var(--transition-smooth); }
-        .sidebar-item:hover, .sidebar-item.active { background: var(--card-bg); color: #ffffff; }
+        .sidebar-item:hover, .sidebar-item.active { background: rgba(255,255,255,0.02); color: var(--turquoise-main); border-left: 4px solid var(--turquoise-main); border-radius: 0 10px 10px 0;}
         .sidebar-item.active i { color: var(--turquoise-main); }
 
         .main-content { margin-left: 280px; flex: 1; padding: 40px 50px; max-width: 1200px; }
-        .header-area { margin-bottom: 35px; }
-        .header-area h1 { font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.8px; }
-        .header-area p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+        
+        /* Títulos de página ahora son oscuros para resaltar en el fondo claro */
+        .header-area { margin-bottom: 35px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .header-area h1 { font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: -0.8px; }
+        .header-area p { font-size: 14px; color: #64748b; margin-top: 4px; }
 
         .tab-section { display: none; animation: techFadeIn 0.5s ease forwards; }
         .tab-section.active { display: grid; grid-template-columns: 1fr; gap: 25px; }
@@ -53,15 +64,17 @@
         .grid-two-columns { display: grid; grid-template-columns: 1fr; gap: 25px; }
         @media (min-width: 901px) { .grid-two-columns { grid-template-columns: 1fr 1fr; } }
 
-        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); box-shadow: var(--shadow-premium); border: 1px solid var(--border-smooth); box-sizing: border-box; }
+        /* Las tarjetas mantienen el estilo oscuro de la tienda */
+        .card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-premium); box-shadow: var(--shadow-premium); border: 1px solid var(--border-smooth); box-sizing: border-box; color: var(--text-light); }
         .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #ffffff; display: flex; align-items: center; gap: 10px; }
 
-        input, textarea, button, select { width: 100%; padding: 14px; margin: 6px 0 16px 0; border-radius: 10px; border: 1px solid transparent; background: var(--dark-bg); color: var(--text-light); box-sizing: border-box; font-size: 14.5px; outline: none; transition: var(--transition-smooth); }
-        input:focus, textarea:focus, select:focus { background: #11141a; border-color: var(--turquoise-main); box-shadow: 0 0 10px rgba(0, 180, 216, 0.2); }
+        input, textarea, select { width: 100%; padding: 14px; margin: 6px 0 16px 0; border-radius: 10px; border: 1px solid var(--border-smooth); background: #11141a; color: var(--text-light); box-sizing: border-box; font-size: 14.5px; outline: none; transition: var(--transition-smooth); font-family: inherit;}
+        input:focus, textarea:focus, select:focus { border-color: var(--turquoise-main); box-shadow: 0 0 10px rgba(85, 187, 204, 0.2); }
         label { font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-top: 4px; }
         
-        button { background: var(--turquoise-main); color: #000000; border: none; cursor: pointer; font-weight: 700; margin-bottom: 0; border-radius: 22px; padding: 12px 24px; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15); }
+        button { background: var(--turquoise-main); color: #000000; border: none; cursor: pointer; font-weight: 700; margin-bottom: 0; border-radius: 8px; padding: 12px 24px; box-shadow: 0 4px 15px rgba(85, 187, 204, 0.15); transition: var(--transition-smooth); width: 100%;}
         button:hover { background: var(--turquoise-light); transform: translateY(-1px); }
+        
         .btn-brand-accent { background: var(--turquoise-dark); color: white; }
         .btn-brand-accent:hover { background: var(--turquoise-main); color: black; }
 
@@ -70,7 +83,7 @@
         .list-item:last-child { border-bottom: none; }
         .list-item span { font-weight: 600; color: var(--text-light); }
         
-        .btn-edit { background: rgba(0, 180, 216, 0.15); color: var(--turquoise-main); width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
+        .btn-edit { background: rgba(85, 187, 204, 0.15); color: var(--turquoise-main); width: auto; padding: 6px 14px; margin-right: 5px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
         .btn-edit:hover { background: var(--turquoise-main); color: #000; }
         .btn-del { background: rgba(255, 59, 48, 0.15); color: var(--del); width: auto; padding: 6px 14px; font-size: 12px; border-radius: 6px; display: inline-block; border: none; font-weight: 600; box-shadow: none; }
         .btn-del:hover { background: var(--del); color: #fff; }
@@ -87,13 +100,13 @@
         .badge-baja { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 
         .apple-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); z-index: 50000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .apple-modal-content { background: var(--card-bg); width: 100%; max-width: 680px; border-radius: 20px; padding: 35px; box-shadow: 0 30px 70px rgba(0,0,0,0.5); border: 1px solid var(--border-smooth); animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; max-height: 90vh; overflow-y: auto; }
+        .apple-modal-content { background: var(--card-bg); width: 100%; max-width: 680px; border-radius: 20px; padding: 35px; box-shadow: 0 30px 70px rgba(0,0,0,0.5); border: 1px solid var(--border-smooth); animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; max-height: 90vh; overflow-y: auto; color: var(--text-light); }
         @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-smooth); padding-bottom: 15px; margin-bottom: 20px; }
-        .modal-close-btn { background: var(--dark-bg); color: var(--text-light); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 14px; transition: var(--transition-smooth); }
-        .modal-close-btn:hover { background: #11141a; color: var(--turquoise-main); }
-        .ai-bulletin-box { background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(144, 224, 239, 0.02)); border: 1px dashed var(--turquoise-main); border-radius: 12px; padding: 20px; margin-top: 25px; display: none; }
+        .modal-close-btn { background: #11141a; color: var(--text-light); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 14px; transition: var(--transition-smooth); }
+        .modal-close-btn:hover { background: var(--turquoise-main); color: #000; }
+        .ai-bulletin-box { background: linear-gradient(135deg, rgba(85, 187, 204, 0.05), rgba(85, 187, 204, 0.02)); border: 1px dashed var(--turquoise-main); border-radius: 12px; padding: 20px; margin-top: 25px; display: none; }
         
         .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; margin-bottom: 15px; font-weight: 600; color: #cfd8dc; }
         .toggle-switch input { display: none; }
@@ -136,7 +149,7 @@
         <li class="sidebar-item" onclick="switchTab('tab-personal', event)"><i class="fas fa-users"></i> Personal Técnico</li>
         <li class="sidebar-item" onclick="switchTab('tab-auditoria', event)"><i class="fas fa-history"></i> Auditoría</li>
         
-        <hr style="border: 0; border-top: 1px solid var(--border-smooth); margin: 10px 0;">
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;">
         <li class="sidebar-item" onclick="irAlPortalEmpresarial()"><i class="fas fa-desktop"></i> Portal Empresarial</li>
     </ul>
 </aside>
@@ -150,11 +163,13 @@
     <section id="tab-solicitudes" class="tab-section active">
         <div class="card">
             <h2>Solicitudes de Registro</h2>
-            <button class="btn-del" onclick="eliminarSeleccionados('solicitudes_registro')">🗑️ Eliminar Seleccionados</button>
-            <table class="ticket-table">
-                <thead><tr><th><input type="checkbox" id="select-all-solicitudes" onclick="toggleSelectAll(this, 'check-sol')"></th><th>Empresa</th><th>Nombre</th><th>Correo</th><th>Acción</th></tr></thead>
-                <tbody id="tabla-solicitudes"><tr><td colspan="5">Cargando...</td></tr></tbody>
-            </table>
+            <button class="btn-del" style="margin-bottom: 15px;" onclick="eliminarSeleccionados('solicitudes_registro')">🗑️ Eliminar Seleccionados</button>
+            <div class="ticket-table-wrapper">
+                <table class="ticket-table">
+                    <thead><tr><th><input type="checkbox" id="select-all-solicitudes" onclick="toggleSelectAll(this, 'check-sol')"></th><th>Empresa</th><th>Nombre</th><th>Correo</th><th>Acción</th></tr></thead>
+                    <tbody id="tabla-solicitudes"><tr><td colspan="5" style="text-align: center;">Cargando...</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </section>
     
@@ -205,23 +220,40 @@
         <div class="grid-two-columns">
             <div class="card">
                 <h2><i class="fas fa-building" style="color: var(--turquoise-main);"></i> 1. Selecciona un Cliente</h2>
-                <select id="select-ops-empresa" onchange="cargarOperaciones(this.value)" style="width: 100%; padding: 12px; background: #11141a; color: white; border: 1px solid var(--border-smooth); border-radius: 8px;">
+                <select id="select-ops-empresa" onchange="cargarOperaciones(this.value)">
                     <option value="">-- Cargar Empresas --</option>
                 </select>
                 
                 <div id="panel-ops-empresa" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border:1px solid var(--border-smooth);">
                     <h3 style="font-size:14px; margin-bottom:15px; color:white;">Módulos Autorizados (Plan de la Empresa)</h3>
+                    
                     <label class="toggle-switch"><input type="checkbox" id="emp-mod-fact" onchange="sincronizarSwitchesVisionales('fact')"><span class="slider"></span> Facturación Electrónica</label>
                     <label class="toggle-switch"><input type="checkbox" id="emp-mod-data" onchange="sincronizarSwitchesVisionales('data')"><span class="slider"></span> Data Center & Servidores</label>
                     <label class="toggle-switch"><input type="checkbox" id="emp-mod-inv" onchange="sincronizarSwitchesVisionales('inv')"><span class="slider"></span> Inventario y Piezas</label>
                     <label class="toggle-switch"><input type="checkbox" id="emp-mod-tck" onchange="sincronizarSwitchesVisionales('tck')"><span class="slider"></span> Sistema de Tickets</label>
-                    <button style="width:100%; margin-top:10px;" onclick="guardarPermisosEmpresa()">Guardar Permisos Generales</button>
+                    
+                    <button style="margin-top:15px;" onclick="guardarPermisosEmpresa()">Guardar Permisos Generales</button>
+
+                    <div style="border-top: 1px solid var(--border-smooth); margin-top:25px; padding-top:20px;">
+                        <h3 style="font-size:14px; margin-bottom:15px; color:white;"><i class="fas fa-file-invoice" style="color:var(--turquoise-main);"></i> Acceso para Contador</h3>
+                        <div id="ops-contador-info" style="margin-bottom:15px;">
+                            <p style="color:var(--text-muted); font-size:13px;">Verificando contador...</p>
+                        </div>
+                        <div id="form-contador-box" style="display:none; background:var(--card-bg); padding:20px; border-radius:8px; border:1px dashed var(--turquoise-main);">
+                            <input type="text" id="cont-nombre" placeholder="Nombre del Contador" style="padding:12px; margin-bottom:10px; font-size:13px;">
+                            <input type="email" id="cont-correo" placeholder="Correo (Será el Usuario)" style="padding:12px; margin-bottom:10px; font-size:13px;">
+                            <input type="password" id="cont-pass" placeholder="Contraseña de acceso" style="padding:12px; margin-bottom:15px; font-size:13px;">
+                            <button onclick="crearContadorEmpresa()" style="font-size:13px;">Guardar Contador</button>
+                            <button onclick="document.getElementById('form-contador-box').style.display='none'" style="font-size:13px; margin-top:10px; background:#475569; color:white;">Cancelar</button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             
             <div class="card">
                 <h2><i class="fas fa-users-cog" style="color: var(--turquoise-main);"></i> 2. Control de Acceso por Usuario</h2>
-                <div id="lista-ops-usuarios" style="color:var(--text-secondary); font-size:14px; max-height:450px; overflow-y:auto; padding-right:5px;">Selecciona una empresa corporativa a la izquierda para administrar su planilla.</div>
+                <div id="lista-ops-usuarios" style="color:var(--text-secondary); font-size:14px; max-height:600px; overflow-y:auto; padding-right:5px;">Selecciona una empresa corporativa a la izquierda para administrar su planilla.</div>
             </div>
         </div>
     </section>
@@ -334,6 +366,7 @@
                         <option value="admin">Administrador General</option>
                         <option value="cliente_admin">Cliente Empresarial Admin</option>
                         <option value="cliente">Cliente Empresarial</option>
+                        <option value="contador">Contador</option>
                     </select>
 
                     <div id="div-empresa-alta" style="display:none; margin-bottom:15px;">
@@ -346,8 +379,8 @@
                     <button type="submit">Agregar Usuario</button>
                 </form>
 
-                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:var(--dark-bg); border-radius:12px; border: 1px solid var(--border-smooth);">
-                    <h3 style="color:var(--turquoise-main);">✏️ Actualizar Credenciales</h3>
+                <div id="bloque-editar-usuario" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border: 1px solid var(--border-smooth);">
+                    <h3 style="color:var(--turquoise-main); margin-bottom: 15px;"><i class="fas fa-pen-to-square"></i> Actualizar Credenciales</h3>
                     <form id="form-editar-trabajador">
                         <input type="hidden" id="edit-emp-id">
                         
@@ -371,6 +404,7 @@
                             <option value="admin">Administrador General</option>
                             <option value="cliente_admin">Cliente Empresarial Admin</option>
                             <option value="cliente">Cliente Empresarial</option>
+                            <option value="contador">Contador</option>
                         </select>
 
                         <div id="div-empresa-edit" style="display:none; margin-bottom:15px;">
@@ -419,7 +453,7 @@
             <div><span style="color:var(--text-secondary);">Urgencia Asignada:</span> <br><div id="modalPrioridad" style="margin-top:4px;"></div></div>
         </div>
 
-        <div style="margin-bottom:20px; background:var(--dark-bg); padding:16px; border-radius:10px; border: 1px solid var(--border-smooth);">
+        <div style="margin-bottom:20px; background:#11141a; padding:16px; border-radius:10px; border: 1px solid var(--border-smooth);">
             <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Asunto:</span>
             <h3 id="modalAsunto" style="margin: 4px 0 12px 0; font-size:16px; color: white;"></h3>
             
@@ -449,7 +483,7 @@
     let imgS = "", imgP = "", imgRev = "", imgPartner = "", imgEmp = "", imgSupportEmp = "", editId = null, editType = null;
     let editSupportEmpId = null;
     let currentOpsEmpresa = null;
-    let currentOpsUsuarios = []; // VARIABLE GLOBAL PARA GUARDAR USUARIOS DEL CENTRO DE OPERACIONES
+    let currentOpsUsuarios = []; // Para sincronización en cascada
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [], particulares: [] };
     let cacheTickets = [];
     let currentOpenTicket = null;
@@ -651,6 +685,7 @@
                     if (data.success) {
                         alert('Usuario removido del servidor maestro.');
                         cargarListaTrabajadores(); 
+                        if(currentOpsEmpresa) cargarOperaciones(currentOpsEmpresa); // Recargar si está en la vista
                     } else { alert(data.message); }
                 });
         }
@@ -685,7 +720,7 @@
         document.getElementById('edit-emp-phone').value = u.telefono || "";
         document.getElementById('edit-emp-role').value = u.rol;
 
-        if (u.rol === 'cliente' || u.rol === 'cliente_admin') {
+        if (u.rol === 'cliente' || u.rol === 'cliente_admin' || u.rol === 'contador') {
             toggleEmpresa('cliente', 'div-empresa-edit');
             setTimeout(() => { document.getElementById('select-empresa-edit').value = u.empresa_id; }, 100);
         } else {
@@ -707,7 +742,7 @@
                     id: document.getElementById('edit-emp-id').value, nombre: document.getElementById('edit-emp-name').value,
                     usuario: document.getElementById('edit-emp-user').value, password: document.getElementById('edit-emp-pass').value,
                     correo: document.getElementById('edit-emp-email').value, telefono: document.getElementById('edit-emp-phone').value,
-                    rol: rol, empresa_id: (rol === 'cliente' || rol === 'cliente_admin') ? document.getElementById('select-empresa-edit').value : null
+                    rol: rol, empresa_id: (rol === 'cliente' || rol === 'cliente_admin' || rol === 'contador') ? document.getElementById('select-empresa-edit').value : null
                 })
             })
             .then(res => res.json()).then(data => {
@@ -734,11 +769,15 @@
     if (altaForm) {
         altaForm.addEventListener('submit', function (e) {
             e.preventDefault();
+            const rol = document.getElementById('new-emp-role').value;
             const datos = {
-                nombre: document.getElementById('new-emp-name').value, usuario: document.getElementById('new-emp-user').value,
-                password: document.getElementById('new-emp-pass').value, email: document.getElementById('new-emp-email').value,
-                telefono: document.getElementById('new-emp-phone').value, rol: document.getElementById('new-emp-role').value,
-                empresa_id: document.getElementById('select-empresa-alta') ? document.getElementById('select-empresa-alta').value : null
+                nombre: document.getElementById('new-emp-name').value, 
+                usuario: document.getElementById('new-emp-user').value,
+                password: document.getElementById('new-emp-pass').value, 
+                email: document.getElementById('new-emp-email').value,
+                telefono: document.getElementById('new-emp-phone').value, 
+                rol: rol,
+                empresa_id: (rol === 'cliente' || rol === 'cliente_admin' || rol === 'contador') ? document.getElementById('select-empresa-alta').value : null
             };
 
             fetch(`${API}/admin/crear-usuario`, {
@@ -1040,7 +1079,7 @@
     function toggleEmpresa(rol, divId) {
         const div = document.getElementById(divId);
         if(!div) return;
-        div.style.display = (rol === 'cliente' || rol === 'cliente_admin') ? 'block' : 'none';
+        div.style.display = (rol === 'cliente' || rol === 'cliente_admin' || rol === 'contador') ? 'block' : 'none';
     }
 
     function borrarTicket(id, event) {
@@ -1077,7 +1116,7 @@
     function cargarOperaciones(empId) {
         if(!empId) { 
             document.getElementById('panel-ops-empresa').style.display = 'none'; 
-            document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; 
+            document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa corporativa a la izquierda para administrar su planilla."; 
             window.currentOpsUsuarios = [];
             return; 
         }
@@ -1096,26 +1135,45 @@
             if(users.length === 0) { 
                 window.currentOpsUsuarios = [];
                 list.innerHTML = "<p style='color:var(--text-muted);'><i class='fas fa-exclamation-circle'></i> No hay trabajadores registrados bajo esta empresa.</p>"; 
-                return; 
-            }
-            
-            // Guardamos los IDs de los usuarios para el Efecto Cascada
-            window.currentOpsUsuarios = users.map(u => u.id);
+            } else {
+                // Guardamos los IDs de los usuarios para el Efecto Cascada
+                window.currentOpsUsuarios = users.map(u => u.id);
 
-            list.innerHTML = users.map(u => `
-                <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <b style="color:var(--turquoise-main); font-size:15px;">${u.nombre}</b> <span style="background:var(--dark-bg); padding:2px 8px; border-radius:6px; font-size:11px;">${u.rol.toUpperCase()}</span>
+                list.innerHTML = users.map(u => `
+                    <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <b style="color:var(--turquoise-main); font-size:15px;">${u.nombre}</b> <span style="background:var(--dark-bg); padding:2px 8px; border-radius:6px; font-size:11px;">${u.rol.toUpperCase()}</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <label class="toggle-switch"><input type="checkbox" id="u-fact-${u.id}" ${u.permisos.facturacion ? 'checked':''}><span class="slider"></span> Facturación</label>
+                            <label class="toggle-switch"><input type="checkbox" id="u-data-${u.id}" ${u.permisos.datacenter ? 'checked':''}><span class="slider"></span> Data Center</label>
+                            <label class="toggle-switch"><input type="checkbox" id="u-inv-${u.id}" ${u.permisos.inventario ? 'checked':''}><span class="slider"></span> Inventario</label>
+                            <label class="toggle-switch"><input type="checkbox" id="u-tck-${u.id}" ${u.permisos.tickets ? 'checked':''}><span class="slider"></span> Tickets</label>
+                        </div>
+                        <button style="padding:6px 14px; font-size:12px; margin-top:10px; width:auto; display:inline-block;" onclick="guardarPermisosUsuario(${u.id})">Guardar Permisos</button>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <label class="toggle-switch"><input type="checkbox" id="u-fact-${u.id}" ${u.permisos.facturacion ? 'checked':''}><span class="slider"></span> Facturación</label>
-                        <label class="toggle-switch"><input type="checkbox" id="u-data-${u.id}" ${u.permisos.datacenter ? 'checked':''}><span class="slider"></span> Data Center</label>
-                        <label class="toggle-switch"><input type="checkbox" id="u-inv-${u.id}" ${u.permisos.inventario ? 'checked':''}><span class="slider"></span> Inventario</label>
-                        <label class="toggle-switch"><input type="checkbox" id="u-tck-${u.id}" ${u.permisos.tickets ? 'checked':''}><span class="slider"></span> Tickets</label>
+                `).join('');
+            }
+
+            // BUSCAR SI HAY UN CONTADOR
+            const contador = users.find(u => u.rol === 'contador');
+            const infoBox = document.getElementById('ops-contador-info');
+            if(contador) {
+                infoBox.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#161a22; padding:12px; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3);">
+                        <div>
+                            <div style="color:var(--btn-green); font-weight:bold; font-size:14px;"><i class="fas fa-user-tie"></i> ${contador.nombre}</div>
+                            <div style="color:var(--text-muted); font-size:12px; margin-top:4px;">${contador.usuario}</div>
+                        </div>
+                        <button class="btn-del" style="margin:0;" onclick="eliminarUsuario(${contador.id}, '${contador.nombre}')" title="Remover Contador"><i class="fas fa-trash"></i></button>
                     </div>
-                    <button style="padding:6px 14px; font-size:12px; margin-top:10px; width:auto; display:inline-block;" onclick="guardarPermisosUsuario(${u.id})">Guardar Permisos</button>
-                </div>
-            `).join('');
+                `;
+            } else {
+                infoBox.innerHTML = `
+                    <p style="color:var(--text-muted); font-size:13px; margin-bottom:10px;">Esta empresa aún no tiene un contador asignado.</p>
+                    <button class="btn-brand-accent" style="width:100%; padding:10px; font-size:13px; border-radius:8px;" onclick="document.getElementById('form-contador-box').style.display='block'">+ Asignar Contador</button>
+                `;
+            }
         });
     }
 
@@ -1134,8 +1192,10 @@
         };
 
         try {
+            // Guardar a nivel de empresa
             await fetch(`${API}/admin/operaciones/empresa`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) });
             
+            // SINCRONIZACIÓN EN CASCADA PARA LOS USUARIOS
             if (window.currentOpsUsuarios && window.currentOpsUsuarios.length > 0) {
                 for (let uId of window.currentOpsUsuarios) {
                     const uBody = { usuario_id: uId, facturacion: fact, datacenter: data, inventario: inv, tickets: tck };
@@ -1159,6 +1219,42 @@
         fetch(`${API}/admin/operaciones/usuario`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
         .then(() => alert("Accesos del trabajador actualizados exitosamente."));
     }
+
+    // CREACIÓN RÁPIDA DE CONTADOR DESDE EL CENTRO DE OPERACIONES
+    window.crearContadorEmpresa = function() {
+        const nombre = document.getElementById('cont-nombre').value;
+        const correo = document.getElementById('cont-correo').value;
+        const pass = document.getElementById('cont-pass').value;
+        
+        if(!nombre || !correo || !pass) return alert("Completa todos los datos del contador.");
+        
+        const datos = {
+            nombre: nombre, 
+            usuario: correo,
+            password: pass, 
+            email: correo,
+            telefono: "00000000", 
+            rol: "contador",
+            empresa_id: currentOpsEmpresa
+        };
+
+        fetch(`${API}/admin/crear-usuario`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify(datos)
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                alert('Contador asignado con éxito.');
+                document.getElementById('cont-nombre').value = '';
+                document.getElementById('cont-correo').value = '';
+                document.getElementById('cont-pass').value = '';
+                document.getElementById('form-contador-box').style.display = 'none';
+                cargarOperaciones(currentOpsEmpresa); 
+                cargarListaTrabajadores(); 
+            } else { 
+                alert("Error: " + (data.message || "Este usuario o correo ya existe.")); 
+            }
+        }).catch(err => { alert("Error de conexión."); });
+    };
 
 </script>
 </body>

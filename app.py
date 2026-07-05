@@ -57,6 +57,7 @@ def db_query(query, params=(), fetch=False):
 def init_db():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     c = conn.cursor()
+    # Tablas Base
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
@@ -68,11 +69,14 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
+    
+    # Tablas Facturación, Proformas y Diseño
     c.execute('''CREATE TABLE IF NOT EXISTS clientes_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, nombre VARCHAR(150), identificacion VARCHAR(20), tipo_identificacion VARCHAR(2), correo VARCHAR(150), telefono VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresa_datos_visuales (id_empresa INT PRIMARY KEY, nombre_comercial VARCHAR(150), telefono VARCHAR(20), correo VARCHAR(150), logo_base64 TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS Facturas (id SERIAL PRIMARY KEY, Id_Empresa INT, Id_Cliente INT, Consecutivo VARCHAR(50), Clave_50_Digitos VARCHAR(50), Condicion_Venta VARCHAR(2), Medio_Pago VARCHAR(2), Total_Servicios_Gravados NUMERIC, Total_Impuesto NUMERIC, Total_Comprobante NUMERIC, Estado_Hacienda VARCHAR(50), Mensaje_Hacienda TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, lineas_json TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT)''')
+    
     conn.commit()
     c.close()
     conn.close()
@@ -130,7 +134,12 @@ def get_empresa_id_from_session():
 def login():
     if request.method == 'GET':
         if 'usuario_id' in session:
-            return jsonify({"success": True, "usuario": session.get('usuario'), "empresa": session.get('empresa', 'iCareTech CR'), "rol": session.get('rol')})
+            return jsonify({
+                "success": True, 
+                "usuario": session.get('usuario'), 
+                "empresa": session.get('empresa', 'iCareTech CR'),
+                "rol": session.get('rol')
+            })
         return jsonify({"success": False}), 401
 
     data = request.json
@@ -175,16 +184,21 @@ def acceso_empresarial():
             res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = 'iCareTech CR'", fetch=True)
             id_empresa = res[0][0]
 
-        try: db_query("INSERT INTO permisos_empresa (empresa_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (id_empresa,))
-        except Exception: db_query("UPDATE permisos_empresa SET facturacion=true, datacenter=true, inventario=true, tickets=true WHERE empresa_id=%s", (id_empresa,))
+        try: 
+            db_query("INSERT INTO permisos_empresa (empresa_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (id_empresa,))
+        except Exception: 
+            db_query("UPDATE permisos_empresa SET facturacion=true, datacenter=true, inventario=true, tickets=true WHERE empresa_id=%s", (id_empresa,))
 
         u_id = session.get('usuario_id')
-        try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (u_id,))
-        except Exception: db_query("UPDATE permisos_usuario SET facturacion=true, datacenter=true, inventario=true, tickets=true WHERE usuario_id=%s", (u_id,))
+        try: 
+            db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (u_id,))
+        except Exception: 
+            db_query("UPDATE permisos_usuario SET facturacion=true, datacenter=true, inventario=true, tickets=true WHERE usuario_id=%s", (u_id,))
         
         session['empresa'] = 'iCareTech CR'
         return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e: 
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/cliente/datos-operativos', methods=['GET'])
 @login_required
@@ -251,12 +265,12 @@ def obtener_datos_operativos():
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
-#                      RUTAS DE REGISTRO
+#                      API RUTAS DE REGISTRO E INICIO
 # ==============================================================================
 
 @app.route('/api/registro_particular', methods=['POST'])
 def registro_particular():
-    d = request.get_json(silent=True) or {}
+    d = request.json or {}
     try:
         nombre = d.get('nombre')
         correo = d.get('correo')
@@ -294,6 +308,7 @@ def registro_corporativo():
         return jsonify({"success": True}), 201
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
+
 # ==============================================================================
 #                      API FACTURACIÓN Y DISEÑO DE PDF
 # ==============================================================================
@@ -330,7 +345,7 @@ def imprimir_documento():
         cli_correo = cli[0][2] if cli else ""
         cli_telefono = cli[0][3] if cli else ""
 
-        # DISEÑO AZUL CURVO (Idéntico a las imágenes enviadas)
+        # DISEÑO AZUL CURVO PARA PDF
         html = f"""
         <!DOCTYPE html>
         <html lang="es">
@@ -754,18 +769,8 @@ def aprobar_solicitud():
 @app.route('/api/admin/eliminar-varios', methods=['POST'])
 def eliminar_varios():
     data = request.json
-    tabla = data.get('tabla')
-    ids = tuple(data.get('ids', []))
-    db_query(f"DELETE FROM {tabla} WHERE id IN %s", (ids,))
+    db_query(f"DELETE FROM {data.get('tabla')} WHERE id IN %s", (tuple(data.get('ids', [])),))
     return jsonify({"success": True})
-
-@app.route('/api/registro_corporativo', methods=['POST'])
-def registro_corporativo():
-    data = request.json
-    try:
-        db_query("""INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo) VALUES (%s, %s, %s, %s, %s)""", (data.get('empresa'), data.get('nombre'), data.get('puesto'), data.get('telefono'), data.get('correo')))
-        return jsonify({"success": True}), 201
-    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/todo', methods=['GET'])
 def obtener_todo():

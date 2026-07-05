@@ -12,11 +12,6 @@ from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 import base64
 import json
-import hashlib
-from cryptography.hazmat.primitives.serialization import pkcs12
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
 
 app = Flask(__name__)
 
@@ -253,6 +248,7 @@ def obtener_datos_operativos():
         except Exception as e: pass
         
         return jsonify({
+            "empresa": empresa_val,
             "plan": plan_actual,
             "facturas_mes_actual": facturas_mes,
             "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
@@ -365,23 +361,40 @@ def save_permisos_empresa():
     except: pass
     return jsonify({"success": True})
 
+# =============== BLINDAJE DE USUARIOS POR EMPRESA ==================
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
     if not es_admin(): return jsonify({"error": "Denegado"}), 403
+    
+    # 1. Obtener el nombre exacto de la empresa para evitar coincidencias
     res_emp = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (empresa_id,), fetch=True)
-    nombre_empresa = res_emp[0][0] if res_emp else ""
+    if not res_emp:
+        return jsonify([]) # Si la empresa no existe, retornar vacío
+        
+    nombre_empresa = res_emp[0][0]
+    
+    # 2. Traer SOLO los usuarios que pertenezcan EXCLUSIVAMENTE a esa empresa
     users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s OR empresa = %s", (str(empresa_id), nombre_empresa), fetch=True) or []
+    
     lista = []
     for u in users:
         u_id = u[0]
         try: p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_usuario WHERE usuario_id = %s", (u_id,), fetch=True)
         except: p = None
+        
         if not p:
-            try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (u_id,))
+            # Asignar permisos seguros por defecto
+            try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, false, false, false, true)", (u_id,))
             except: pass
-            p = [(True, True, True, True)]
-        lista.append({"id": u_id, "nombre": u[1], "rol": u[2], "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}})
+            p = [(False, False, False, True)]
+            
+        lista.append({
+            "id": u_id, 
+            "nombre": u[1], 
+            "rol": u[2], 
+            "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}
+        })
     return jsonify(lista)
 
 @app.route('/api/admin/operaciones/usuario', methods=['POST'])
@@ -689,6 +702,12 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
 
 def firmar_xml_hacienda(xml_sin_firmar, p12_b64, pin):
     try:
+        from cryptography.hazmat.primitives.serialization import pkcs12
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import serialization
+        
         p12_data = base64.b64decode(p12_b64)
         private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(p12_data, pin.encode(), backend=default_backend())
         cert_der = certificate.public_bytes(serialization.Encoding.DER)

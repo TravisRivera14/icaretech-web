@@ -12,7 +12,7 @@
     <style>
         :root {
             /* FONDOS CLAROS Y TARJETAS OSCURAS (DARK PREMIUM) */
-            --bg-dark: #f8fafc; /* DUQUESA BLANCO CLARO */
+            --bg-dark: #f8fafc; 
             --sidebar-bg: #11141a;
             --card-bg: #1f2833;
             --card-hover: #2a3645;
@@ -71,7 +71,7 @@
         }
         
         .logo-dual-container img {
-            height: 35px;
+            height: 55px;
             object-fit: contain;
         }
         
@@ -146,9 +146,49 @@
             padding: 9px 16px; border-radius: 6px; border: none; color: white; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-top:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .btn-t-green { background: var(--btn-green); color: #fff;}
         .btn-t-blue { background: var(--neon-blue); color: #fff; }
-        .btn-t-purple { background: var(--btn-purple); color: #fff; }
+
+        /* BURBUJA DE REDES SOCIALES (TOPBAR) */
+        .dropdown-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background-color: var(--sidebar-bg);
+            min-width: 180px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px 0;
+            z-index: 1100;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        .dropdown-content a {
+            color: #f5f5f7;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--neon-blue);
+        }
+        .dropdown-menu-container:hover .dropdown-content {
+            display: block;
+            transform: translateX(-50%) translateY(0);
+        }
 
         .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 2px solid #e2e8f0; cursor: pointer; }
         .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 16px; }
@@ -254,10 +294,20 @@
     <main class="main-content">
         <div class="topbar">
             <div class="top-buttons">
-                <button class="btn-top btn-t-green fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)"><i class="fas fa-file-invoice"></i> Nueva factura</button>
+                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)"><i class="fas fa-file-invoice"></i> Nueva factura</button>
                 <button class="btn-top btn-t-blue" onclick="window.open('https://www.instagram.com/icaretechcr/', '_blank')"><i class="fas fa-shopping-cart"></i> Tienda</button>
-                <button class="btn-top btn-t-green" style="background:#25D366;" onclick="window.open('https://wa.me/50686390631', '_blank')"><i class="fab fa-whatsapp"></i> Contáctanos</button>
-                <button class="btn-top btn-t-purple fact-top-btn" style="display:none;" onclick="renderModulo('Datos de la Empresa', null)"><i class="fas fa-database"></i> Datos de facturación</button>
+                
+                <div class="dropdown-menu-container">
+                    <button class="btn-top btn-t-blue dropdown-trigger"><i class="fab fa-whatsapp"></i> Contáctanos</button>
+                    <div class="dropdown-content">
+                        <a href="https://www.instagram.com/icaretechcr/" target="_blank"><i class="fab fa-instagram" style="color:#E1306C; font-size:18px;"></i> Instagram</a>
+                        <a href="https://www.facebook.com/iCareTechCR/" target="_blank"><i class="fab fa-facebook-f" style="color:#1877F2; font-size:18px;"></i> Facebook</a>
+                        <a href="https://www.tiktok.com/@icaretechcr" target="_blank"><i class="fab fa-tiktok" style="color:#fff; font-size:18px;"></i> TikTok</a>
+                        <a href="#" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp" style="color:#25D366; font-size:18px;"></i> WhatsApp</a>
+                    </div>
+                </div>
+
+                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Datos de la Empresa', null)"><i class="fas fa-database"></i> Datos de facturación</button>
             </div>
             
             <div style="display:flex; align-items:center; gap: 20px;">
@@ -306,22 +356,22 @@
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <h2 style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adquirir Servicios</h2>
                 
-                <div class="card" style="padding: 20px; border-left: 4px solid var(--neon-blue); margin:0;">
+                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
                     <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-file-invoice-dollar"></i> Sistema de Facturación</h3>
-                    <p style="color: var(--text-muted); font-size: 12.5px; margin-bottom:15px;">Planes contables desde $0 hasta $29.99/mes.</p>
-                    <button class="btn-top btn-t-blue" style="width: 100%; justify-content: center;" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes y Precios</button>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Planes contables desde $0 hasta $29.99/mes.</p>
+                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes y Precios</button>
                 </div>
 
-                <div class="card" style="padding: 20px; border-left: 4px solid var(--btn-purple); margin:0;">
+                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
                     <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-server"></i> Cloud & Data Center</h3>
-                    <p style="color: var(--text-muted); font-size: 12.5px; margin-bottom:15px;">Servidores VPS rápidos y Almacenamiento seguro.</p>
-                    <button class="btn-top btn-t-purple" style="width: 100%; justify-content: center;" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Servidores VPS rápidos y Almacenamiento seguro.</p>
+                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
                 </div>
 
-                <div class="card" style="padding: 20px; border-left: 4px solid var(--btn-green); margin:0;">
+                <div class="card" style="padding: 20px; background: var(--neon-blue); border: none; margin:0;">
                     <h3 style="color: #fff; margin:0 0 8px 0; font-size:15px;"><i class="fas fa-laptop-code"></i> Creación de Página Web</h3>
-                    <p style="color: var(--text-muted); font-size: 12.5px; margin-bottom:15px;">Diseño y desarrollo web corporativo a la medida.</p>
-                    <button class="btn-top btn-t-green" style="width: 100%; justify-content: center;" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 12.5px; margin-bottom:15px;">Diseño y desarrollo web corporativo a la medida.</p>
+                    <button class="btn-top" style="width: 100%; justify-content: center; background: #fff; color: var(--neon-blue);" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
                 </div>
             </div>
 
@@ -333,6 +383,10 @@
         let lineasDocumento = []; 
         let clientesCache = [];
         let productosCache = [];
+
+        function openWA(msg) {
+            window.open(`https://wa.me/50686390631?text=${encodeURIComponent(msg)}`, '_blank');
+        }
 
         // Menú lateral dinámico
         const menuData = {
@@ -508,7 +562,6 @@
                                 <li>Reportes Especializados</li>
                                 <li>Dashboard Completo de Indicadores</li>
                             </ul>
-                            <button class="btn-top btn-t-blue" style="margin-top:20px;" onclick="renderModulo('Mi plan', document.querySelectorAll('.submenu li')[1])">Ver Planes Completos</button>
                         </div>
                         <div class="card">
                             <h3 class="section-title">DISPONGA DE UN MAYOR ANÁLISIS</h3>
@@ -575,7 +628,7 @@
                                 <div><label>Teléfono</label><input type="text" id="fc-telefono" class="form-input"></div>
                                 <div style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
                                     <button type="button" class="btn-top" style="background:#475569;" onclick="document.getElementById('form-cliente').style.display='none'">Cancelar</button>
-                                    <button type="submit" class="btn-top btn-t-green"><i class="fas fa-save"></i> Guardar Cliente</button>
+                                    <button type="submit" class="btn-top btn-t-blue"><i class="fas fa-save"></i> Guardar Cliente</button>
                                 </div>
                             </form>
                         </div>
@@ -601,7 +654,7 @@
                                 <input type="hidden" id="fp-unidad" value="Sp">
                                 <div style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
                                     <button type="button" class="btn-top" style="background:#475569;" onclick="document.getElementById('form-prod-box').style.display='none'">Cancelar</button>
-                                    <button type="submit" class="btn-top btn-t-green"><i class="fas fa-save"></i> Registrar Ítem</button>
+                                    <button type="submit" class="btn-top btn-t-blue"><i class="fas fa-save"></i> Registrar Ítem</button>
                                 </div>
                             </form>
                         </div>
@@ -697,7 +750,6 @@
 
         window.renderEditorDocumento = function(tipo) {
             lineasDocumento = [];
-            const color = tipo === 'Factura' ? 'var(--neon-blue)' : 'var(--btn-green)';
             
             document.getElementById('vista-principal').innerHTML = `
                 <div class="breadcrumb">Modulo Contable / <span>Nueva ${tipo.toLowerCase()}</span></div>
@@ -716,7 +768,7 @@
                         <div><label>Cant.</label><input type="number" id="busca-cant" class="form-input" style="margin:0;" value="1" min="0.1"></div>
                         <div><label>P. Unit</label><input type="text" id="busca-precio" class="form-input" style="margin:0;" disabled></div>
                         <div><label>Total</label><input type="text" id="busca-total" class="form-input" style="margin:0;" disabled></div>
-                        <button class="btn-top" style="background:${color};" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
+                        <button class="btn-top btn-t-blue" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
                     </div>
                     
                     <table class="admin-table" style="margin-bottom:30px;">
@@ -728,11 +780,11 @@
                         <div style="background:#11141a; padding:20px; border-radius:12px; width:280px; border:1px solid var(--border-color);">
                             <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">Subtotal: <span id="t-sub" style="color:#fff; font-weight:600;">₡0.00</span></p>
                             <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">IVA: <span id="t-iva" style="color:#fff; font-weight:600;">₡0.00</span></p>
-                            <p style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:800; font-size:18px;">Total: <span id="t-total" style="color:${color};">₡0.00</span></p>
+                            <p style="border-top:1px solid var(--border-color); padding-top:15px; margin-top:15px; display:flex; justify-content:space-between; font-weight:800; font-size:18px;">Total: <span id="t-total" style="color:var(--neon-blue);">₡0.00</span></p>
                         </div>
                     </div>
                     
-                    <button id="btn-emitir-doc" class="btn-top" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; background:${color}; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
+                    <button id="btn-emitir-doc" class="btn-top btn-t-blue" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
                 </div>
             `;
             
@@ -798,7 +850,7 @@
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'var(--del)':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -821,7 +873,6 @@
                         </div>
                         <div id="sub-logo" class="sub-tab-content" style="display:none;">
                             <h3 class="section-title">Logotipo de Documentos PDF</h3>
-                            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">(Requiere Plan de Pago. En Plan Gratis solo se mostrará el logo de iCareTech CR).</p>
                             <img id="emp-logo-preview" src="Logo_Admin_v2.png" style="max-height:100px; border:1px dashed var(--border-color); padding:10px; border-radius:12px; margin-bottom:15px; display:block; background:#11141a;">
                             <input type="file" id="emp-logo-file" accept="image/*" class="form-input" style="max-width:350px;" onchange="window.previewLogo(this)">
                             <br><button class="btn-top btn-t-blue" onclick="window.guardarConfigEmpresa()"><i class="fas fa-upload"></i> Guardar Logo</button>
@@ -831,7 +882,7 @@
                                 <label>Nombre Comercial</label><input type="text" id="emp-nombre" class="form-input" required>
                                 <label>Teléfono Comercial</label><input type="text" id="emp-telefono" class="form-input" required>
                                 <label>Correo Electrónico</label><input type="email" id="emp-correo" class="form-input" required>
-                                <button type="submit" class="btn-top btn-t-green"><i class="fas fa-save"></i> Actualizar Datos</button>
+                                <button type="submit" class="btn-top btn-t-blue"><i class="fas fa-save"></i> Actualizar Datos</button>
                             </form>
                         </div>
                     </div>
@@ -879,7 +930,7 @@
                         <label>PIN de la Llave (.p12)</label><input type="password" id="h-pin" class="form-input" required>
                         <label>Archivo .p12</label><input type="file" id="h-p12" accept=".p12" class="form-input" required style="padding:7px; background:#11141a;">
                         <label style="display:flex; align-items:center; gap:8px; margin:15px 0; color:#cfd8dc;"><input type="checkbox" id="h-prod"> Producción Confirmada</label>
-                        <div style="display:flex; gap:10px;"><button type="submit" class="btn-top btn-t-green"><i class="fas fa-save"></i> Guardar</button><button type="button" class="btn-top" style="background:#475569;" onclick="window.probarConexionHacienda()"><i class="fas fa-plug"></i> Probar Conexión</button></div>
+                        <div style="display:flex; gap:10px;"><button type="submit" class="btn-top btn-t-blue"><i class="fas fa-save"></i> Guardar</button><button type="button" class="btn-top" style="background:#475569;" onclick="window.probarConexionHacienda()"><i class="fas fa-plug"></i> Probar Conexión</button></div>
                     </form>
                     <div id="hacienda-status" style="margin-top:20px; padding:15px; border-radius:8px; display:none; font-weight:600; font-size:13px;"></div>
                 </div>
@@ -925,7 +976,7 @@
                         <td>${new Date(t.fecha).toLocaleDateString()}</td>
                         <td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td>
                         <td style="color:${t.prioridad === 'Alta' ? 'var(--del)' : 'var(--btn-yellow)'}">${t.prioridad}</td>
-                        <td style="color:${t.estado==='Resuelto'?'var(--btn-green)':'var(--btn-blue)'}">${t.estado}</td>
+                        <td style="color:${t.estado==='Resuelto'?'var(--btn-green)':'var(--neon-blue)'}">${t.estado}</td>
                         <td>${t.atendido_por}</td>
                     </tr>`).join('')}
                 </tbody></table>`;

@@ -20,6 +20,10 @@
             --neon-blue: #00b4d8;
             --border-color: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s ease;
+            --btn-green: #10b981;
+            --btn-purple: #8b5cf6;
+            --btn-yellow: #f59e0b;
+            --del: #ff3b30;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -71,7 +75,6 @@
             overflow-y: auto;
         }
         
-        /* ELEMENTOS DEL MENÚ Y BURBUJAS (DROPDOWNS) */
         .nav-item {
             padding: 15px 25px;
             display: flex;
@@ -211,7 +214,7 @@
             font-size: 14px;
         }
 
-        /* NUEVOS ESTILOS REQUERIDOS PARA EL CONTENIDO DINÁMICO BLANCO/MODERNO */
+        /* ESTILOS DE VISTAS INTERNAS Y MODULOS (CLAROS/MODERNOS PERO OSCUROS) */
         .page-title { margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;}
         .section-title { margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #fff;}
         .breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
@@ -240,11 +243,27 @@
         .btn-t-green { background: #10b981; color: #fff;}
         .btn-t-blue { background: var(--neon-blue); color: #fff; }
 
-        /* Tablas */
+        /* Estilos de Formularios y Tablas para Facturación (Dark) */
+        .form-input { 
+            width: 100%; padding: 10px 15px; margin-bottom: 15px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; font-size: 13.5px; transition: 0.3s; box-sizing: border-box; font-family: inherit;
+        }
+        .form-input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);}
+        label { color: #cfd8dc; font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;}
+
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; color: #fff;}
         .admin-table th { color: var(--text-muted); text-align: left; padding: 12px 15px; border-bottom: 2px solid var(--border-color); font-weight: 600; text-transform: uppercase; font-size: 11px; background: rgba(255,255,255,0.02); }
         .admin-table td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); color: #cfd8dc; }
         .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .fact-btn-del { padding: 6px 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s;}
+        .fact-btn-del:hover { background: #ef4444; color: white;}
+        .fact-btn-view { padding: 6px 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--btn-green); border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s; margin-right: 5px;}
+        .fact-btn-view:hover { background: var(--btn-green); color: white;}
+
+        .tabs-header { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; gap: 5px; }
+        .tab-link { padding: 10px 20px; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: 0.2s; }
+        .tab-link:hover { color: #fff; }
+        .tab-link.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); }
     </style>
 </head>
 <body>
@@ -296,7 +315,7 @@
             <div class="dash-card" onclick="showSection('facturacion')">
                 <div class="dash-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                 <div class="dash-info">
-                    <h3>Módulo Contable</h3>
+                    <h3>Modulo Contable</h3>
                     <p>Facturación electrónica y proformas.</p>
                 </div>
             </div>
@@ -317,16 +336,20 @@
         // MENÚ LATERAL DINÁMICO (Se cambia según el panel elegido en el inicio)
         const menuData = {
             'datacenter': [
-                {nombre: 'Resumen', icon: 'fa-server'}, 
+                {nombre: 'Resumen Data Center', icon: 'fa-server'}, 
                 {nombre: 'Monitoreo', icon: 'fa-chart-area'}, 
                 {nombre: 'Respaldos', icon: 'fa-shield-alt'}
             ],
             'facturacion': [
-                {nombre: 'Facturador Inicio', icon: 'fa-rocket'},
+                {nombre: 'Inicio Facturador', icon: 'fa-rocket'},
                 {nombre: 'Clientes', icon: 'fa-users'},
-                {nombre: 'Productos', icon: 'fa-box'},
+                {nombre: 'Catálogo CABYS', icon: 'fa-box'},
                 {nombre: 'Nueva Factura', icon: 'fa-file-invoice-dollar'},
-                {nombre: 'Nueva Proforma', icon: 'fa-file-contract'}
+                {nombre: 'Historial de Facturas', icon: 'fa-file-alt'},
+                {nombre: 'Nueva Proforma', icon: 'fa-file-contract'},
+                {nombre: 'Proformas Generadas', icon: 'fa-file-signature'},
+                {nombre: 'Datos de la Empresa', icon: 'fa-id-card'},
+                {nombre: 'Llave Hacienda (.p12)', icon: 'fa-key'}
             ],
             'tickets': [
                 {nombre: 'Reportar Avería', icon: 'fa-plus-circle'}, 
@@ -376,7 +399,7 @@
             contenedor.classList.remove('dashboard-grid'); // Quitar grid para las vistas internas
 
             // ---------- MÓDULO DATA CENTER ----------
-            if (opcion === 'Resumen') {
+            if (opcion === 'Resumen Data Center') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Resumen</span></div>
                     <h2 class="page-title"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
@@ -471,18 +494,356 @@
                 `;
             }
 
-            // ---------- PLACEHOLDERS DE FACTURACIÓN PARA EVITAR CÓDIGO DE 2000 LÍNEAS ----------
-            // (La funcionalidad real la tenemos en el archivo blanco del mensaje anterior, aquí ponemos el aviso)
-            else {
+            // ---------- MODULO CONTABLE (FACTURACIÓN) ----------
+            else if (opcion === 'Inicio Facturador') {
+                const plan = userDataCache.plan || 'Gratis';
                 contenedor.innerHTML = `
-                    <div class="breadcrumb">Panel Corporativo / <span>${opcion}</span></div>
-                    <div class="card-white" style="text-align:center; padding: 60px 20px;">
-                        <i class="fas fa-tools" style="font-size:48px; color:var(--text-muted); margin-bottom:20px;"></i>
-                        <h2 class="page-title" style="border:none;">Módulo de Facturación / Tickets</h2>
-                        <p style="color:var(--text-muted);">Esta interfaz empresarial oscura está configurada para el Data Center. Para la facturación y generación de PDF, por favor utiliza la <b>versión blanca</b> provista en la actualización anterior.</p>
+                    <div class="breadcrumb">Modulo Contable / <span>Información general</span></div>
+                    <h2 class="page-title">Información general de facturación</h2>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-box"><p>VENTAS NETAS</p><h3>₡0.00</h3></div>
+                        <div class="metric-box"><p>COMPRAS NETAS</p><h3>₡0.00</h3></div>
+                        <div class="metric-box"><p>BALANCE NETAS</p><h3>₡0.00</h3></div>
+                        <div class="metric-box"><p>PROVISIÓN MENSUAL DE VENTAS</p><h3>₡0.00</h3></div>
+                    </div>
+
+                    <div class="split-grid">
+                        <div class="card-white">
+                            <h3 class="section-title">PLAN RECOMENDADO</h3>
+                            <p style="color:var(--text-muted); margin-bottom:15px;">Basado en las características de su perfil, este es un plan recomendado de nuestra tienda:</p>
+                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0;">PLAN PROFESIONAL (Actualmente: ${plan})</h4>
+                            <ul style="color:#cfd8dc; padding-left:20px; line-height:1.8;">
+                                <li>Documentos Ilimitados</li>
+                                <li>Reportes Especializados</li>
+                                <li>Dashboard Completo de Indicadores</li>
+                                <li>Entre otras funcionalidades...</li>
+                            </ul>
+                            <button class="btn-top btn-t-blue" style="margin-top:15px;" onclick="alert('Contactando a ventas...')">Ver planes</button>
+                        </div>
+                        
+                        <div class="card-white">
+                            <h3 class="section-title">DISPONGA DE UN MAYOR ANÁLISIS</h3>
+                            <p style="color:var(--text-muted); margin-bottom:15px;">Mejorando su plan podrá contar con más áreas de datos para su negocio:</p>
+                            <ul style="color:#cfd8dc; padding-left:20px; line-height:1.8;">
+                                <li>Gráficos de mejores ventas y compras</li>
+                                <li>Gráficos de mejores clientes y proveedores</li>
+                                <li>Información de medios de pago</li>
+                            </ul>
+                        </div>
                     </div>
                 `;
             }
+            else if (opcion === 'Clientes') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Modulo Contable / <span>Clientes</span></div>
+                    <div class="card-white">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
+                            <h2 class="page-title" style="border:none; margin:0; padding:0;">Clientes registrados</h2>
+                            <button class="btn-top btn-t-blue" onclick="document.getElementById('form-cliente').style.display='block'"><i class="fas fa-plus"></i> Registrar Cliente</button>
+                        </div>
+
+                        <div id="form-cliente" style="display:none; background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid var(--border-color);">
+                            <h3 class="section-title">Nuevo Cliente</h3>
+                            <form onsubmit="guardarClienteFact(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                <div><label>Nombre o Razón Social</label><input type="text" id="fc-nombre" class="form-input" required></div>
+                                <div><label>Identificación</label><input type="text" id="fc-cedula" class="form-input" required></div>
+                                <div><label>Tipo Identificación</label><select id="fc-tipo" class="form-input"><option value="01">Física</option><option value="02">Jurídica</option></select></div>
+                                <div><label>Correo Electrónico</label><input type="email" id="fc-correo" class="form-input" required></div>
+                                <div><label>Teléfono</label><input type="text" id="fc-telefono" class="form-input"></div>
+                                <div style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end;">
+                                    <button type="button" class="btn-top" style="background:#475569;" onclick="document.getElementById('form-cliente').style.display='none'">Cancelar</button>
+                                    <button type="submit" class="btn-top btn-t-green">Guardar Cliente</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div id="tabla-clientes-fact">Cargando clientes...</div>
+                    </div>
+                `;
+                cargarClientesFact();
+            }
+            else if (opcion === 'Catálogo CABYS') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Modulo Contable / <span>CABYS</span></div>
+                    <div class="card-white">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
+                            <h2 class="page-title" style="border:none; margin:0; padding:0;">Catálogo de productos y servicios</h2>
+                            <button class="btn-top btn-t-blue" onclick="document.getElementById('form-prod-box').style.display='block'"><i class="fas fa-plus"></i> Nuevo Ítem</button>
+                        </div>
+
+                        <div id="form-prod-box" style="display:none; background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:20px;">
+                            <form onsubmit="guardarProductoFact(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                <div><label>Código CABYS</label><input type="text" id="fp-cabys" class="form-input" required placeholder="13 dígitos"></div>
+                                <div><label>Descripción</label><input type="text" id="fp-desc" class="form-input" required></div>
+                                <div><label>Precio Unitario (₡)</label><input type="number" id="fp-precio" class="form-input" step="0.01" required></div>
+                                <div><label>IVA (%)</label><select id="fp-iva" class="form-input"><option value="13.00">13%</option><option value="0.00">0%</option></select></div>
+                                <input type="hidden" id="fp-unidad" value="Sp">
+                                <div style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end;">
+                                    <button type="button" class="btn-top" style="background:#475569;" onclick="document.getElementById('form-prod-box').style.display='none'">Cancelar</button>
+                                    <button type="submit" class="btn-top btn-t-green">Registrar Ítem</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div id="tabla-productos-fact">Cargando catálogo...</div>
+                    </div>
+                `;
+                cargarProductosFact();
+            }
+            else if (opcion === 'Nueva Factura') {
+                renderEditorDocumento('Factura');
+            }
+            else if (opcion === 'Historial de Facturas') {
+                contenedor.innerHTML = `<div class="breadcrumb">Modulo Contable / <span>Documentos generados</span></div><div class="card-white"><h2 class="page-title">Historial de Facturas</h2><div id="tabla-fact">Cargando...</div></div>`;
+                cargarHistorialDoc('factura');
+            }
+            else if (opcion === 'Nueva Proforma') {
+                renderEditorDocumento('Proforma');
+            }
+            else if (opcion === 'Proformas Generadas') {
+                contenedor.innerHTML = `<div class="breadcrumb">Modulo Contable / <span>Proformas Generadas</span></div><div class="card-white"><h2 class="page-title">Historial de Proformas</h2><div id="tabla-prof">Cargando...</div></div>`;
+                cargarHistorialDoc('proforma');
+            }
+            else if (opcion === 'Datos de la Empresa') {
+                renderConfigEmpresa();
+            }
+            else if (opcion === 'Llave Hacienda (.p12)') {
+                renderConfigHacienda();
+            }
+
+            // ---------- MODULO TICKETS (SOPORTE) ----------
+            else if (opcion === 'Reportar Avería') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Soporte / <span>Reportar</span></div>
+                    <h2 class="page-title"><i class="fas fa-plus-circle" style="color:var(--neon-blue);"></i> Reportar Nuevo Requerimiento</h2>
+                    <p style="color:var(--text-muted);">Módulo en construcción...</p>
+                `;
+            }
+        }
+
+        // --- FUNCIONES DE FACTURACIÓN (ADAPTADAS AL DISEÑO OSCURO) ---
+
+        function cargarClientesFact() {
+            const list = document.getElementById('tabla-clientes-fact');
+            fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
+                if(!data || data.length === 0) { list.innerHTML = "<p style='color:var(--text-muted); padding:20px; text-align:center;'>Sin clientes registrados.</p>"; return; }
+                list.innerHTML = `<table class="admin-table"><thead><tr><th>Nombre o Razón Social</th><th>Identificación</th><th>Correo de Envío</th><th>Acción</th></tr></thead><tbody>
+                    ${data.map(c => `<tr><td><b>${c.nombre}</b></td><td>${c.identificacion}</td><td>${c.correo}</td><td><button class="fact-btn-del" onclick="borrarItem('clientes_facturacion', ${c.id}, 'Clientes')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                </tbody></table>`;
+            });
+        }
+
+        function guardarClienteFact(e) {
+            e.preventDefault();
+            const body = { nombre: document.getElementById('fc-nombre').value, tipo_identificacion: document.getElementById('fc-tipo').value, identificacion: document.getElementById('fc-cedula').value, correo: document.getElementById('fc-correo').value, telefono: document.getElementById('fc-telefono').value };
+            fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=>renderModulo('Clientes'));
+        }
+
+        function cargarProductosFact() {
+            const area = document.getElementById('tabla-productos-fact');
+            fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(data => {
+                if(!data || data.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); padding:20px; text-align:center;'>El catálogo está vacío.</p>"; return; }
+                area.innerHTML = `<table class="admin-table"><thead><tr><th>Código CABYS</th><th>Descripción</th><th>Precio (CRC)</th><th>Acción</th></tr></thead><tbody>
+                    ${data.map(p => `<tr><td><code>${p.codigo_cabys}</code></td><td><b>${p.descripcion}</b></td><td>₡${p.precio_unitario}</td><td><button class="fact-btn-del" onclick="borrarItem('productos_facturacion', ${p.id}, 'Productos')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                </tbody></table>`;
+            });
+        }
+
+        function guardarProductoFact(e) {
+            e.preventDefault();
+            const body = { codigo_cabys: document.getElementById('fp-cabys').value, descripcion: document.getElementById('fp-desc').value, precio_unitario: document.getElementById('fp-precio').value, unidad_medida: 'Sp', impuesto: document.getElementById('fp-iva').value };
+            fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=>renderModulo('Catálogo CABYS'));
+        }
+
+        function borrarItem(tabla, id, moduloRef) {
+            if(confirm('¿Eliminar de forma permanente de Neon?')) {
+                fetch(`/api/eliminar/${tabla}/${id}`, { method: 'DELETE', credentials: 'include' }).then(()=>renderModulo(moduloRef));
+            }
+        }
+
+        function guardarConfigEmpresa() {
+            const body = { nombre: document.getElementById('emp-nombre').value, telefono: document.getElementById('emp-telefono').value, correo: document.getElementById('emp-correo').value, logo: logoBase64 };
+            fetch('/api/facturacion/config-empresa', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=>renderModulo('Datos de la Empresa'));
+        }
+
+        function guardarHacienda(e) {
+            e.preventDefault();
+            const f = new FormData();
+            f.append('usuario_idp', document.getElementById('h-user').value);
+            f.append('password_idp', document.getElementById('h-pass').value);
+            f.append('pin_p12', document.getElementById('h-pin').value);
+            f.append('ambiente', document.getElementById('h-prod').checked ? 'true' : 'false');
+            if(document.getElementById('h-p12').files[0]) f.append('archivo_p12', document.getElementById('h-p12').files[0]);
+            
+            fetch('/api/admin/configuracion-hacienda', { method: 'POST', credentials: 'include', body: f }).then(r=>r.json()).then(data => {
+                const b = document.getElementById('hacienda-status'); b.style.display = 'block';
+                b.style.background = data.success ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+                b.style.color = data.success ? '#10b981' : '#ef4444';
+                b.innerText = data.message;
+            });
+        }
+
+        function probarConexionHacienda() {
+            const b = document.getElementById('hacienda-status'); b.style.display = 'block'; b.innerText = "Sincronizando token Oauth2 con Hacienda...";
+            fetch('/api/admin/facturacion/probar-conexion', { credentials: 'include' }).then(r=>r.json()).then(data => {
+                b.style.background = data.status === "Conexión Exitosa" ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+                b.style.color = data.status === "Conexión Exitosa" ? '#10b981' : '#ef4444';
+                b.innerText = data.mensaje || data.status;
+            });
+        }
+
+        function cargarHistorialDoc(tipo) {
+            const target = tipo === 'factura' ? 'tabla-historial-fact' : 'tabla-historial-prof';
+            fetch('/api/cliente/datos-operativos', {credentials: 'include'}).then(r=>r.json()).then(data => {
+                const area = document.getElementById(target);
+                const lista = tipo === 'factura' ? data.facturas : data.proformas;
+                if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); padding:20px;'>No hay documentos emitidos.</p>"; return; }
+                
+                area.innerHTML = `<table class="admin-table"><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Monto</th><th>Impresión</th></tr></thead><tbody>
+                    ${lista.map(d => `<tr><td><b>${d.consecutivo}</b></td><td>${d.fecha}</td><td>₡${d.monto}</td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> Ver PDF</button></td></tr>`).join('')}
+                </tbody></table>`;
+            });
+        }
+
+        // Lógica de editor de documentos
+        function renderEditorDocumento(tipo) {
+            lineasDocumento = [];
+            const color = tipo === 'Factura' ? 'var(--neon-blue)' : 'var(--btn-green)';
+            const icono = tipo === 'Factura' ? 'fa-file-invoice-dollar' : 'fa-file-contract';
+            
+            document.getElementById('vista-principal').innerHTML = `
+                <div class="breadcrumb">Modulo Contable / <span>Nueva ${tipo.toLowerCase()}</span></div>
+                <div class="card-white">
+                    <h2 class="page-title">Emitir ${tipo} Electrónica</h2>
+                    
+                    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:15px; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                        <div><label>Receptor</label><select id="doc-cliente" class="form-input" style="margin:0;"></select></div>
+                        <div><label>Venta</label><select id="doc-condicion" class="form-input" style="margin:0;"><option value="01">Contado</option><option value="02">Crédito</option></select></div>
+                        <div><label>Pago</label><select id="doc-medio" class="form-input" style="margin:0;"><option value="04">Transferencia</option><option value="01">Efectivo</option></select></div>
+                    </div>
+                    
+                    <h3 class="section-title"><i class="fas fa-list-ol"></i> Detalle</h3>
+                    <div style="display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; gap:10px; margin-bottom:15px; align-items:end;">
+                        <div><label>Producto (CABYS)</label><input type="text" id="busca-prod" class="form-input" style="margin:0;" placeholder="CABYS o Descripción..."></div>
+                        <div><label>Cant.</label><input type="number" id="busca-cant" class="form-input" style="margin:0;" value="1" min="0.1"></div>
+                        <div><label>P. Unit</label><input type="text" id="busca-precio" class="form-input" style="margin:0;" disabled></div>
+                        <div><label>Total</label><input type="text" id="busca-total" class="form-input" style="margin:0;" disabled></div>
+                        <button class="btn-top btn-t-blue" onclick="agregarLinea()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    
+                    <table class="admin-table" style="margin-bottom:30px;">
+                        <thead style="background:rgba(255,255,255,0.02);"><tr><th>Cant.</th><th>CABYS</th><th>Descripción</th><th>P. Unit</th><th>IVA</th><th>Total</th><th></th></tr></thead>
+                        <tbody id="doc-body"><tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sin líneas</td></tr></tbody>
+                    </table>
+                    
+                    <div style="display:flex; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:20px;">
+                        <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; width:250px; border:1px solid var(--border-color);">
+                            <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">Subtotal: <span id="t-sub" style="color:#fff; font-weight:600;">₡0.00</span></p>
+                            <p style="margin:5px 0; display:flex; justify-content:space-between; color:var(--text-muted);">IVA: <span id="t-iva" style="color:#fff; font-weight:600;">₡0.00</span></p>
+                            <p style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px; display:flex; justify-content:space-between; font-weight:800; font-size:16px;">Total: <span id="t-total" style="color:var(--neon-blue);">₡0.00</span></p>
+                        </div>
+                    </div>
+                    
+                    <button id="btn-emitir-doc" class="btn-top btn-t-blue" style="width:100%; margin-top:25px; padding:15px; font-size:15px;" disabled onclick="emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Emitir ${tipo}</button>
+                </div>
+            `;
+            
+            const selC = document.getElementById('doc-cliente');
+            if(!clientesCache || clientesCache.length === 0) { selC.innerHTML = '<option value="">Sin clientes</option>'; }
+            else { selC.innerHTML = '<option value="">-- Cliente --</option>' + clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
+            
+            const buscaProd = document.getElementById('busca-prod');
+            buscaProd.addEventListener('input', function() {
+                const txt = this.value.toLowerCase();
+                if(txt.length < 2) return;
+                const match = productosCache.find(p => p.descripcion.toLowerCase().includes(txt) || p.codigo_cabys.includes(txt));
+                if(match) { window.prodSeleccionado = match; document.getElementById('busca-precio').value = match.precio_unitario; actualizarTotalLinea(); } else { window.prodSeleccionado = null; }
+            });
+            document.getElementById('busca-cant').addEventListener('input', actualizarTotalLinea);
+        }
+
+        function actualizarTotalLinea() {
+            const cant = parseFloat(document.getElementById('busca-cant').value) || 0;
+            const precio = parseFloat(document.getElementById('busca-precio').value) || 0;
+            document.getElementById('busca-total').value = (cant * precio).toFixed(2);
+        }
+
+        function agregarLinea() {
+            if(!window.prodSeleccionado) return alert("Busca y selecciona un producto primero.");
+            const cant = parseFloat(document.getElementById('busca-cant').value) || 1;
+            lineasDocumento.push({ codigo_cabys: window.prodSeleccionado.codigo_cabys, descripcion: window.prodSeleccionado.descripcion, cantidad: cant, precio_unitario: window.prodSeleccionado.precio_unitario, monto_total: cant * window.prodSeleccionado.precio_unitario, impuesto: window.prodSeleccionado.impuesto, unidad_medida: window.prodSeleccionado.unidad_medida });
+            document.getElementById('busca-prod').value = ""; document.getElementById('busca-cant').value = "1"; document.getElementById('busca-precio').value = ""; document.getElementById('busca-total').value = ""; window.prodSeleccionado = null; renderLineasDocumento();
+        }
+
+        function renderLineasDocumento() {
+            const tbody = document.getElementById('doc-body');
+            let html = ''; let sub = 0; let iva = 0;
+            lineasDocumento.forEach((l, i) => {
+                html += `<tr><td>${l.cantidad}</td><td>${l.codigo_cabys}</td><td><b>${l.descripcion}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:600; color:var(--neon-blue);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="lineasDocumento.splice(${i},1); renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
+                sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100);
+            });
+            tbody.innerHTML = html || `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sin líneas</td></tr>`;
+            document.getElementById('t-sub').innerText = `₡${sub.toFixed(2)}`; document.getElementById('t-iva').innerText = `₡${iva.toFixed(2)}`; document.getElementById('t-total').innerText = `₡${(sub+iva).toFixed(2)}`;
+            document.getElementById('btn-emitir-doc').disabled = lineasDocumento.length === 0;
+        }
+
+        async function emitirDocumento(tipo) {
+            const cliente_id = document.getElementById('doc-cliente').value;
+            if(!cliente_id) return alert("Selecciona un cliente.");
+            const btn = document.getElementById('btn-emitir-doc'); btn.innerText = "Procesando..."; btn.disabled = true;
+            let sub = 0; let iva = 0; lineasDocumento.forEach(l => { sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100); });
+            const payload = { cliente_id: cliente_id, condicion_venta: document.getElementById('doc-condicion').value, medio_pago: document.getElementById('doc-medio').value, lineas: lineasDocumento, total_gravado: sub, total_impuesto: iva, total_comprobante: sub + iva };
+            const endpoint = tipo === 'Factura' ? '/api/facturacion/emitir' : '/api/facturacion/proformas/emitir';
+            try {
+                const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(data.success) { alert(`¡${tipo} generada con éxito!`); renderModulo(tipo === 'Factura' ? 'Historial de Facturas' : 'Proformas Generadas'); } 
+                else { alert("Error: " + data.message); btn.innerText = `Emitir ${tipo}`; btn.disabled = false; }
+            } catch(e) { alert("Error de red."); btn.disabled = false; }
+        }
+
+        function renderConfigEmpresa() {
+            document.getElementById('vista-principal').innerHTML = `
+                <div class="breadcrumb">Modulo Contable / <span>Datos de la Empresa</span></div>
+                <div class="card-white" style="padding:0; overflow:hidden;">
+                    <div class="tabs-header" style="padding:20px 20px 0 20px; background:rgba(255,255,255,0.02);">
+                        <div class="tab-link active" onclick="switchSubTab('sub-resumen', this)">Resumen</div>
+                        <div class="tab-link" onclick="switchSubTab('sub-logo', this)">Logo</div>
+                        <div class="tab-link" onclick="switchSubTab('sub-general', this)">Información general</div>
+                    </div>
+                    <div style="padding:30px;">
+                        <div id="sub-resumen" class="sub-tab-content" style="display:block;">
+                            <h3 class="section-title">Información del Contribuyente</h3>
+                            <p style="margin-bottom:10px; color:#cfd8dc;">📍 <b>Nombre Comercial:</b> <span id="r-comercial">No configurado</span></p>
+                            <p style="margin-bottom:10px; color:#cfd8dc;">📞 <b>Teléfono:</b> <span id="r-tel">No configurado</span></p>
+                            <p style="margin-bottom:10px; color:#cfd8dc;">✉️ <b>Correo:</b> <span id="r-correo">No configurado</span></p>
+                        </div>
+                        <div id="sub-logo" class="sub-tab-content" style="display:none;">
+                            <h3 class="section-title">Logotipo de Documentos PDF</h3>
+                            <img id="emp-logo-preview" src="Logo_Admin_v2.png" style="max-height:100px; border:1px dashed var(--border-color); padding:10px; border-radius:8px; margin-bottom:15px; display:block; background:rgba(255,255,255,0.02);">
+                            <input type="file" id="emp-logo-file" accept="image/*" class="form-input" style="max-width:300px;" onchange="previewLogo(this)">
+                            <br><button class="btn-top btn-t-blue" onclick="guardarConfigEmpresa()"><i class="fas fa-upload"></i> Guardar Logo</button>
+                        </div>
+                        <div id="sub-general" class="sub-tab-content" style="display:none;">
+                            <form onsubmit="event.preventDefault(); guardarConfigEmpresa();">
+                                <label>Nombre Comercial</label><input type="text" id="emp-nombre" class="form-input" required>
+                                <label>Teléfono Comercial</label><input type="text" id="emp-telefono" class="form-input" required>
+                                <label>Correo Electrónico</label><input type="email" id="emp-correo" class="form-input" required>
+                                <button type="submit" class="btn-top btn-t-blue">Actualizar Datos Generales</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fetch('/api/facturacion/config-empresa', {credentials: 'include'}).then(r=>r.json()).then(data => {
+                if(data.nombre_comercial) {
+                    document.getElementById('r-comercial').innerText = data.nombre_comercial; document.getElementById('emp-nombre').value = data.nombre_comercial;
+                    document.getElementById('r-tel').innerText = data.telefono; document.getElementById('emp-telefono').value = data.telefono;
+                    document.getElementById('r-correo').innerText = data.correo; document.getElementById('emp-correo').value = data.correo;
+                    if(data.logo) { document.getElementById('emp-logo-preview').src = data.logo; logoBase64 = data.logo; }
+                }
+            });
         }
 
         // Simulación de carga de datos al iniciar la página
@@ -495,16 +856,15 @@
                 }
                 const data = await res.json();
                 if(data.usuario) {
-                    document.getElementById('bienvenida-usuario').innerText = `Panel de Gestión, ${data.usuario}`;
+                    document.getElementById('bienvenida-usuario').innerText = `Bienvenido, ${data.usuario}`;
                     document.getElementById('nombre-empresa-badge').innerText = data.empresa || "Cliente Corporativo";
-                    
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
-                    if (headerUserName && headerUserInitial) {
-                        headerUserName.innerText = data.usuario;
-                        headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
-                    }
+                    if (headerUserName && headerUserInitial) { headerUserName.innerText = data.usuario; headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase(); }
                 }
+
+                fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d);
+                fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d);
             } catch (e) {
                 console.warn("Modo desarrollo o sin conexión al backend");
             }
@@ -512,7 +872,7 @@
 
         // Función para cerrar sesión con alerta
         async function logout() {
-            if(confirm('¿Seguro que deseas cerrar sesión y registrar salida en la auditoría?')) {
+            if(confirm('¿Seguro que deseas cerrar sesión?')) {
                 try {
                     await fetch('/api/logout', { credentials: 'include' });
                     window.location.href = '/login.html';

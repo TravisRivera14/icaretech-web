@@ -211,10 +211,10 @@
                 
                 <div id="panel-ops-empresa" style="display:none; margin-top:20px; padding:20px; background:#11141a; border-radius:12px; border:1px solid var(--border-smooth);">
                     <h3 style="font-size:14px; margin-bottom:15px; color:white;">Módulos Autorizados (Plan de la Empresa)</h3>
-                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-fact"><span class="slider"></span> Facturación Electrónica</label>
-                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-data"><span class="slider"></span> Data Center & Servidores</label>
-                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-inv"><span class="slider"></span> Inventario y Piezas</label>
-                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-tck"><span class="slider"></span> Sistema de Tickets</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-fact" onchange="sincronizarSwitchesVisionales('fact')"><span class="slider"></span> Facturación Electrónica</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-data" onchange="sincronizarSwitchesVisionales('data')"><span class="slider"></span> Data Center & Servidores</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-inv" onchange="sincronizarSwitchesVisionales('inv')"><span class="slider"></span> Inventario y Piezas</label>
+                    <label class="toggle-switch"><input type="checkbox" id="emp-mod-tck" onchange="sincronizarSwitchesVisionales('tck')"><span class="slider"></span> Sistema de Tickets</label>
                     <button style="width:100%; margin-top:10px;" onclick="guardarPermisosEmpresa()">Guardar Permisos Generales</button>
                 </div>
             </div>
@@ -1056,6 +1056,18 @@
     }
 
     // ----------------- LÓGICA DE CENTRO DE OPERACIONES BLINDADA Y EN CASCADA -----------------
+    
+    // FUNCION DE EFECTO CASCADA VISUAL INSTANTÁNEO
+    window.sincronizarSwitchesVisionales = function(tipo) {
+        const isChecked = document.getElementById(`emp-mod-${tipo}`).checked;
+        if (window.currentOpsUsuarios && window.currentOpsUsuarios.length > 0) {
+            window.currentOpsUsuarios.forEach(uId => {
+                const toggleUsuario = document.getElementById(`u-${tipo}-${uId}`);
+                if (toggleUsuario) toggleUsuario.checked = isChecked;
+            });
+        }
+    };
+
     function irAOperaciones(empId) {
         switchTab('tab-operaciones', {currentTarget: document.querySelectorAll('.sidebar-item')[4]});
         document.getElementById('select-ops-empresa').value = empId;
@@ -1066,7 +1078,7 @@
         if(!empId) { 
             document.getElementById('panel-ops-empresa').style.display = 'none'; 
             document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; 
-            currentOpsUsuarios = [];
+            window.currentOpsUsuarios = [];
             return; 
         }
         currentOpsEmpresa = empId;
@@ -1082,13 +1094,13 @@
         fetch(`${API}/admin/operaciones/usuarios/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(users => {
             const list = document.getElementById('lista-ops-usuarios');
             if(users.length === 0) { 
-                currentOpsUsuarios = [];
+                window.currentOpsUsuarios = [];
                 list.innerHTML = "<p style='color:var(--text-muted);'><i class='fas fa-exclamation-circle'></i> No hay trabajadores registrados bajo esta empresa.</p>"; 
                 return; 
             }
             
             // Guardamos los IDs de los usuarios para el Efecto Cascada
-            currentOpsUsuarios = users.map(u => u.id);
+            window.currentOpsUsuarios = users.map(u => u.id);
 
             list.innerHTML = users.map(u => `
                 <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
@@ -1122,19 +1134,10 @@
         };
 
         try {
-            // Guardar a nivel de empresa
             await fetch(`${API}/admin/operaciones/empresa`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) });
             
-            // SINCRONIZACIÓN EN CASCADA PARA LOS USUARIOS
             if (window.currentOpsUsuarios && window.currentOpsUsuarios.length > 0) {
                 for (let uId of window.currentOpsUsuarios) {
-                    // Actualizar botones visuales
-                    if(document.getElementById(`u-fact-${uId}`)) document.getElementById(`u-fact-${uId}`).checked = fact;
-                    if(document.getElementById(`u-data-${uId}`)) document.getElementById(`u-data-${uId}`).checked = data;
-                    if(document.getElementById(`u-inv-${uId}`)) document.getElementById(`u-inv-${uId}`).checked = inv;
-                    if(document.getElementById(`u-tck-${uId}`)) document.getElementById(`u-tck-${uId}`).checked = tck;
-
-                    // Actualizar a nivel de base de datos para cada usuario
                     const uBody = { usuario_id: uId, facturacion: fact, datacenter: data, inventario: inv, tickets: tck };
                     await fetch(`${API}/admin/operaciones/usuario`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(uBody) });
                 }

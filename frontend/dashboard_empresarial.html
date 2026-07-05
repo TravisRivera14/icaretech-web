@@ -72,15 +72,15 @@
         }
         
         .main-logo-img {
-            height: 65px; /* LOGO MÁS GRANDE */
+            height: 65px; 
             object-fit: contain;
-            filter: brightness(0) invert(1); /* LOGO BLANCO PURO SIN FONDO */
+            filter: brightness(0) invert(1); 
         }
         
         #client-logo-img {
             height: 45px;
             object-fit: contain;
-            background: white; /* Pequeño fondo blanco para que el logo del cliente resalte si es oscuro */
+            background: white; 
             padding: 4px;
             border-radius: 6px;
         }
@@ -331,60 +331,17 @@
         .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
         .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
         .btn-outline:hover { background: var(--neon-blue); color: #000; }
-        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
+        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: white; }
         .btn-solid:hover { opacity: 0.9; }
         .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
     </style>
-</head>
-<body>
-
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-dual-container">
-                <img src="Logo.png" alt="iCare Tech" class="main-logo-img">
-                <div id="client-logo-wrapper" style="display:none; align-items:center; gap:10px;">
-                    <div style="width:1px; height:40px; background:rgba(255,255,255,0.2);"></div>
-                    <img id="client-logo-img" src="" alt="Cliente Logo">
-                </div>
-            </div>
-            <div><span class="empresa-badge" id="nombre-empresa-badge">Cargando Empresa...</span></div>
-        </div>
-        
-        <div class="nav-menu" id="sidebar-dynamic-menu">
-            </div>
-
-        <div id="sidebar-upsell-container" style="display: none;">
-            <div class="sidebar-upsell-title">Adquirir Servicios</div>
-            
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-file-invoice-dollar"></i> Sistema de Facturación</h3>
-                <p>Planes contables desde $0 hasta $29.99/mes.</p>
-                <button class="sidebar-upsell-btn" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes</button>
-            </div>
-
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-server"></i> Cloud & Data Center</h3>
-                <p>Servidores VPS rápidos y Almacenamiento seguro.</p>
-                <button class="sidebar-upsell-btn" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
-            </div>
-
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-laptop-code"></i> Creación de Página Web</h3>
-                <p>Diseño y desarrollo web corporativo a la medida.</p>
-                <button class="sidebar-upsell-btn" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
-            </div>
-        </div>
-        
-        <div class="logout-btn">
-            <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-        </div>
-    </nav>
+</nav>
 
     <main class="main-content">
         <div class="topbar">
             <div class="top-buttons">
                 <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)"><i class="fas fa-file-invoice"></i> Nueva factura</button>
-                <button class="btn-top btn-t-blue" onclick="window.location.href='tienda.html'"><i class="fas fa-shopping-cart"></i> Tienda</button>
+                <button class="btn-top btn-t-blue" onclick="window.location.href='tienda_servicios.html'"><i class="fas fa-shopping-cart"></i> Tienda</button>
                 
                 <div class="dropdown-menu-container">
                     <button class="btn-top btn-t-blue dropdown-trigger"><i class="fab fa-whatsapp"></i> Contáctanos</button>
@@ -506,7 +463,7 @@
             const contenedor = document.getElementById('vista-principal');
             contenedor.style.display = 'block';
 
-            // Mostrar botones del topbar y Upsells (Burbujas laterales) solo si es módulo de facturación
+            // Mostrar u ocultar elementos condicionales de Facturación de forma segura
             const isFacturacion = ['Inicio Facturador', 'Mi plan', 'Clientes', 'Catálogo CABYS', 'Nueva Factura', 'Historial de Facturas', 'Nueva Proforma', 'Proformas Generadas', 'Datos de la Empresa', 'Llave Hacienda (.p12)'].includes(opcion);
             
             document.querySelectorAll('.fact-top-btn').forEach(btn => btn.style.display = isFacturacion ? 'flex' : 'none');
@@ -520,17 +477,16 @@
             if (opcion === 'Resumen Data Center') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Resumen</span></div>
-                    <h2 class="page-title"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
-                    
-                    <div class="metrics-grid">
-                        <div class="metric-box" style="border-left: 4px solid var(--btn-green);"><p>ESTADO DEL CLUSTER</p><h3 style="color:var(--btn-green);">ÓPTIMO</h3></div>
-                        <div class="metric-box"><p>NODOS ACTIVOS</p><h3>2 / 2</h3></div>
-                        <div class="metric-box"><p>ALMACENAMIENTO TOTAL</p><h3>256 GB</h3></div>
-                        <div class="metric-box"><p>UPTIME (90 DÍAS)</p><h3>99.98%</h3></div>
-                    </div>
-
                     <div class="card">
-                        <h3 class="section-title">Servidores Asignados</h3>
+                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
+                        <div class="metrics-grid" style="margin-top:20px;">
+                            <div class="metric-box" style="border-left: 4px solid var(--btn-green);"><p>ESTADO DEL CLUSTER</p><h3 style="color:var(--btn-green);">ÓPTIMO</h3></div>
+                            <div class="metric-box"><p>NODOS ACTIVOS</p><h3>2 / 2</h3></div>
+                            <div class="metric-box"><p>ALMACENAMIENTO TOTAL</p><h3>256 GB</h3></div>
+                            <div class="metric-box"><p>UPTIME (90 DÍAS)</p><h3>99.98%</h3></div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top:30px;">Servidores Asignados</h3>
                         <table class="admin-table">
                             <thead><tr><th>Servidor</th><th>IP Pública</th><th>S.O.</th><th>Estado</th><th>Acción</th></tr></thead>
                             <tbody>
@@ -556,24 +512,23 @@
             else if (opcion === 'Monitoreo') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Monitoreo</span></div>
-                    <h2 class="page-title"><i class="fas fa-chart-area" style="color:var(--neon-blue);"></i> Rendimiento y Monitoreo en Vivo</h2>
-                    
-                    <div class="split-grid">
-                        <div class="card">
-                            <h3 class="section-title"><i class="fas fa-microchip"></i> Uso de CPU (Promedio Global)</h3>
-                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">24%</div>
-                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
-                                <div style="width:24%; background:var(--neon-blue); height:100%;"></div>
+                    <div class="card">
+                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-chart-area" style="color:var(--neon-blue);"></i> Rendimiento y Monitoreo en Vivo</h2>
+                        <div class="split-grid" style="margin-top:20px;">
+                            <div class="metric-box" style="background:#11141a;">
+                                <h3 class="section-title"><i class="fas fa-microchip"></i> Uso de CPU</h3>
+                                <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">24%</div>
+                                <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                    <div style="width:24%; background:var(--neon-blue); height:100%;"></div>
+                                </div>
                             </div>
-                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Estado normal. Sin cuellos de botella detectados.</p>
-                        </div>
-                        <div class="card">
-                            <h3 class="section-title"><i class="fas fa-memory"></i> Uso de Memoria RAM</h3>
-                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">4.2 GB <span style="font-size:14px; color:var(--text-muted);">/ 8 GB</span></div>
-                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
-                                <div style="width:52%; background:var(--btn-purple); height:100%;"></div>
+                            <div class="metric-box" style="background:#11141a;">
+                                <h3 class="section-title"><i class="fas fa-memory"></i> Uso de Memoria RAM</h3>
+                                <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">4.2 GB</div>
+                                <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                    <div style="width:52%; background:var(--btn-purple); height:100%;"></div>
+                                </div>
                             </div>
-                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">52% en uso. Rendimiento óptimo de base de datos.</p>
                         </div>
                     </div>
                 `;
@@ -581,32 +536,21 @@
             else if (opcion === 'Respaldos') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Respaldos</span></div>
-                    <h2 class="page-title"><i class="fas fa-shield-alt" style="color:var(--neon-blue);"></i> Políticas de Respaldo (Backups)</h2>
-                    
-                    <div class="card" style="background:rgba(16, 185, 129, 0.05); border-color:var(--btn-green); display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <h3 style="color:var(--btn-green); margin:0 0 5px 0;"><i class="fas fa-check-circle"></i> Protección Activa: Backups Automáticos</h3>
-                            <p style="color:var(--text-muted); margin:0;">El sistema realiza copias de seguridad incrementales cada 24 horas.</p>
-                        </div>
-                        <button class="btn-top btn-t-blue" onclick="alert('Instrucción enviada.')"><i class="fas fa-cloud-upload-alt"></i> Forzar Respaldo Ahora</button>
-                    </div>
-
                     <div class="card">
-                        <h3 class="section-title">Historial de Restauración</h3>
-                        <table class="admin-table">
-                            <thead><tr><th>Fecha de Copia</th><th>Tipo de Backup</th><th>Tamaño</th><th>Estado del Nodo</th><th>Acciones</th></tr></thead>
-                            <tbody>
-                                <tr><td>Hoy, 02:00 AM</td><td>Incremental</td><td>125 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar</button></td></tr>
-                                <tr><td>Ayer, 02:00 AM</td><td>Incremental</td><td>122 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar</button></td></tr>
-                            </tbody>
-                        </table>
+                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-shield-alt" style="color:var(--neon-blue);"></i> Políticas de Respaldo (Backups)</h2>
+                        <div style="background:rgba(16, 185, 129, 0.05); border:1px solid var(--btn-green); display:flex; justify-content:space-between; align-items:center; padding:20px; border-radius:10px; margin-top:20px;">
+                            <div>
+                                <h3 style="color:var(--btn-green); margin:0 0 5px 0;"><i class="fas fa-check-circle"></i> Protección Activa: Backups Automáticos</h3>
+                                <p style="color:var(--text-muted); margin:0;">El sistema realiza copias de seguridad incrementales cada 24 horas.</p>
+                            </div>
+                            <button class="btn-top btn-t-blue" onclick="alert('Instrucción enviada.')"><i class="fas fa-cloud-upload-alt"></i> Forzar Respaldo Ahora</button>
+                        </div>
                     </div>
                 `;
             }
 
             // ---------- MÓDULO CONTABLE (FACTURACIÓN) ----------
             else if (opcion === 'Inicio Facturador') {
-                const plan = userDataCache.plan || 'Gratis';
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>Información general</span></div>
                     <h2 class="page-title">Información general de facturación</h2>
@@ -622,13 +566,12 @@
                         <div class="card">
                             <h3 class="section-title">PLAN RECOMENDADO</h3>
                             <p style="color:var(--text-muted); margin-bottom:15px; line-height:1.6;">Basado en las características de su perfil, este es un plan recomendado de nuestra tienda:</p>
-                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: ${plan})</h4>
+                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: Gratis)</h4>
                             <ul style="color:#cfd8dc; padding-left:20px; line-height:2;">
                                 <li>Documentos Ilimitados</li>
                                 <li>Reportes Especializados</li>
                                 <li>Dashboard Completo de Indicadores</li>
                             </ul>
-                            <button class="btn-top btn-t-blue" style="margin-top:20px;" onclick="renderModulo('Mi plan', document.querySelectorAll('.submenu li')[1])">Ver Planes Completos</button>
                         </div>
                         <div class="card">
                             <h3 class="section-title">DISPONGA DE UN MAYOR ANÁLISIS</h3>
@@ -648,10 +591,10 @@
                     <div class="breadcrumb">Modulo Contable / <span>Mi plan</span></div>
                     <h2 class="page-title">Suscripción y Límites del Sistema</h2>
                     
-                    <div class="card" style="background:rgba(85, 187, 204, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px;">
-                        <h3 class="section-title" style="color:var(--neon-blue);"><i class="fas fa-chart-pie"></i> Consumo de Documentos del Mes</h3>
-                        <p style="margin:0 0 15px 0; color:#cfd8dc;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
-                        <div style="font-size:16px; font-weight:700; color:var(--text-light);">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
+                    <div class="card" style="background:rgba(85, 187, 204, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px; color:#1e293b;">
+                        <h3 class="section-title" style="color:var(--neon-blue); font-weight:700;"><i class="fas fa-chart-pie"></i> Consumo de Documentos del Mes</h3>
+                        <p style="margin:0 0 15px 0; color:#475569; font-weight:500;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
+                        <div style="font-size:16px; font-weight:700; color:#1e293b;">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
                     </div>
 
                     <div class="pricing-grid">
@@ -669,7 +612,7 @@
                         </div>
                         <div class="price-card recommended">
                             <div class="price-badge">RECOMENDADO</div>
-                            <div class="price-header bg-green" style="padding-top:25px;">PROFESIONAL</div>
+                            <div class="price-header bg-green">PROFESIONAL</div>
                             <div class="price-amount"><h2>$11.99</h2><div class="colones">₡5,472.48 <i class="fas fa-info-circle"></i></div><div class="period">Mensual + IVA</div></div>
                             <ul class="price-features"><li>Documentos <b>ILIMITADOS</b></li><li>Usuarios <b>3</b> + Contador</li><li>Multi-Moneda – <b>USD/CRC</b></li><li>Soporte de Proformas</li></ul>
                             <div class="price-btn-box"><button class="price-btn btn-solid" onclick="window.open('https://wa.me/50686390631', '_blank')">ACTUALIZAR AHORA</button></div>
@@ -745,7 +688,7 @@
                 window.renderConfigHacienda();
             }
 
-            // ---------- MODULO TICKETS (SOPORTE) ----------
+            // ---------- MÓDULO TICKETS (SOPORTE) ----------
             else if (opcion === 'Reportar Avería') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Soporte iCare / <span>Reportar Avería</span></div>
@@ -836,7 +779,7 @@
                         <div><label>Cant.</label><input type="number" id="busca-cant" class="form-input" style="margin:0;" value="1" min="0.1"></div>
                         <div><label>P. Unit</label><input type="text" id="busca-precio" class="form-input" style="margin:0;" disabled></div>
                         <div><label>Total</label><input type="text" id="busca-total" class="form-input" style="margin:0;" disabled></div>
-                        <button class="btn-top" style="background:${color};" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
+                        <button class="btn-top btn-t-blue" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
                     </div>
                     
                     <table class="admin-table" style="margin-bottom:30px;">
@@ -852,7 +795,7 @@
                         </div>
                     </div>
                     
-                    <button id="btn-emitir-doc" class="btn-top" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; background:${color}; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
+                    <button id="btn-emitir-doc" class="btn-top btn-t-blue" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
                 </div>
             `;
             
@@ -879,7 +822,7 @@
         window.agregarLinea = function() {
             if(!window.prodSeleccionado) return alert("Busca y selecciona un producto primero.");
             const cant = parseFloat(document.getElementById('busca-cant').value) || 1;
-            lineasDocumento.push({ codigo_cabys: window.prodSeleccionado.codigo_cabys, descripcion: window.prodSeleccionado.descripcion, cantidad: cant, precio_unitario: window.prodSeleccionado.precio_unitario, monto_total: cant * window.prodSeleccionado.precio_unitario, impuesto: window.prodSeleccionado.impuesto, unidad_medida: window.prodSeleccionado.unidad_medida });
+            lineasDocumento.push({ codigo_cabys: window.prodSeleccionado.codigo_cabys, descripcion: window.prodSeleccionado.descripcion, cantidad: cant, precio_unitario: window.prodSeleccionado.replace ? 0 : window.prodSeleccionado.precio_unitario, monto_total: cant * window.prodSeleccionado.precio_unitario, impuesto: window.prodSeleccionado.impuesto, unidad_medida: window.prodSeleccionado.unidad_medida });
             document.getElementById('busca-prod').value = ""; document.getElementById('busca-cant').value = "1"; document.getElementById('busca-precio').value = ""; document.getElementById('busca-total').value = ""; window.prodSeleccionado = null; window.renderLineasDocumento();
         };
 
@@ -918,7 +861,7 @@
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'#10b981'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -941,7 +884,6 @@
                         </div>
                         <div id="sub-logo" class="sub-tab-content" style="display:none;">
                             <h3 class="section-title">Logotipo de Documentos PDF</h3>
-                            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">(Requiere Plan de Pago. En Plan Gratis solo se mostrará el logo de iCareTech CR).</p>
                             <img id="emp-logo-preview" src="Logo_Admin_v2.png" style="max-height:100px; border:1px dashed var(--border-color); padding:10px; border-radius:12px; margin-bottom:15px; display:block; background:#11141a;">
                             <input type="file" id="emp-logo-file" accept="image/*" class="form-input" style="max-width:350px;" onchange="window.previewLogo(this)">
                             <br><button class="btn-top btn-t-blue" onclick="window.guardarConfigEmpresa()"><i class="fas fa-upload"></i> Guardar Logo</button>
@@ -1044,7 +986,7 @@
                     ${lista.map(t => `<tr>
                         <td>${new Date(t.fecha).toLocaleDateString()}</td>
                         <td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td>
-                        <td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${t.prioridad}</td>
+                        <td style="color:${t.prioridad === 'Alta' ? 'var(--del)' : 'var(--btn-yellow)'}">${t.prioridad}</td>
                         <td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${t.estado}</td>
                         <td>${t.atendido_por}</td>
                     </tr>`).join('')}
@@ -1052,30 +994,28 @@
             });
         };
 
-        // --- INICIALIZADOR GLOBAL ---
+        // --- INICIALIZADOR GLOBAL (FIX DE CARGA SEGURO) ---
         window.onload = async () => {
             try {
                 const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
                 if (res.status === 401) { window.location.href = '/login.html'; return; }
                 const data = await res.json();
+                
                 if(data.usuario) {
-                    const welcomeEl = document.getElementById('bienvenida-usuario');
-                    if(welcomeEl) welcomeEl.innerText = `Bienvenido, ${data.usuario}`;
-                    
-                    const badge = document.getElementById('nombre-empresa-badge');
-                    if(badge) badge.innerText = data.empresa || "Cliente Corporativo";
-                    
+                    // SE CORRIGIERON LAS CONSTANTES PARA PREVENIR EL ENCALLAMIENTO DEL OPERADOR DEL SCRIPT
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
-                    if (headerUserName && headerUserInitial) { 
-                        headerUserName.innerText = data.usuario; 
-                        headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase(); 
-                    }
+                    if (headerUserName) headerUserName.innerText = data.usuario;
+                    if (headerUserInitial) headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
                 }
                 
                 const opsRes = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
                 userDataCache = await opsRes.json();
                 
+                // SE SETEA EL NOMBRE COMPLETO DE LA COMPAÑÍA EN EL BADGE SIN COLGARSE
+                const badge = document.getElementById('nombre-empresa-badge');
+                if(badge) badge.innerText = userDataCache.empresa || "Cliente Corporativo";
+
                 // LÓGICA DE DUAL LOGO: Cargar el logo del cliente desde el endpoint de configuración
                 try {
                     const confRes = await fetch('/api/facturacion/config-empresa', {credentials: 'include'});

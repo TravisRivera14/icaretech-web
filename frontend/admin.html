@@ -130,6 +130,7 @@
         <li class="sidebar-item" onclick="switchTab('tab-tickets', event)"><i class="fas fa-ticket-alt"></i> Tickets de Soporte</li>
         <li class="sidebar-item active" onclick="switchTab('tab-solicitudes', event)"><i class="fas fa-inbox"></i> Solicitudes</li>
         <li class="sidebar-item" onclick="switchTab('tab-empresas', event)"><i class="fas fa-building"></i> Clientes Corporativos</li>
+        <li class="sidebar-item" onclick="switchTab('tab-particulares', event)"><i class="fas fa-user"></i> Clientes Particulares</li>
         <li class="sidebar-item" onclick="switchTab('tab-operaciones', event)"><i class="fas fa-network-wired"></i> C. de Operaciones</li>
         <li class="sidebar-item" onclick="switchTab('tab-contenidos', event)"><i class="fas fa-file-alt"></i> Landing & Contenidos</li>
         <li class="sidebar-item" onclick="switchTab('tab-personal', event)"><i class="fas fa-users"></i> Personal Técnico</li>
@@ -160,9 +161,9 @@
     <section id="tab-tickets" class="tab-section">
         <div class="card">
             <h2><i class="fas fa-filter" style="color: var(--turquoise-main);"></i> Segmentación de Incidencias</h2>
-            <label>Filtrar y dividir vista por Empresa:</label>
+            <label>Filtrar y dividir vista por Empresa/Cliente:</label>
             <select id="filtroEmpresaTickets" onchange="filtrarTicketsPorEmpresa(this.value)">
-                <option value="Todos">-- Mostrar Todas las Empresas --</option>
+                <option value="Todos">-- Mostrar Todos --</option>
             </select>
             
             <div class="ticket-table-wrapper">
@@ -179,16 +180,24 @@
     <section id="tab-empresas" class="tab-section">
         <div class="grid-two-columns">
             <div class="card">
-                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Agregar Cliente</h2>
+                <h2 id="emp-soporte-label"><i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Agregar Cliente Corporativo</h2>
                 <input type="text" id="newSupportEmpName" placeholder="Nombre legal de la compañía">
                 <label>Logo corporativo (Opcional):</label>
                 <input type="file" id="newSupportEmpImg" accept="image/*" style="padding: 10px;">
                 <button onclick="agregarEmpresaSoporte()" class="btn-brand-accent" id="btn-guardar-empresa-soporte">+ Agregar Cliente</button>
             </div>
             <div class="card">
-                <h2><i class="fas fa-list-ol" style="color: var(--turquoise-main);"></i> Clientes Activos</h2>
+                <h2><i class="fas fa-building" style="color: var(--turquoise-main);"></i> Clientes Corporativos Activos</h2>
                 <div id="lista-empresas-soporte-bajas" class="list-container">Cargando datos...</div>
             </div>
+        </div>
+    </section>
+
+    <section id="tab-particulares" class="tab-section">
+        <div class="card">
+            <h2><i class="fas fa-user" style="color: var(--turquoise-main);"></i> Clientes Particulares Activos</h2>
+            <p style="color:var(--text-secondary); margin-bottom:15px; font-size:14px;">Usuarios independientes registrados con el plan Gratis.</p>
+            <div id="lista-particulares" class="list-container">Cargando datos...</div>
         </div>
     </section>
 
@@ -440,11 +449,10 @@
     let imgS = "", imgP = "", imgRev = "", imgPartner = "", imgEmp = "", imgSupportEmp = "", editId = null, editType = null;
     let editSupportEmpId = null;
     let currentOpsEmpresa = null;
-    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [] };
+    let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [], particulares: [] };
     let cacheTickets = [];
     let currentOpenTicket = null;
 
-    // AHORA ESTE BOTÓN REDIRIGE DIRECTAMENTE A DASHBOARD_CLIENTE.HTML
     function irAlPortalEmpresarial() {
         fetch(`${API}/admin/acceso-empresarial`, { method: 'POST', credentials: 'include' })
         .then(r => r.json())
@@ -493,7 +501,8 @@
 
         const titles = {
             'tab-tickets': 'Tickets de Soporte', 'tab-solicitudes': 'Gestión de Solicitudes',
-            'tab-empresas': 'Clientes Corporativos', 'tab-operaciones': 'Centro de Operaciones',
+            'tab-empresas': 'Clientes Corporativos', 'tab-particulares': 'Clientes Particulares',
+            'tab-operaciones': 'Centro de Operaciones',
             'tab-contenidos': 'Landing & Contenidos', 'tab-personal': 'Personal & Accesos', 
             'tab-auditoria': 'Auditoría'
         };
@@ -501,6 +510,7 @@
             'tab-tickets': 'Visualiza y atiende los requerimientos de soporte.',
             'tab-solicitudes': 'Aprobar o denegar solicitudes de registro de nuevos usuarios.',
             'tab-empresas': 'Administra el catálogo de clientes corporativos.',
+            'tab-particulares': 'Administra el listado de clientes que se registraron de forma independiente.',
             'tab-operaciones': 'Gestiona qué módulos puede ver cada empresa y usuario.',
             'tab-contenidos': 'Modifica la estructura visual y textos de la página.',
             'tab-personal': 'Administra las cuentas de tu equipo y clientes.',
@@ -645,7 +655,6 @@
         }
     }
 
-    // --- FUNCIONES PARA ERRORES DE CAMPOS DUPLICADOS ---
     function limpiarError(idInput) {
         document.getElementById(idInput).style.borderColor = 'transparent';
         const errorDiv = document.getElementById('error-' + idInput);
@@ -666,7 +675,6 @@
         const u = JSON.parse(decodeURIComponent(uEncoded));
         document.getElementById('bloque-editar-usuario').style.display = 'block';
         
-        // Limpiamos errores previos por si acaso
         ['edit-emp-name', 'edit-emp-user', 'edit-emp-email', 'edit-emp-phone'].forEach(id => limpiarError(id));
 
         document.getElementById('edit-emp-id').value = u.id;
@@ -876,7 +884,7 @@
             alert(editSupportEmpId ? "Cliente actualizado con éxito." : "Cliente agregado.");
             editSupportEmpId = null; document.getElementById('newSupportEmpName').value = "";
             document.getElementById('newSupportEmpImg').value = ""; imgSupportEmp = ""; 
-            document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Agregar Cliente`;
+            document.getElementById('emp-soporte-label').innerHTML = `<i class="fas fa-plus-circle" style="color: var(--turquoise-main);"></i> Agregar Cliente Corporativo`;
             document.getElementById('btn-guardar-empresa-soporte').innerText = "+ Agregar Cliente";
             document.getElementById('btn-guardar-empresa-soporte').style.background = "var(--turquoise-main)";
             document.getElementById('btn-guardar-empresa-soporte').style.color = "black";
@@ -887,7 +895,7 @@
     function eliminarEmpresaSoporte(id) {
         if (confirm("¿Remover de forma permanente esta empresa asociada? Se desvincularán en cascada todos sus tickets de soporte.")) {
             fetch(`${API}/eliminar/empresas_recomiendan/${id}`, { method: 'DELETE', credentials: 'include' })
-                .then(r => r.json()).then(() => { alert("Empresa removida del sistema."); loadContent(); });
+                .then(r => r.json()).then(() => { alert("Removido del sistema."); loadContent(); });
         }
     }   
 
@@ -898,8 +906,9 @@
                 cacheData.servicios = data.servicios || []; cacheData.productos = data.productos || [];
                 cacheData.resenas = data.resenas || []; cacheData.socios = data.socios || [];
                 cacheData.beneficios = data.beneficios || []; cacheData.objetivos = data.objetivos || [];
-                
                 cacheData.empresas = data.empresas || [];
+                cacheData.particulares = data.particulares || [];
+                
                 actualizarTodosLosSelectoresDeEmpresas();
 
                 if (data.config) {
@@ -909,12 +918,7 @@
                     document.getElementById('compromiso').value = data.config.compromiso || "";
                 }
 
-                const selectFiltro = document.getElementById('filtroEmpresaTickets');
-                if(selectFiltro) {
-                    selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todas las Empresas --</option>';
-                    cacheData.empresas.forEach(e => { selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`; });
-                }
-
+                // Cargar empresas corporativas en su lista
                 const divBajas = document.getElementById('lista-empresas-soporte-bajas');
                 if (cacheData.empresas.length === 0) {
                     divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
@@ -933,6 +937,24 @@
                 `}).join('');
                 }
 
+                // Cargar clientes particulares en su lista
+                const divParticulares = document.getElementById('lista-particulares');
+                if(divParticulares) {
+                    if (cacheData.particulares.length === 0) {
+                        divParticulares.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin clientes particulares registrados.</div>`;
+                    } else {
+                        divParticulares.innerHTML = cacheData.particulares.map(e => `
+                    <div class="list-item">
+                        <span style="display:flex; align-items:center;"><i class="fas fa-user" style="margin-right:10px; color:var(--turquoise-main);"></i> ${e.nombre}</span>
+                        <div>
+                            <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irAOperaciones(${e.id})"><i class="fas fa-network-wired"></i> Accesos</button>
+                            <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Eliminar</button>
+                        </div>
+                    </div>
+                `).join('');
+                    }
+                }
+
                 let h = "<b style='color:var(--turquoise-main); font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;'>💻 MÓDULOS DE SERVICIOS ACTIVOS:</b>";
                 cacheData.servicios.forEach((s, idx) => {
                     h += `<div class="list-item"><span>${s.titulo}</span><div><button class="btn-edit" onclick="prepararEdicion('servicios', ${idx})">Editar</button><button class="btn-del" onclick="del('servicios', ${s.id})">Eliminar</button></div></div>`;
@@ -948,7 +970,8 @@
     }
 
     function actualizarTodosLosSelectoresDeEmpresas() {
-        const options = '<option value="">-- Seleccionar --</option>' + cacheData.empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+        const todas = [...cacheData.empresas, ...(cacheData.particulares || [])];
+        const options = '<option value="">-- Seleccionar --</option>' + todas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
         
         ['select-empresa-alta', 'select-empresa-edit', 'select-ops-empresa'].forEach(id => {
             const selectElement = document.getElementById(id);
@@ -958,6 +981,12 @@
                 if(prevVal) selectElement.value = prevVal;
             }
         });
+
+        const selectFiltro = document.getElementById('filtroEmpresaTickets');
+        if(selectFiltro) {
+            selectFiltro.innerHTML = '<option value="Todos">-- Mostrar Todos --</option>';
+            todas.forEach(e => { selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`; });
+        }
     }
 
     function prepararEdicion(tipo, index) {
@@ -1020,7 +1049,7 @@
 
     // ----------------- LÓGICA CENTRO DE OPERACIONES -----------------
     function irAOperaciones(empId) {
-        switchTab('tab-operaciones', {currentTarget: document.querySelectorAll('.sidebar-item')[3]});
+        switchTab('tab-operaciones', {currentTarget: document.querySelectorAll('.sidebar-item')[4]}); // El index cambió por la nueva pestaña
         document.getElementById('select-ops-empresa').value = empId;
         cargarOperaciones(empId);
     }

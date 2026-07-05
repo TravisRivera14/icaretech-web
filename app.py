@@ -63,7 +63,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL DEFAULT 'cliente', nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, empresa VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), debe_cambiar_pass BOOLEAN DEFAULT FALSE, correo VARCHAR(150))''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '', plan VARCHAR(50) DEFAULT 'Gratis')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '', plan VARCHAR(50) DEFAULT 'Gratis', tipo VARCHAR(20) DEFAULT 'corporativo')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, usuario_id INT, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', whatsapp VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión')''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
@@ -88,7 +88,8 @@ def init_db():
         "ALTER TABLE tickets_soporte ADD COLUMN whatsapp VARCHAR(20)",
         "ALTER TABLE tickets_soporte ADD COLUMN atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión'",
         "ALTER TABLE Facturas ADD COLUMN lineas_json TEXT",
-        "ALTER TABLE empresas_recomiendan ADD COLUMN plan VARCHAR(50) DEFAULT 'Gratis'"
+        "ALTER TABLE empresas_recomiendan ADD COLUMN plan VARCHAR(50) DEFAULT 'Gratis'",
+        "ALTER TABLE empresas_recomiendan ADD COLUMN tipo VARCHAR(20) DEFAULT 'corporativo'"
     ]
     for mig in migraciones:
         try: db_query(mig)
@@ -264,20 +265,17 @@ def obtener_datos_operativos():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-# ==============================================================================
-#                      API RUTAS DE REGISTRO E INICIO
-# ==============================================================================
-
 @app.route('/api/registro_particular', methods=['POST'])
 def registro_particular():
-    d = request.json or {}
+    d = request.get_json(silent=True) or {}
     try:
         nombre = d.get('nombre')
         correo = d.get('correo')
         telefono = d.get('telefono')
         password = d.get('password')
         
-        db_query("INSERT INTO empresas_recomiendan (nombre, plan) VALUES (%s, 'Gratis')", (nombre,))
+        # EL TIPO 'particular' ASEGURA QUE NO SALGA EN LA LANDING PAGE
+        db_query("INSERT INTO empresas_recomiendan (nombre, plan, tipo) VALUES (%s, 'Gratis', 'particular')", (nombre,))
         res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s ORDER BY id DESC LIMIT 1", (nombre,), fetch=True)
         id_empresa = res_emp[0][0]
         
@@ -307,11 +305,6 @@ def registro_corporativo():
         db_query("""INSERT INTO solicitudes_registro (empresa, nombre_completo, puesto, telefono, correo) VALUES (%s, %s, %s, %s, %s)""", (data.get('empresa'), data.get('nombre'), data.get('puesto'), data.get('telefono'), data.get('correo')))
         return jsonify({"success": True}), 201
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
-
-
-# ==============================================================================
-#                      API FACTURACIÓN Y DISEÑO DE PDF
-# ==============================================================================
 
 @app.route('/api/facturacion/imprimir', methods=['GET'])
 @login_required
@@ -345,7 +338,6 @@ def imprimir_documento():
         cli_correo = cli[0][2] if cli else ""
         cli_telefono = cli[0][3] if cli else ""
 
-        # DISEÑO AZUL CURVO PARA PDF
         html = f"""
         <!DOCTYPE html>
         <html lang="es">
@@ -467,29 +459,24 @@ def imprimir_documento():
         </html>
         """
         return html
-    except Exception as e:
-        return f"Error generando documento: {str(e)}", 500
+    except Exception as e: return f"Error generando documento: {str(e)}", 500
 
 @app.route('/api/facturacion/clientes', methods=['GET', 'POST', 'DELETE'])
 @login_required
 def crud_clientes_facturacion():
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
-
     if request.method == 'GET':
         try:
             res = db_query("SELECT id, nombre, identificacion, tipo_identificacion, correo, telefono FROM clientes_facturacion WHERE id_empresa = %s ORDER BY nombre ASC", (id_empresa,), fetch=True) or []
             return jsonify([{"id": r[0], "nombre": r[1], "identificacion": r[2], "tipo_identificacion": r[3], "correo": r[4], "telefono": r[5]} for r in res])
         except Exception as e: return jsonify({"error": str(e)}), 500
-
     if request.method == 'POST':
         d = request.json
         try:
-            db_query("INSERT INTO clientes_facturacion (id_empresa, nombre, identificacion, tipo_identificacion, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s)", 
-                     (id_empresa, d.get('nombre'), d.get('identificacion'), d.get('tipo_identificacion'), d.get('correo'), d.get('telefono')))
+            db_query("INSERT INTO clientes_facturacion (id_empresa, nombre, identificacion, tipo_identificacion, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s)", (id_empresa, d.get('nombre'), d.get('identificacion'), d.get('tipo_identificacion'), d.get('correo'), d.get('telefono')))
             return jsonify({"success": True, "message": "Cliente registrado correctamente."})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
-
     if request.method == 'DELETE':
         d = request.json
         try:
@@ -497,27 +484,22 @@ def crud_clientes_facturacion():
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
-
 @app.route('/api/facturacion/productos', methods=['GET', 'POST', 'DELETE'])
 @login_required
 def crud_productos_facturacion():
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
-
     if request.method == 'GET':
         try:
             res = db_query("SELECT id, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto FROM productos_facturacion WHERE id_empresa = %s ORDER BY descripcion ASC", (id_empresa,), fetch=True) or []
             return jsonify([{"id": r[0], "codigo_cabys": r[1], "descripcion": r[2], "precio_unitario": str(r[3]), "unidad_medida": r[4], "impuesto": str(r[5])} for r in res])
         except Exception as e: return jsonify({"error": str(e)}), 500
-
     if request.method == 'POST':
         d = request.json
         try:
-            db_query("INSERT INTO productos_facturacion (id_empresa, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto) VALUES (%s, %s, %s, %s, %s, %s)", 
-                     (id_empresa, d.get('codigo_cabys'), d.get('descripcion'), d.get('precio_unitario'), d.get('unidad_medida'), d.get('impuesto')))
-            return jsonify({"success": True, "message": "Producto o servicio registrado."})
+            db_query("INSERT INTO productos_facturacion (id_empresa, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto) VALUES (%s, %s, %s, %s, %s, %s)", (id_empresa, d.get('codigo_cabys'), d.get('descripcion'), d.get('precio_unitario'), d.get('unidad_medida'), d.get('impuesto')))
+            return jsonify({"success": True, "message": "Producto registrado."})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
-
     if request.method == 'DELETE':
         d = request.json
         try:
@@ -531,18 +513,13 @@ def emitir_proforma():
     d = request.json
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"success": False, "message": "Empresa no asociada"}), 403
-
     try:
         res_count = db_query("SELECT COUNT(*) FROM proformas WHERE id_empresa = %s", (id_empresa,), fetch=True)
         count = res_count[0][0] + 1
         consecutivo = f"PRF-{str(count).zfill(5)}"
-        
         fecha_vencimiento = datetime.now() + timedelta(days=int(d.get('dias_validez', 30)))
         lineas_json = json.dumps(d.get('lineas'))
-
-        db_query("""INSERT INTO proformas (id_empresa, id_cliente, consecutivo, fecha_vencimiento, condicion_venta, medio_pago, total_gravado, total_impuesto, total_comprobante, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
-                 (id_empresa, d.get('cliente_id'), consecutivo, fecha_vencimiento, d.get('condicion_venta'), d.get('medio_pago'), d.get('total_gravado'), d.get('total_impuesto'), d.get('total_comprobante'), lineas_json))
-        
+        db_query("""INSERT INTO proformas (id_empresa, id_cliente, consecutivo, fecha_vencimiento, condicion_venta, medio_pago, total_gravado, total_impuesto, total_comprobante, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (id_empresa, d.get('cliente_id'), consecutivo, fecha_vencimiento, d.get('condicion_venta'), d.get('medio_pago'), d.get('total_gravado'), d.get('total_impuesto'), d.get('total_comprobante'), lineas_json))
         return jsonify({"success": True, "message": "Proforma generada correctamente.", "consecutivo": consecutivo})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
@@ -551,17 +528,14 @@ def emitir_proforma():
 def config_visual_empresa():
     id_empresa = get_empresa_id_from_session()
     if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
-
     if request.method == 'GET':
         res = db_query("SELECT nombre_comercial, telefono, correo, logo_base64 FROM empresa_datos_visuales WHERE id_empresa = %s", (id_empresa,), fetch=True)
         if res: return jsonify({"nombre_comercial": res[0][0], "telefono": res[0][1], "correo": res[0][2], "logo": res[0][3]})
         return jsonify({})
-
     if request.method == 'POST':
         d = request.json
         try:
-            db_query("""INSERT INTO empresa_datos_visuales (id_empresa, nombre_comercial, telefono, correo, logo_base64) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (id_empresa) DO UPDATE SET nombre_comercial = EXCLUDED.nombre_comercial, telefono = EXCLUDED.telefono, correo = EXCLUDED.correo, logo_base64 = EXCLUDED.logo_base64""", 
-                     (id_empresa, d.get('nombre'), d.get('telefono'), d.get('correo'), d.get('logo')))
+            db_query("""INSERT INTO empresa_datos_visuales (id_empresa, nombre_comercial, telefono, correo, logo_base64) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (id_empresa) DO UPDATE SET nombre_comercial = EXCLUDED.nombre_comercial, telefono = EXCLUDED.telefono, correo = EXCLUDED.correo, logo_base64 = EXCLUDED.logo_base64""", (id_empresa, d.get('nombre'), d.get('telefono'), d.get('correo'), d.get('logo')))
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
@@ -569,19 +543,15 @@ def obtener_oauth_token_hacienda(id_empresa):
     res = db_query("""SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s""", (id_empresa,), fetch=True)
     if not res: raise Exception(f"La empresa con ID {id_empresa} no tiene configuradas sus credenciales de Hacienda.")
     usuario_idp = res[0][0]; password_idp = res[0][1]; ambiente_produccion = res[0][2]
-
     url_auth = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut/protocol/openid-connect/token" if ambiente_produccion else "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"
-
     payload = {'grant_type': 'password', 'client_id': 'api-stag' if not ambiente_produccion else 'api-prod', 'username': usuario_idp, 'password': password_idp}
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-
     try:
         response = requests.post(url_auth, data=payload, headers=headers, timeout=10)
         if response.status_code == 200:
             datos_token = response.json()
             return {"success": True, "access_token": datos_token.get("access_token"), "expires_in": datos_token.get("expires_in"), "refresh_token": datos_token.get("refresh_token")}
-        else:
-            return {"success": False, "status_code": response.status_code, "error_detalle": response.text}
+        else: return {"success": False, "status_code": response.status_code, "error_detalle": response.text}
     except Exception as e: return {"success": False, "error_detalle": str(e)}
 
 def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
@@ -703,7 +673,6 @@ def emitir_factura_electronica_api():
     if not cliente_id or not lineas_frontend or not id_empresa_actual:
         return jsonify({"success": False, "message": "Faltan datos esenciales o empresa no asociada."}), 400
 
-    # CANDADO LÓGICO DEL PLAN GRATIS
     res_plan = db_query("SELECT plan FROM empresas_recomiendan WHERE id = %s", (id_empresa_actual,), fetch=True)
     plan_actual = res_plan[0][0] if res_plan and res_plan[0][0] else 'Gratis'
     
@@ -745,10 +714,55 @@ def emitir_factura_electronica_api():
         else:
             db_query("UPDATE Facturas SET Estado_Hacienda = 'Rechazado', Mensaje_Hacienda = %s WHERE Clave_50_Digitos = %s", (resultado_envio["message"], clave_50))
             return jsonify({"success": False, "message": resultado_envio["message"]}), 400
-    except Exception as e:
-        registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
-        return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
+    except Exception as e: return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
 
+@app.route('/api/admin/facturacion/probar-conexion', methods=['GET'])
+@login_required
+def probar_conexion_hacienda():
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual: return jsonify({"status": "Error", "mensaje": "Usuario no tiene empresa asignada."}), 400
+    try:
+        resultado = obtener_oauth_token_hacienda(id_empresa_actual)
+        if resultado["success"]: return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente.", "token": resultado["access_token"][:15] + "..."})
+        else: return jsonify({"status": "Error de Autenticación", "mensaje": "Hacienda rechazó las credenciales.", "detalles_tecnicos": resultado}), 400
+    except Exception as e: return jsonify({"status": "Error Interno", "error": str(e)}), 500
+
+@app.route('/api/admin/configuracion-hacienda', methods=['POST'])
+@login_required
+def guardar_configuracion_hacienda():
+    rol = str(session.get('rol', '')).lower().strip()
+    if rol not in ['admin', 'personal', 'personal_admin', 'cliente_admin']: return jsonify({"message": "Acceso denegado"}), 403
+        
+    usuario_idp = request.form.get('usuario_idp')
+    password_idp = request.form.get('password_idp')
+    pin_p12 = request.form.get('pin_p12')
+    ambiente = request.form.get('ambiente')
+    ambiente_produccion = True if ambiente in ['true', 'on', True] else False
+    archivo_p12 = request.files.get('archivo_p12')
+    
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual: return jsonify({"success": False, "message": "Tu cuenta no está vinculada a una empresa."}), 400
+    if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12: return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
+
+    try:
+        contenido_binario = archivo_p12.read()
+        p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
+        existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
+        if existe: db_query("""UPDATE configuracionhacienda SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s WHERE id_empresa = %s""", (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
+        else: db_query("""INSERT INTO configuracionhacienda (id_empresa, hacienda_usuario_idp, hacienda_password_idp, ruta_llave_p12, pin_llave_p12, ambiente_produccion) VALUES (%s, %s, %s, %s, %s, %s)""", (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
+        return jsonify({"success": True, "message": "Configuración guardada correctamente."})
+    except Exception as e: return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
+
+@app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
+@login_required
+def verificar_configuracion_hacienda():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    id_empresa = request.args.get('id_empresa', 1)
+    res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    if res: return jsonify({"configurado": True, "usuario_idp": res[0][0], "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"})
+    return jsonify({"configurado": False})
+
+# RUTAS ADMINISTRATIVAS GENERALES
 @app.route('/api/admin/solicitudes', methods=['GET'])
 def listar_solicitudes():
     res = db_query("SELECT id, empresa, nombre_completo, correo FROM solicitudes_registro", fetch=True) or []
@@ -777,165 +791,113 @@ def obtener_todo():
     try:
         config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
         config = {r[0]: r[1] for r in config_raw}
-        if 'hero_titulo' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
-        if 'mision' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
-        if 'vision' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-        if 'compromiso' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
+        
+        emp_raw = db_query("SELECT id, nombre, imagen, tipo FROM empresas_recomiendan ORDER BY id ASC", fetch=True) or []
+        empresas = []
+        particulares = []
+        for r in emp_raw:
+            tipo = r[3] if len(r) > 3 and r[3] else 'corporativo'
+            if tipo == 'particular': particulares.append({"id": r[0], "nombre": r[1], "imagen": r[2]})
+            else: empresas.append({"id": r[0], "nombre": r[1], "imagen": r[2]})
 
-        beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
-        if beneficios_existentes and beneficios_existentes[0][0] == 0:
-            ventajas_defecto = [("Técnicos Certificados", "Tu infraestructura manipulada por profesionales.", "fas fa-user-check"), ("Repuestos Originales", "Componentes genuinos.", "fas fa-shield-alt"), ("Transparencia", "Sin costos ocultos.", "fas fa-handshake")]
-            for titulo, desc, icono in ventajas_defecto: db_query("INSERT INTO beneficios (titulo, descripcion, icono) VALUES (%s, %s, %s)", (titulo, desc, icono))
-
-        config_raw = db_query("SELECT clave, valor FROM configuracion", fetch=True) or []
-        config = {r[0]: r[1] for r in config_raw}
-
-        servs_raw = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or []
-        servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in servs_raw]
-        prods_raw = db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or []
-        prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]) if r[2] else 0.0, "imagen": r[3], "categoria": r[4]} for r in prods_raw]
-        parts_raw = db_query("SELECT id, nombre, imagen FROM socios", fetch=True) or []
-        parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in parts_raw]
-        reviews_raw = db_query("SELECT id, cliente, puesto, comentario, imagen_cliente FROM resenas", fetch=True) or []
-        reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4]} for r in reviews_raw]
-        ben_raw = db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or []
-        beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in ben_raw]
-        obj_raw = db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or []
-        objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in obj_raw]
-        emp_raw = db_query("SELECT id, nombre, imagen FROM empresas_recomiendan ORDER BY id ASC", fetch=True) or []
-        empresas = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in emp_raw]
-
-        return jsonify({"config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews, "beneficios": beneficios, "objetivos": objetivos, "empresas": empresas})
-    except Exception as e: return jsonify({"error": "Error interno", "detalles": str(e)}), 500
+        servs = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]} for r in (db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios", fetch=True) or [])]
+        prods = [{"id": r[0], "nombre": r[1], "precio": float(r[2]) if r[2] else 0.0, "imagen": r[3], "categoria": r[4]} for r in (db_query("SELECT id, nombre, precio, imagen, categoria FROM productos", fetch=True) or [])]
+        parts = [{"id": r[0], "nombre": r[1], "imagen": r[2]} for r in (db_query("SELECT id, nombre, imagen FROM socios", fetch=True) or [])]
+        reviews = [{"id": r[0], "cliente": r[1], "puesto": r[2], "comentario": r[3], "imagen_cliente": r[4]} for r in (db_query("SELECT id, cliente, puesto, comentario, imagen_cliente FROM resenas", fetch=True) or [])]
+        beneficios = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in (db_query("SELECT id, icono, titulo, descripcion FROM beneficios ORDER BY id ASC", fetch=True) or [])]
+        objetivos = [{"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3]} for r in (db_query("SELECT id, icono, titulo, descripcion FROM clientes_objetivos ORDER BY id ASC", fetch=True) or [])]
+        
+        return jsonify({"config": config, "servicios": servs, "productos": prods, "socios": parts, "resenas": reviews, "beneficios": beneficios, "objetivos": objetivos, "empresas": empresas, "particulares": particulares})
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/servicios/<int:id>', methods=['GET'])
 def obtener_servicio_individual(id):
-    try:
-        res = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios WHERE id = %s", (id,), fetch=True)
-        if res:
-            r = res[0]
-            return jsonify({"id": r[0], "icono": r[1], "titulo": r[2], "descripcion": r[3], "imagen": r[4], "proceso": r[5], "beneficios": r[6]})
-        return jsonify({"error": "No encontrado"}), 404
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    res = db_query("SELECT id, icono, titulo, descripcion, imagen, proceso, beneficios FROM servicios WHERE id = %s", (id,), fetch=True)
+    if res: return jsonify({"id": res[0][0], "icono": res[0][1], "titulo": res[0][2], "descripcion": res[0][3], "imagen": res[0][4], "proceso": res[0][5], "beneficios": res[0][6]})
+    return jsonify({"error": "No encontrado"}), 404
 
 @app.route('/api/beneficios', methods=['POST'])
 @login_required
 def guardar_beneficio():
-    d = request.json or {}
-    db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', '')))
-    registrar_cambio("Guardó Tarjeta de Valor", f"Se agregó el beneficio: {d.get('titulo', 'Sin Título')}")
+    db_query("INSERT INTO beneficios (icono, titulo, descripcion) VALUES (%s, %s, %s)", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/beneficios/<int:id>', methods=['PUT'])
 @login_required
 def editar_beneficio(id):
-    d = request.json or {}
-    db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-check'), d.get('titulo', ''), d.get('descripcion', ''), id))
-    registrar_cambio("Editó Tarjeta de Valor", f"Se modificó el beneficio ID {id}: {d.get('titulo', '')}")
+    db_query("UPDATE beneficios SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos', methods=['POST'])
 @login_required
 def guardar_objetivo():
-    d = request.json or {}
-    db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', '')))
-    registrar_cambio("Guardó Cliente Objetivo", f"Se registró el perfil: {d.get('titulo', '')}")
+    db_query("INSERT INTO clientes_objetivos (icono, titulo, descripcion) VALUES (%s, %s, %s)", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/objetivos/<int:id>', methods=['PUT'])
 @login_required
 def editar_objective(id):
-    d = request.json or {}
-    db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (d.get('icono', 'fas fa-bullseye'), d.get('titulo', ''), d.get('descripcion', ''), id))
-    registrar_cambio("Editó Cliente Objetivo", f"Se actualizó el perfil ID {id}: {d.get('titulo', '')}")
+    db_query("UPDATE clientes_objetivos SET icono=%s, titulo=%s, descripcion=%s WHERE id=%s", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan', methods=['POST'])
 @login_required
 def guardar_empresa():
-    d = request.json or {}
-    db_query("INSERT INTO empresas_recomiendan (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Empresa'), d.get('imagen', '')))
-    registrar_cambio("Agregó Cliente Corporativo", f"Añadió la empresa: {d.get('nombre', '')}")
+    db_query("INSERT INTO empresas_recomiendan (nombre, imagen) VALUES (%s, %s)", (request.json.get('nombre', 'Empresa'), request.json.get('imagen', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/recomiendan/<int:id>', methods=['PUT'])
 @login_required
 def editar_empresa(id):
-    d = request.json or {}
-    db_query("UPDATE empresas_recomiendan SET nombre=%s, imagen=%s WHERE id=%s", (d.get('nombre', 'Empresa'), d.get('imagen', ''), id))
-    registrar_cambio("Editó Cliente Corporativo", f"Se modificó la empresa ID {id}: {d.get('nombre', '')}")
+    db_query("UPDATE empresas_recomiendan SET nombre=%s, imagen=%s WHERE id=%s", (request.json.get('nombre', 'Empresa'), request.json.get('imagen', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/config', methods=['POST'])
 @login_required
 def guardar_config():
-    d = request.json or {}
-    claves_permitidas = ['hero_titulo', 'mision', 'vision', 'compromiso']
-    for k in claves_permitidas:
-        if k in d:
-            db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, d[k]))
-            registrar_cambio("Actualizó Texto Maestro", f"Modificó la clave principal de contenido: {k}")
+    for k in ['hero_titulo', 'mision', 'vision', 'compromiso']:
+        if k in request.json: db_query("INSERT INTO configuracion (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor", (k, request.json[k]))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas', methods=['POST'])
 def guardar_resena():
-    d = request.json or {}
-    db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente', '')))
-    registrar_cambio("Recibió Reseña Pública", f"El cliente {d.get('cliente', 'Anónimo')} publicó un comentario.")
+    db_query("INSERT INTO resenas (cliente, puesto, comentario, imagen_cliente) VALUES (%s, %s, %s, %s)", (request.json.get('cliente', ''), request.json.get('puesto', ''), request.json.get('comentario', ''), request.json.get('imagen_cliente', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/resenas/<int:id>', methods=['PUT'])
 @login_required
 def editar_resena(id):
-    d = request.json or {}
-    db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (d.get('cliente', 'Anónimo'), d.get('puesto', ''), d.get('comentario', ''), d.get('imagen_cliente',''), id))
-    registrar_cambio("Editó Reseña Interna", f"Se actualizó la reseña del ID {id}")
+    db_query("UPDATE resenas SET cliente=%s, puesto=%s, comentario=%s, imagen_cliente=%s WHERE id=%s", (request.json.get('cliente', ''), request.json.get('puesto', ''), request.json.get('comentario', ''), request.json.get('imagen_cliente',''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/socios', methods=['POST'])
 @login_required
 def guardar_socio():
-    d = request.json or {}
-    db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (d.get('nombre', 'Socio'), d.get('imagen', '')))
-    registrar_cambio("Añadió Socio Comercial", f"Se registró el socio: {d.get('nombre', '')}")
+    db_query("INSERT INTO socios (nombre, imagen) VALUES (%s, %s)", (request.json.get('nombre', ''), request.json.get('imagen', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios', methods=['POST'])
 @login_required
 def guardar_servicio():
-    d = request.json or {}
-    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen', ''), d.get('proceso', ''), d.get('beneficios', '')))
-    registrar_cambio("Creó Módulo de Servicio", f"Se agregó el servicio técnico: {d.get('titulo', '')}")
+    db_query("INSERT INTO servicios (icono, titulo, descripcion, imagen, proceso, beneficios) VALUES (%s, %s, %s, %s, %s, %s)", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', ''), request.json.get('imagen', ''), request.json.get('proceso', ''), request.json.get('beneficios', '')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos', methods=['POST'])
 @login_required
 def guardar_producto():
-    d = request.json or {}
-    precio = d.get('precio', 0)
-    try: precio = float(precio) if precio else 0
-    except: precio = 0
-    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (d.get('nombre', ''), precio, d.get('imagen', ''), d.get('categoria', 'Otros')))
-    registrar_cambio("Subió Pieza/Equipo", f"Se añadió al catálogo de la tienda: {d.get('nombre', '')}")
+    db_query("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (%s, %s, %s, %s)", (request.json.get('nombre', ''), float(request.json.get('precio', 0) or 0), request.json.get('imagen', ''), request.json.get('categoria', 'Otros')))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/servicios/<int:id>', methods=['PUT'])
 @login_required
 def editar_servicio(id):
-    d = request.json or {}
-    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (d.get('icono', '⚙'), d.get('titulo', ''), d.get('descripcion', ''), d.get('imagen',''), d.get('proceso', ''), d.get('beneficios', ''), id))
-    registrar_cambio("Actualizó Desglose Técnico", f"Se modificó el servicio ID {id}: {d.get('titulo', '')}")
+    db_query("UPDATE servicios SET icono=%s, titulo=%s, descripcion=%s, imagen=%s, proceso=%s, beneficios=%s WHERE id=%s", (request.json.get('icono', ''), request.json.get('titulo', ''), request.json.get('descripcion', ''), request.json.get('imagen',''), request.json.get('proceso', ''), request.json.get('beneficios', ''), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
 @login_required
 def editar_producto(id):
-    d = request.json or {}
-    precio = d.get('precio', 0)
-    try: precio = float(precio) if precio else 0
-    except: precio = 0
-    db_query("UPDATE productos SET nombre=%s, precio=%s, imagen=%s, categoria=%s WHERE id=%s", (d.get('nombre', ''), precio, d.get('imagen',''), d.get('categoria', 'Otros'), id))
-    registrar_cambio("Modificó Precio/Pieza", f"Se actualizó el producto ID {id}: {d.get('nombre', '')}")
+    db_query("UPDATE productos SET nombre=%s, precio=%s, imagen=%s, categoria=%s WHERE id=%s", (request.json.get('nombre', ''), float(request.json.get('precio', 0) or 0), request.json.get('imagen',''), request.json.get('categoria', 'Otros'), id))
     return jsonify({"mensaje": "✅"})
 
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
@@ -944,11 +906,8 @@ def eliminar_item(tabla, id):
     tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan', 'clientes_facturacion', 'productos_facturacion']
     if tabla in tablas_permitidas:
         if tabla in ['clientes_facturacion', 'productos_facturacion']:
-            id_emp = get_empresa_id_from_session()
-            db_query(f"DELETE FROM {tabla} WHERE id = %s AND id_empresa = %s", (id, id_emp))
-        else:
-            db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
-        registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
+            db_query(f"DELETE FROM {tabla} WHERE id = %s AND id_empresa = %s", (id, get_empresa_id_from_session()))
+        else: db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400
 
@@ -957,90 +916,32 @@ def eliminar_item(tabla, id):
 def listar_tickets_admin():
     if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
     try:
-        try:
-            query = """
-                SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
-                       t.descripcion, t.prioridad, t.estado, t.fecha, t.atendido_por 
-                FROM tickets_soporte t 
-                LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
-                ORDER BY t.fecha DESC
-            """
-            tickets_raw = db_query(query, fetch=True) or []
-        except Exception:
-            query = """
-                SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, 
-                       t.descripcion, t.prioridad, t.estado, t.fecha 
-                FROM tickets_soporte t 
-                LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id 
-                ORDER BY t.fecha DESC
-            """
-            tickets_raw = db_query(query, fetch=True) or []
-        
-        return jsonify([{
-            "id": r[0], "empresa_id": r[1], "empresa_nombre": r[2] or "Sin Empresa", 
-            "contacto": r[3], "asunto": r[4], "descripcion": r[5], 
-            "prioridad": r[6], "estado": r[7], "fecha": str(r[8]),
-            "atendido_por": r[9] if len(r) > 9 and r[9] else "Pendiente revisión"
-        } for r in tickets_raw])
+        tickets_raw = db_query("SELECT t.id, t.empresa_id, e.nombre, t.contacto, t.asunto, t.descripcion, t.prioridad, t.estado, t.fecha, t.atendido_por FROM tickets_soporte t LEFT JOIN empresas_recomiendan e ON t.empresa_id = e.id ORDER BY t.fecha DESC", fetch=True) or []
+        return jsonify([{"id": r[0], "empresa_id": r[1], "empresa_nombre": r[2] or "Sin Empresa", "contacto": r[3], "asunto": r[4], "descripcion": r[5], "prioridad": r[6], "estado": r[7], "fecha": str(r[8]), "atendido_por": r[9] if len(r)>9 and r[9] else "Pendiente revisión"} for r in tickets_raw])
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/tickets/crear', methods=['POST'])
 def crear_ticket():
     d = request.json
     try:
-        empresa_id = d.get('empresa_id')
-        usuario_id = session.get('usuario_id', None)
-        
-        if not empresa_id:
-            empresa_val = session.get('empresa')
-            if not empresa_val:
-                return jsonify({"success": False, "message": "No se proporcionó empresa y no hay sesión activa."}), 400
-                
-            if str(empresa_val).isdigit():
-                empresa_id = int(empresa_val)
-            else:
-                empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_val,), fetch=True)
-                if not empresa_res:
-                    db_query("INSERT INTO empresas_recomiendan (nombre) VALUES (%s)", (empresa_val,))
-                    empresa_res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s", (empresa_val,), fetch=True)
-                empresa_id = empresa_res[0][0]
-
-        usuario_log = session.get('usuario', d.get('contacto', 'Usuario Público'))
-        
-        try:
-            db_query("""INSERT INTO tickets_soporte (empresa_id, usuario_id, contacto, asunto, descripcion, prioridad, whatsapp) VALUES (%s, %s, %s, %s, %s, %s, %s)""", (empresa_id, usuario_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
-        except Exception:
-            db_query("""INSERT INTO tickets_soporte (empresa_id, contacto, asunto, descripcion, prioridad) VALUES (%s, %s, %s, %s, %s)""", (empresa_id, d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad')))
-            
-        registrar_cambio("Ticket Creado", f"El usuario {usuario_log} creó un ticket de prioridad {d.get('prioridad')}")
+        emp_id = d.get('empresa_id') or (db_query("SELECT id FROM empresas_recomiendan WHERE nombre=%s", (session.get('empresa'),), fetch=True)[0][0] if session.get('empresa') and not str(session.get('empresa')).isdigit() else int(session.get('empresa') or 0))
+        db_query("""INSERT INTO tickets_soporte (empresa_id, usuario_id, contacto, asunto, descripcion, prioridad, whatsapp) VALUES (%s, %s, %s, %s, %s, %s, %s)""", (emp_id, session.get('usuario_id'), d.get('contacto'), d.get('asunto'), d.get('descripcion'), d.get('prioridad'), d.get('whatsapp')))
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
-    
+
 @app.route('/api/admin/tickets/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_ticket_admin(id):
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
-    try:
-        db_query("DELETE FROM tickets_soporte WHERE id = %s", (id,))
-        registrar_cambio("Eliminó Ticket", f"Ticket ID {id} eliminado de forma permanente")
-        return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+    db_query("DELETE FROM tickets_soporte WHERE id = %s", (id,))
+    return jsonify({"success": True})
 
 @app.route('/api/admin/tickets/<int:id>/estado', methods=['POST'])
 @login_required
 def cambiar_estado_ticket(id):
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
-    estado = request.json.get('estado')
-    admin_nombre = session.get('usuario', 'Soporte Técnico')
-    try:
-        try:
-            db_query("UPDATE tickets_soporte SET estado = %s, atendido_por = %s WHERE id = %s", (estado, admin_nombre, id))
-        except Exception:
-            db_query("UPDATE tickets_soporte SET estado = %s WHERE id = %s", (estado, id))
-            
-        registrar_cambio("Actualizó Ticket", f"Ticket ID {id} marcado como {estado}")
-        return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+    db_query("UPDATE tickets_soporte SET estado = %s, atendido_por = %s WHERE id = %s", (request.json.get('estado'), session.get('usuario', 'Soporte'), id))
+    return jsonify({"success": True})
 
 if __name__ == '__main__':
     initialize_database()

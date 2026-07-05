@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda y Planes Oficiales | iCare Tech CR</title>
+    <link rel="icon" href="Logo_Pestana_v2.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* MANTENIENDO EL DISEÑO DARK PREMIUM DE TU MARCA */
+            --bg-dark: #0b0c10;
+            --card-bg: #1f2833;
+            --text-light: #f5f5f7;
+            --text-muted: #8a99ad;
+            --neon-blue: #55bbcc; /* Turquesa de tu marca */
+            --border-color: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { background: var(--bg-dark); color: var(--text-light); -webkit-font-smoothing: antialiased; }
+        
+        /* HEADER IGUAL AL DE TU PÁGINA PRINCIPAL */
+        header { 
+            background: #11141a; 
+            padding: 15px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border-color); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+        }
+        
+        .logo-img { height: 60px; filter: brightness(0) invert(1); }
+        
+        .btn-back { 
+            background: var(--card-bg); 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: var(--transition); 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .btn-back:hover { 
+            background: var(--neon-blue); 
+            color: #000; 
+            border-color: var(--neon-blue); 
+        }
+        
+        /* CONTENEDOR CENTRAL */
+        .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
+        
+        .section-header { text-align: center; margin-bottom: 50px; }
+        .section-header h2 { font-size: 32px; font-weight: 800; color: white; margin-bottom: 10px; }
+        .section-header p { color: var(--text-muted); font-size: 15px; max-width: 600px; margin: 0 auto; line-height: 1.6;}
+        
+        /* CUADRÍCULA DE PLANES DE FACTURACIÓN */
+        .pricing-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 80px; 
+        }
+        
+        .price-card { 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            text-align: center; 
+            border: 1px solid var(--border-color); 
+            display: flex; 
+            flex-direction: column; 
+            transition: var(--transition); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .price-card:hover { 
+            transform: translateY(-8px); 
+            border-color: var(--neon-blue); 
+            box-shadow: 0 15px 40px rgba(85, 187, 204, 0.15); 
+        }
+        
+        .price-header { 
+            padding: 20px; 
+            font-weight: 800; 
+            font-size: 14px; 
+            letter-spacing: 1.5px; 
+            background: #11141a; 
+            color: white; 
+            text-transform: uppercase;
+        }
+        
+        .price-header.featured { background: var(--neon-blue); color: #000; }
+        
+        .price-amount { padding: 35px 20px; border-bottom: 1px solid var(--border-color); }
+        .price-amount h2 { font-size: 46px; margin: 0; color: white; font-weight: 800; }
+        .price-amount .colones { font-size: 14px; color: var(--text-muted); margin-top: 8px; font-weight: 500;}
+        
+        .price-features { padding: 25px; list-style: none; margin: 0; text-align: left; flex: 1; }
+        .price-features li { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14.5px; color: #cfd8dc; display: flex; align-items: center; gap: 12px; }
+        .price-features li:last-child { border-bottom: none; }
+        .price-features li i { color: var(--neon-blue); font-size: 16px;}
+        
+        .price-btn-box { padding: 25px; background: #11141a; }
+        .btn-plan { width: 100%; padding: 16px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: var(--transition); font-size: 14.5px; }
+        .btn-outline { background: transparent; border: 2px solid var(--neon-blue); color: var(--neon-blue); }
+        .btn-outline:hover { background: var(--neon-blue); color: #000; }
+        .btn-solid { background: var(--neon-blue); color: #000; }
+        .btn-solid:hover { opacity: 0.9; }
+
+        /* CUADRÍCULA DE SERVICIOS ADICIONALES (DATA CENTER Y WEB) */
+        .services-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 30px; 
+            margin-bottom: 80px; 
+        }
+        
+        .service-upsell-card { 
+            background: rgba(85, 187, 204, 0.05); 
+            border: 1px solid rgba(85, 187, 204, 0.2); 
+            border-radius: 16px; 
+            padding: 35px; 
+            text-align: center; 
+            transition: var(--transition);
+        }
+        
+        .service-upsell-card:hover { 
+            transform: translateY(-5px); 
+            border-color: var(--neon-blue); 
+            background: rgba(85, 187, 204, 0.1); 
+        }
+        
+        .upsell-icon { font-size: 45px; color: var(--neon-blue); margin-bottom: 20px; }
+        .service-upsell-card h3 { font-size: 20px; color: white; margin-bottom: 12px; }
+        .service-upsell-card p { font-size: 14.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
+        
+        /* CUADRÍCULA DE PRODUCTOS DE LA BASE DE DATOS */
+        .products-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 30px; 
+        }
+        
+        .prod-card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 25px; 
+            border: 1px solid var(--border-color); 
+            transition: var(--transition); 
+            display:flex; 
+            flex-direction:column;
+        }
+        
+        .prod-card:hover { transform: translateY(-5px); border-color: var(--neon-blue); box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
+        .prod-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; background: #11141a; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(85, 187, 204, 0.3); border: 1px dashed var(--border-color);}
+        .prod-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: white; }
+        .prod-desc { font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; flex:1;}
+        .prod-price { font-size: 22px; font-weight: 800; color: var(--neon-blue); margin-bottom: 20px; }
+        
+        .btn-buy { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px; 
+            background: rgba(85, 187, 204, 0.1); 
+            color: var(--neon-blue); 
+            border: 1px solid var(--neon-blue); 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-buy:hover { background: var(--neon-blue); color: #000; }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; }
+            .logo-img { height: 45px; }
+            .btn-back span { display: none; }
+            .section-header h2 { font-size: 26px; }
+            .price-card.recommended { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/">
+            <img src="Logo.png" alt="iCare Tech" class="logo-img">
+        </a>
+        <a href="dashboard_cliente.html" class="btn-back">
+            <i class="fas fa-arrow-left"></i> <span>Volver al Portal</span>
+        </a>
+    </header>
+
+    <div class="container">
+        <div class="section-header">
+            <h2>Planes de Facturación Electrónica</h2>
+            <p>Emisión y aceptación de documentos en versión 4.4 de Hacienda. Solución en la nube, fácil, rápida y accesible desde cualquier dispositivo.</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-header">PAGO POR USO</div>
+                <div class="price-amount">
+                    <h2>$21.99</h2>
+                    <div class="colones">₡10,036.68 / Anual + IVA</div>
+                </div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check-circle"></i> 70 Documentos anuales</li>
+                    <li><i class="fas fa-check-circle"></i> 2 Usuarios + Contador</li>
+                    <li><i class="fas fa-check-circle"></i> Multi-Moneda (USD/CRC)</li>
+                    <li><i class="fas fa-check-circle"></i> Logo en la factura</li>
+                </ul>
+                <div class="price-btn-box">
+                    <button class="btn-plan btn-outline" onclick="window.open('https://wa.me/50686390631?text=Hola,%20me%20interesa%20adquirir%20el%20plan%20de%20facturación%20PAGO%20POR%20USO', '_blank')">Adquirir Plan</button>
+                </div>
+            </div>
+
+            <div class="price-card" style="border-color: var(--neon-blue); transform: scale(1.05); z-index: 10;">
+                <div class="price-header featured">PROFESIONAL (Recomendado)</div>
+                <div class="price-amount">
+                    <h2>$11.99</h2>
+                    <div class="colones">₡5,472.48 / Mensual + IVA</div>
+                </div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check-circle"></i> Documentos <b>ILIMITADOS</b></li>
+                    <li><i class="fas fa-check-circle"></i> 3 Usuarios + Contador</li>
+                    <li><i class="fas fa-check-circle"></i> Multi-Moneda (USD/CRC)</li>
+                    <li><i class="fas fa-check-circle"></i> Soporte para Proformas</li>
+                </ul>
+                <div class="price-btn-box">
+                    <button class="btn-plan btn-solid" onclick="window.open('https://wa.me/50686390631?text=Hola,%20me%20interesa%20adquirir%20el%20plan%20de%20facturación%20PROFESIONAL', '_blank')">Actualizar Ahora</button>
+                </div>
+            </div>
+
+            <div class="price-card">
+                <div class="price-header">EMPRESARIAL</div>
+                <div class="price-amount">
+                    <h2>$29.99</h2>
+                    <div class="colones">₡13,688.04 / Mensual + IVA</div>
+                </div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check-circle"></i> Documentos <b>ILIMITADOS</b></li>
+                    <li><i class="fas fa-check-circle"></i> Usuarios <b>ILIMITADOS</b></li>
+                    <li><i class="fas fa-check-circle"></i> Múltiples Sucursales</li>
+                    <li><i class="fas fa-check-circle"></i> Módulo Inventario Integrado</li>
+                </ul>
+                <div class="price-btn-box">
+                    <button class="btn-plan btn-outline" onclick="window.open('https://wa.me/50686390631?text=Hola,%20me%20interesa%20adquirir%20el%20plan%20de%20facturación%20EMPRESARIAL', '_blank')">Adquirir Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Servicios de Infraestructura IT</h2>
+            <p>Potencia las capacidades digitales de tu empresa con nuestros servidores administrados y desarrollo corporativo.</p>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-upsell-card">
+                <i class="fas fa-server upsell-icon"></i>
+                <h3>Cloud & Data Center</h3>
+                <p>Servidores VPS de alto rendimiento, bases de datos seguras y respaldos automatizados. Infraestructura robusta para sistemas empresariales.</p>
+                <button class="btn-plan btn-outline" onclick="window.open('https://wa.me/50686390631?text=Deseo%20cotizar%20un%20Servidor%20VPS%20Cloud', '_blank')">Solicitar Cotización</button>
+            </div>
+            <div class="service-upsell-card">
+                <i class="fas fa-laptop-code upsell-icon"></i>
+                <h3>Desarrollo Web Corporativo</h3>
+                <p>Diseño de páginas web a medida, responsivas, optimizadas para Google (SEO) y con plataformas administrables. Eleva tu imagen comercial.</p>
+                <button class="btn-plan btn-outline" onclick="window.open('https://wa.me/50686390631?text=Deseo%20cotizar%20el%20desarrollo%20de%20una%20página%20web', '_blank')">Solicitar Cotización</button>
+            </div>
+            <div class="service-upsell-card">
+                <i class="fas fa-tools upsell-icon"></i>
+                <h3>Soporte Técnico Avanzado</h3>
+                <p>Mantenimiento preventivo y correctivo de hardware, redes y servidores. Cobertura remota y en sitio para continuidad de tu negocio.</p>
+                <button class="btn-plan btn-outline" onclick="window.open('https://wa.me/50686390631?text=Necesito%20asistencia%20y%20soporte%20técnico%20avanzado', '_blank')">Contactar Soporte</button>
+            </div>
+        </div>
+
+        <div id="contenedor-productos" style="display:none;">
+            <div class="section-header" style="margin-top: 40px;">
+                <h2>Componentes y Hardware</h2>
+                <p>Equipos, repuestos y accesorios oficiales provistos por iCareTech CR.</p>
+            </div>
+            <div class="products-grid" id="productos-grid">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Al cargar la página, llamamos a la API para ver si hay productos en la BD
+        window.onload = function() {
+            fetch('/api/todo')
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('productos-grid');
+                
+                // Si la base de datos devuelve productos registrados
+                if (data.productos && data.productos.length > 0) {
+                    document.getElementById('contenedor-productos').style.display = 'block';
+                    
+                    const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
+                    
+                    data.productos.forEach(p => {
+                        let imgHtml = p.imagen ? `<img src="${p.imagen}" class="prod-img">` : `<div class="prod-img"><i class="fas fa-microchip"></i></div>`;
+                        grid.innerHTML += `
+                            <div class="prod-card">
+                                ${imgHtml}
+                                <div class="prod-title">${p.nombre}</div>
+                                <div class="prod-desc">Categoría: ${p.categoria || 'Repuestos'}</div>
+                                <div class="prod-price">${formatter.format(p.precio)}</div>
+                                <button class="btn-buy" onclick="window.open('https://wa.me/50686390631?text=Hola,%20me%20interesa%20comprar%20este%20artículo:%20${encodeURIComponent(p.nombre)}', '_blank')">
+                                    <i class="fab fa-whatsapp" style="font-size:16px;"></i> Comprar Artículo
+                                </button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(err => console.log("Carga de productos offline.", err));
+        }
+    </script>
+</body>
+</html>

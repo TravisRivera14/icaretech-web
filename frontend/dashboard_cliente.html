@@ -55,7 +55,7 @@
         .sidebar::-webkit-scrollbar { width: 6px; }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
-        /* LOGOS DUALES EN EL SIDEBAR (MEJORADO) */
+        /* LOGOS DUALES EN EL SIDEBAR */
         .sidebar-header {
             padding: 30px 20px 15px 20px;
             text-align: center;
@@ -313,10 +313,10 @@
         /* Estilos Tarjetas de Precio */
         .pricing-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; justify-content: flex-start; align-items: flex-end;}
         .price-card { background: var(--card-bg); border-radius: 12px; width: 300px; overflow: hidden; text-align: center; color: var(--text-light); display: flex; flex-direction: column; border: 1px solid var(--border-color); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
-        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--btn-green); z-index: 10; margin: 0 10px;}
+        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--neon-blue); z-index: 10; margin: 0 10px;}
         .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px;}
         .bg-blue { background: #0077b6; color: white; }
-        .bg-green { background: var(--btn-green); color: white; }
+        .bg-green { background: var(--neon-blue); color: #fff; }
         .bg-dark { background: #11141a; color: white; }
         .price-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--del); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800;}
         .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid var(--border-color); }
@@ -331,10 +331,9 @@
         .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
         .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
         .btn-outline:hover { background: var(--neon-blue); color: #000; }
-        .btn-solid { border: 2px solid var(--btn-green); background: var(--btn-green); color: white; }
-        .btn-solid:hover { background: #059669; border-color: #059669; }
+        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
+        .btn-solid:hover { opacity: 0.9; }
         .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
-
     </style>
 </head>
 <body>
@@ -385,7 +384,7 @@
         <div class="topbar">
             <div class="top-buttons">
                 <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)"><i class="fas fa-file-invoice"></i> Nueva factura</button>
-                <button class="btn-top btn-t-blue" onclick="window.open('https://www.instagram.com/icaretechcr/', '_blank')"><i class="fas fa-shopping-cart"></i> Tienda</button>
+                <button class="btn-top btn-t-blue" onclick="window.location.href='tienda.html'"><i class="fas fa-shopping-cart"></i> Tienda</button>
                 
                 <div class="dropdown-menu-container">
                     <button class="btn-top btn-t-blue dropdown-trigger"><i class="fab fa-whatsapp"></i> Contáctanos</button>
@@ -629,6 +628,7 @@
                                 <li>Reportes Especializados</li>
                                 <li>Dashboard Completo de Indicadores</li>
                             </ul>
+                            <button class="btn-top btn-t-blue" style="margin-top:20px;" onclick="renderModulo('Mi plan', document.querySelectorAll('.submenu li')[1])">Ver Planes Completos</button>
                         </div>
                         <div class="card">
                             <h3 class="section-title">DISPONGA DE UN MAYOR ANÁLISIS</h3>

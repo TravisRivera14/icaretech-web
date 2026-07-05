@@ -12,13 +12,13 @@
     <style>
         :root {
             /* FONDOS CLAROS Y TARJETAS OSCURAS (DARK PREMIUM) */
-            --bg-dark: #f8fafc; 
+            --bg-dark: #0b0c10; 
             --sidebar-bg: #11141a;
             --card-bg: #1f2833;
             --card-hover: #2a3645;
             --text-light: #f5f5f7;
             --text-muted: #8a99ad;
-            --neon-blue: #55bbcc; /* Turquesa de la marca ajustado */
+            --neon-blue: #00b4d8; 
             --border-color: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s ease;
             --btn-green: #10b981;
@@ -43,7 +43,7 @@
         .sidebar {
             width: 280px;
             background: var(--sidebar-bg);
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -86,7 +86,7 @@
         }
         
         .empresa-badge {
-            background: rgba(85, 187, 204, 0.1);
+            background: rgba(0, 180, 216, 0.1);
             color: var(--neon-blue);
             padding: 5px 10px;
             border-radius: 20px;
@@ -139,63 +139,6 @@
             background: rgba(255,255,255,0.03);
         }
 
-        /* TARJETAS DE SERVICIOS EN SIDEBAR (BURBUJA TURQUESA) */
-        .sidebar-upsell-title {
-            font-size: 10px; color: #64748b; text-transform: uppercase; margin: 15px 20px 5px; font-weight: 700; letter-spacing: 1px;
-        }
-        
-        .sidebar-upsell-card {
-            background: rgba(85, 187, 204, 0.15); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(85, 187, 204, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 10px 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: var(--transition);
-        }
-        
-        .sidebar-upsell-card:hover {
-            transform: translateY(-3px);
-            background: rgba(85, 187, 204, 0.25);
-            border-color: rgba(85, 187, 204, 0.5);
-        }
-        
-        .sidebar-upsell-card h3 {
-            color: #fff;
-            font-size: 13.5px;
-            margin: 0 0 5px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .sidebar-upsell-card p {
-            color: rgba(255,255,255,0.8);
-            font-size: 11.5px;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-        
-        .sidebar-upsell-btn {
-            background: #fff;
-            color: var(--neon-blue);
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .sidebar-upsell-btn:hover {
-            background: var(--neon-blue);
-            color: #fff;
-        }
-        
         .logout-btn { padding: 15px; border-top: 1px solid var(--border-color); margin-top: 10px; }
         .logout-btn a { display: block; text-align: center; padding: 10px; background: rgba(255, 59, 48, 0.1); color: #ff3b30; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: var(--transition); cursor: pointer;}
         .logout-btn a:hover { background: #ff3b30; color: white; }
@@ -205,7 +148,7 @@
         
         .topbar { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
-            padding-bottom: 20px; border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px; border-bottom: 1px solid var(--border-color);
         }
         
         .top-buttons { display: flex; gap: 10px; flex-wrap: wrap;}
@@ -257,15 +200,15 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 2px solid #e2e8f0; cursor: pointer; }
-        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid var(--border-color); cursor: pointer; }
+        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 16px; }
         .user-meta { display: flex; flex-direction: column; text-align: right; }
-        .user-meta b { font-size: 14px; color: #1e293b; }
+        .user-meta b { font-size: 14px; color: #fff; }
         .user-meta span { font-size: 11.5px; color: var(--del); font-weight: 600; transition: 0.3s;}
         .user-meta span:hover { color: #ff6b6b; }
 
         /* TÍTULOS OSCUROS PARA EL FONDO BLANCO */
-        .page-title { margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;}
+        .page-title { margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;}
         .breadcrumb { font-size: 12.5px; color: #64748b; margin-bottom: 20px; font-weight: 600;}
         .breadcrumb span { color: var(--neon-blue); font-weight: 700; }
         
@@ -331,11 +274,32 @@
         .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
         .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
         .btn-outline:hover { background: var(--neon-blue); color: #000; }
-        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: white; }
+        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
         .btn-solid:hover { opacity: 0.9; }
         .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
     </style>
-</nav>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-dual-container">
+                <img src="Logo.png" alt="iCare Tech" class="main-logo-img">
+                <div id="client-logo-wrapper" style="display:none; align-items:center; gap:10px;">
+                    <div style="width:1px; height:40px; background:rgba(255,255,255,0.2);"></div>
+                    <img id="client-logo-img" src="" alt="Cliente Logo">
+                </div>
+            </div>
+            <div><span class="empresa-badge" id="nombre-empresa-badge">Cargando Empresa...</span></div>
+        </div>
+        
+        <div class="nav-menu" id="sidebar-dynamic-menu">
+            </div>
+        
+        <div class="logout-btn">
+            <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        </div>
+    </nav>
 
     <main class="main-content">
         <div class="topbar">
@@ -362,7 +326,7 @@
                 </div>
                 <div class="user-profile" onclick="logout()">
                     <div class="user-meta">
-                        <b id="header-user-name">Cargando...</b>
+                        <b id="header-user-name">...</b>
                         <span><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</span>
                     </div>
                     <div class="user-initial" id="header-user-initial">U</div>
@@ -372,21 +336,21 @@
 
         <div id="vista-principal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
             
-            <div class="card" onclick="showSection('tickets')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('tickets')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
                     <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-ticket-alt"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Centro de Soporte</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Gestiona tickets y reporta averías.</p></div>
                 </div>
             </div>
             
-            <div class="card" onclick="showSection('facturacion')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('facturacion')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
                     <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-file-invoice-dollar"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Módulo Contable</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Facturación electrónica y proformas.</p></div>
                 </div>
             </div>
             
-            <div class="card" onclick="showSection('datacenter')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('datacenter')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
                     <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-server"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Cloud & Data Center</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Monitoreo y respaldos de servidores.</p></div>
@@ -397,10 +361,11 @@
     </main>
 
     <script>
-        let userDataCache = {};
-        let lineasDocumento = []; 
-        let clientesCache = [];
-        let productosCache = [];
+        // Declaración global para que HTML pueda leerlo sin errores
+        window.userDataCache = {};
+        window.lineasDocumento = []; 
+        window.clientesCache = [];
+        window.productosCache = [];
 
         function openWA(msg) {
             window.open(`https://wa.me/50686390631?text=${encodeURIComponent(msg)}`, '_blank');
@@ -442,12 +407,17 @@
             `;
             items.forEach((item, index) => {
                 html += `
-                <a class="nav-item ${index === 0 ? 'active' : ''}" onclick="renderModulo('${item.nombre}', this)">
+                <a class="nav-item ${index === 0 ? 'active' : ''}" onclick="window.renderModulo('${item.nombre}', this)">
                     <div><i class="fas ${item.icon} main-icon"></i> ${item.nombre}</div>
                 </a>`;
             });
             menuHtml.innerHTML = html;
-            renderModulo(items[0].nombre, menuHtml.querySelector('.nav-item.active'));
+            
+            // Retraso ligero para asegurar que el DOM actualizó el active class
+            setTimeout(() => {
+                const el = menuHtml.querySelector('.nav-item.active');
+                if(el) { window.renderModulo(items[0].nombre, el); }
+            }, 10);
         };
 
         window.cargarVista = function(vista) {
@@ -463,30 +433,25 @@
             const contenedor = document.getElementById('vista-principal');
             contenedor.style.display = 'block';
 
-            // Mostrar u ocultar elementos condicionales de Facturación de forma segura
+            // Mostrar botones del topbar solo si es módulo de facturación
             const isFacturacion = ['Inicio Facturador', 'Mi plan', 'Clientes', 'Catálogo CABYS', 'Nueva Factura', 'Historial de Facturas', 'Nueva Proforma', 'Proformas Generadas', 'Datos de la Empresa', 'Llave Hacienda (.p12)'].includes(opcion);
-            
             document.querySelectorAll('.fact-top-btn').forEach(btn => btn.style.display = isFacturacion ? 'flex' : 'none');
-            
-            const upsellContainer = document.getElementById('sidebar-upsell-container');
-            if (upsellContainer) {
-                upsellContainer.style.display = isFacturacion ? 'block' : 'none';
-            }
 
             // ---------- MÓDULO DATA CENTER ----------
             if (opcion === 'Resumen Data Center') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Resumen</span></div>
-                    <div class="card">
-                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
-                        <div class="metrics-grid" style="margin-top:20px;">
-                            <div class="metric-box" style="border-left: 4px solid var(--btn-green);"><p>ESTADO DEL CLUSTER</p><h3 style="color:var(--btn-green);">ÓPTIMO</h3></div>
-                            <div class="metric-box"><p>NODOS ACTIVOS</p><h3>2 / 2</h3></div>
-                            <div class="metric-box"><p>ALMACENAMIENTO TOTAL</p><h3>256 GB</h3></div>
-                            <div class="metric-box"><p>UPTIME (90 DÍAS)</p><h3>99.98%</h3></div>
-                        </div>
+                    <h2 class="page-title"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-box" style="border-left: 4px solid var(--btn-green);"><p>ESTADO DEL CLUSTER</p><h3 style="color:var(--btn-green);">ÓPTIMO</h3></div>
+                        <div class="metric-box"><p>NODOS ACTIVOS</p><h3>2 / 2</h3></div>
+                        <div class="metric-box"><p>ALMACENAMIENTO TOTAL</p><h3>256 GB</h3></div>
+                        <div class="metric-box"><p>UPTIME (90 DÍAS)</p><h3>99.98%</h3></div>
+                    </div>
 
-                        <h3 class="section-title" style="margin-top:30px;">Servidores Asignados</h3>
+                    <div class="card">
+                        <h3 class="section-title">Servidores Asignados</h3>
                         <table class="admin-table">
                             <thead><tr><th>Servidor</th><th>IP Pública</th><th>S.O.</th><th>Estado</th><th>Acción</th></tr></thead>
                             <tbody>
@@ -512,23 +477,24 @@
             else if (opcion === 'Monitoreo') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Monitoreo</span></div>
-                    <div class="card">
-                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-chart-area" style="color:var(--neon-blue);"></i> Rendimiento y Monitoreo en Vivo</h2>
-                        <div class="split-grid" style="margin-top:20px;">
-                            <div class="metric-box" style="background:#11141a;">
-                                <h3 class="section-title"><i class="fas fa-microchip"></i> Uso de CPU</h3>
-                                <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">24%</div>
-                                <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
-                                    <div style="width:24%; background:var(--neon-blue); height:100%;"></div>
-                                </div>
+                    <h2 class="page-title"><i class="fas fa-chart-area" style="color:var(--neon-blue);"></i> Rendimiento y Monitoreo en Vivo</h2>
+                    
+                    <div class="split-grid">
+                        <div class="card">
+                            <h3 class="section-title"><i class="fas fa-microchip"></i> Uso de CPU (Promedio Global)</h3>
+                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">24%</div>
+                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                <div style="width:24%; background:var(--neon-blue); height:100%;"></div>
                             </div>
-                            <div class="metric-box" style="background:#11141a;">
-                                <h3 class="section-title"><i class="fas fa-memory"></i> Uso de Memoria RAM</h3>
-                                <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">4.2 GB</div>
-                                <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
-                                    <div style="width:52%; background:var(--btn-purple); height:100%;"></div>
-                                </div>
+                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Estado normal. Sin cuellos de botella detectados.</p>
+                        </div>
+                        <div class="card">
+                            <h3 class="section-title"><i class="fas fa-memory"></i> Uso de Memoria RAM</h3>
+                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">4.2 GB <span style="font-size:14px; color:var(--text-muted);">/ 8 GB</span></div>
+                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                <div style="width:52%; background:var(--btn-purple); height:100%;"></div>
                             </div>
+                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">52% en uso. Rendimiento óptimo de base de datos.</p>
                         </div>
                     </div>
                 `;
@@ -536,21 +502,32 @@
             else if (opcion === 'Respaldos') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Respaldos</span></div>
-                    <div class="card">
-                        <h2 class="page-title" style="color:#fff; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><i class="fas fa-shield-alt" style="color:var(--neon-blue);"></i> Políticas de Respaldo (Backups)</h2>
-                        <div style="background:rgba(16, 185, 129, 0.05); border:1px solid var(--btn-green); display:flex; justify-content:space-between; align-items:center; padding:20px; border-radius:10px; margin-top:20px;">
-                            <div>
-                                <h3 style="color:var(--btn-green); margin:0 0 5px 0;"><i class="fas fa-check-circle"></i> Protección Activa: Backups Automáticos</h3>
-                                <p style="color:var(--text-muted); margin:0;">El sistema realiza copias de seguridad incrementales cada 24 horas.</p>
-                            </div>
-                            <button class="btn-top btn-t-blue" onclick="alert('Instrucción enviada.')"><i class="fas fa-cloud-upload-alt"></i> Forzar Respaldo Ahora</button>
+                    <h2 class="page-title"><i class="fas fa-shield-alt" style="color:var(--neon-blue);"></i> Políticas de Respaldo (Backups)</h2>
+                    
+                    <div class="card" style="background:rgba(16, 185, 129, 0.05); border-color:var(--btn-green); display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3 style="color:var(--btn-green); margin:0 0 5px 0;"><i class="fas fa-check-circle"></i> Protección Activa: Backups Automáticos</h3>
+                            <p style="color:var(--text-muted); margin:0;">El sistema realiza copias de seguridad incrementales cada 24 horas.</p>
                         </div>
+                        <button class="btn-top btn-t-blue" onclick="alert('Instrucción enviada.')"><i class="fas fa-cloud-upload-alt"></i> Forzar Respaldo Ahora</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="section-title">Historial de Restauración</h3>
+                        <table class="admin-table">
+                            <thead><tr><th>Fecha de Copia</th><th>Tipo de Backup</th><th>Tamaño</th><th>Estado del Nodo</th><th>Acciones</th></tr></thead>
+                            <tbody>
+                                <tr><td>Hoy, 02:00 AM</td><td>Incremental</td><td>125 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar</button></td></tr>
+                                <tr><td>Ayer, 02:00 AM</td><td>Incremental</td><td>122 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar</button></td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 `;
             }
 
             // ---------- MÓDULO CONTABLE (FACTURACIÓN) ----------
             else if (opcion === 'Inicio Facturador') {
+                const plan = window.userDataCache.plan || 'Gratis';
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>Información general</span></div>
                     <h2 class="page-title">Información general de facturación</h2>
@@ -566,12 +543,13 @@
                         <div class="card">
                             <h3 class="section-title">PLAN RECOMENDADO</h3>
                             <p style="color:var(--text-muted); margin-bottom:15px; line-height:1.6;">Basado en las características de su perfil, este es un plan recomendado de nuestra tienda:</p>
-                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: Gratis)</h4>
+                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: ${plan})</h4>
                             <ul style="color:#cfd8dc; padding-left:20px; line-height:2;">
                                 <li>Documentos Ilimitados</li>
                                 <li>Reportes Especializados</li>
                                 <li>Dashboard Completo de Indicadores</li>
                             </ul>
+                            <button class="btn-top btn-t-blue" style="margin-top:20px;" onclick="window.renderModulo('Mi plan', null)">Ver Planes Completos</button>
                         </div>
                         <div class="card">
                             <h3 class="section-title">DISPONGA DE UN MAYOR ANÁLISIS</h3>
@@ -586,15 +564,15 @@
                 `;
             }
             else if (opcion === 'Mi plan') {
-                const usadas = userDataCache.facturas_mes_actual || 0;
+                const usadas = window.userDataCache.facturas_mes_actual || 0;
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>Mi plan</span></div>
                     <h2 class="page-title">Suscripción y Límites del Sistema</h2>
                     
-                    <div class="card" style="background:rgba(85, 187, 204, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px; color:#1e293b;">
+                    <div class="card" style="background:#11141a; border:1px solid var(--neon-blue); margin-bottom:30px;">
                         <h3 class="section-title" style="color:var(--neon-blue); font-weight:700;"><i class="fas fa-chart-pie"></i> Consumo de Documentos del Mes</h3>
-                        <p style="margin:0 0 15px 0; color:#475569; font-weight:500;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
-                        <div style="font-size:16px; font-weight:700; color:#1e293b;">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
+                        <p style="margin:0 0 15px 0; color:#cbd5e1; font-weight:500;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
+                        <div style="font-size:16px; font-weight:700; color:#f8fafc;">Llevas emitidas: <b style="color:#ef4444; font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
                     </div>
 
                     <div class="pricing-grid">
@@ -688,7 +666,7 @@
                 window.renderConfigHacienda();
             }
 
-            // ---------- MÓDULO TICKETS (SOPORTE) ----------
+            // ---------- MODULO TICKETS (SOPORTE) ----------
             else if (opcion === 'Reportar Avería') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Soporte iCare / <span>Reportar Avería</span></div>
@@ -718,7 +696,7 @@
             }
         };
 
-        // --- FUNCIONALIDAD GLOBAL ---
+        // --- FUNCIONALIDAD GLOBAL (Atada a window) ---
 
         window.cargarClientesFact = function() {
             const list = document.getElementById('tabla-clientes-fact');
@@ -733,7 +711,7 @@
         window.guardarClienteFact = function(e) {
             e.preventDefault();
             const body = { nombre: document.getElementById('fc-nombre').value, tipo_identificacion: document.getElementById('fc-tipo').value, identificacion: document.getElementById('fc-cedula').value, correo: document.getElementById('fc-correo').value, telefono: document.getElementById('fc-telefono').value };
-            fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=> { fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d); window.renderModulo('Clientes'); });
+            fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=> { fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => window.clientesCache = d); window.renderModulo('Clientes'); });
         };
 
         window.cargarProductosFact = function() {
@@ -749,7 +727,7 @@
         window.guardarProductoFact = function(e) {
             e.preventDefault();
             const body = { codigo_cabys: document.getElementById('fp-cabys').value, descripcion: document.getElementById('fp-desc').value, precio_unitario: document.getElementById('fp-precio').value, unidad_medida: 'Sp', impuesto: document.getElementById('fp-iva').value };
-            fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=> { fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d); window.renderModulo('Catálogo CABYS'); });
+            fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=> { fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => window.productosCache = d); window.renderModulo('Catálogo CABYS'); });
         };
 
         window.borrarItem = function(tabla, id, moduloRef) {
@@ -759,7 +737,7 @@
         };
 
         window.renderEditorDocumento = function(tipo) {
-            lineasDocumento = [];
+            window.lineasDocumento = [];
             const color = 'var(--neon-blue)';
             
             document.getElementById('vista-principal').innerHTML = `
@@ -779,7 +757,7 @@
                         <div><label>Cant.</label><input type="number" id="busca-cant" class="form-input" style="margin:0;" value="1" min="0.1"></div>
                         <div><label>P. Unit</label><input type="text" id="busca-precio" class="form-input" style="margin:0;" disabled></div>
                         <div><label>Total</label><input type="text" id="busca-total" class="form-input" style="margin:0;" disabled></div>
-                        <button class="btn-top btn-t-blue" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
+                        <button class="btn-top" style="background:${color};" onclick="window.agregarLinea()"><i class="fas fa-plus"></i></button>
                     </div>
                     
                     <table class="admin-table" style="margin-bottom:30px;">
@@ -795,19 +773,19 @@
                         </div>
                     </div>
                     
-                    <button id="btn-emitir-doc" class="btn-top btn-t-blue" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
+                    <button id="btn-emitir-doc" class="btn-top" style="width:100%; margin-top:25px; padding:15px; font-size:15px; justify-content:center; background:${color}; opacity:0.5;" disabled onclick="window.emitirDocumento('${tipo}')"><i class="fas fa-paper-plane"></i> Finalizar y Emitir ${tipo}</button>
                 </div>
             `;
             
             const selC = document.getElementById('doc-cliente');
-            if(!clientesCache || clientesCache.length === 0) { selC.innerHTML = '<option value="">Sin clientes</option>'; }
-            else { selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
+            if(!window.clientesCache || window.clientesCache.length === 0) { selC.innerHTML = '<option value="">Sin clientes</option>'; }
+            else { selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
             
             const buscaProd = document.getElementById('busca-prod');
             buscaProd.addEventListener('input', function() {
                 const txt = this.value.toLowerCase();
                 if(txt.length < 2) return;
-                const match = productosCache.find(p => p.descripcion.toLowerCase().includes(txt) || p.codigo_cabys.includes(txt));
+                const match = window.productosCache.find(p => p.descripcion.toLowerCase().includes(txt) || p.codigo_cabys.includes(txt));
                 if(match) { window.prodSeleccionado = match; document.getElementById('busca-precio').value = match.precio_unitario; window.actualizarTotalLinea(); } else { window.prodSeleccionado = null; }
             });
             document.getElementById('busca-cant').addEventListener('input', window.actualizarTotalLinea);
@@ -822,29 +800,29 @@
         window.agregarLinea = function() {
             if(!window.prodSeleccionado) return alert("Busca y selecciona un producto primero.");
             const cant = parseFloat(document.getElementById('busca-cant').value) || 1;
-            lineasDocumento.push({ codigo_cabys: window.prodSeleccionado.codigo_cabys, descripcion: window.prodSeleccionado.descripcion, cantidad: cant, precio_unitario: window.prodSeleccionado.replace ? 0 : window.prodSeleccionado.precio_unitario, monto_total: cant * window.prodSeleccionado.precio_unitario, impuesto: window.prodSeleccionado.impuesto, unidad_medida: window.prodSeleccionado.unidad_medida });
+            window.lineasDocumento.push({ codigo_cabys: window.prodSeleccionado.codigo_cabys, descripcion: window.prodSeleccionado.descripcion, cantidad: cant, precio_unitario: window.prodSeleccionado.precio_unitario, monto_total: cant * window.prodSeleccionado.precio_unitario, impuesto: window.prodSeleccionado.impuesto, unidad_medida: window.prodSeleccionado.unidad_medida });
             document.getElementById('busca-prod').value = ""; document.getElementById('busca-cant').value = "1"; document.getElementById('busca-precio').value = ""; document.getElementById('busca-total').value = ""; window.prodSeleccionado = null; window.renderLineasDocumento();
         };
 
         window.renderLineasDocumento = function() {
             const tbody = document.getElementById('doc-body');
             let html = ''; let sub = 0; let iva = 0;
-            lineasDocumento.forEach((l, i) => {
+            window.lineasDocumento.forEach((l, i) => {
                 html += `<tr><td>${l.cantidad}</td><td>${l.codigo_cabys}</td><td><b>${l.descripcion}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:600; color:var(--neon-blue);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="window.lineasDocumento.splice(${i},1); window.renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
                 sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100);
             });
             tbody.innerHTML = html || `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sin líneas</td></tr>`;
             document.getElementById('t-sub').innerText = `₡${sub.toFixed(2)}`; document.getElementById('t-iva').innerText = `₡${iva.toFixed(2)}`; document.getElementById('t-total').innerText = `₡${(sub+iva).toFixed(2)}`;
             const btn = document.getElementById('btn-emitir-doc');
-            if (lineasDocumento.length > 0) { btn.disabled = false; btn.style.opacity = '1'; } else { btn.disabled = true; btn.style.opacity = '0.5'; }
+            if (window.lineasDocumento.length > 0) { btn.disabled = false; btn.style.opacity = '1'; } else { btn.disabled = true; btn.style.opacity = '0.5'; }
         };
 
         window.emitirDocumento = async function(tipo) {
             const cliente_id = document.getElementById('doc-cliente').value;
             if(!cliente_id) return alert("Selecciona un cliente.");
             const btn = document.getElementById('btn-emitir-doc'); btn.innerText = "Procesando..."; btn.disabled = true;
-            let sub = 0; let iva = 0; lineasDocumento.forEach(l => { sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100); });
-            const payload = { cliente_id: cliente_id, condicion_venta: document.getElementById('doc-condicion').value, medio_pago: document.getElementById('doc-medio').value, lineas: lineasDocumento, total_gravado: sub, total_impuesto: iva, total_comprobante: sub + iva };
+            let sub = 0; let iva = 0; window.lineasDocumento.forEach(l => { sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100); });
+            const payload = { cliente_id: cliente_id, condicion_venta: document.getElementById('doc-condicion').value, medio_pago: document.getElementById('doc-medio').value, lineas: window.lineasDocumento, total_gravado: sub, total_impuesto: iva, total_comprobante: sub + iva };
             const endpoint = tipo === 'Factura' ? '/api/facturacion/emitir' : '/api/facturacion/proformas/emitir';
             try {
                 const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(payload) });
@@ -861,7 +839,7 @@
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'#10b981'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -941,7 +919,7 @@
                         <label>PIN de la Llave (.p12)</label><input type="password" id="h-pin" class="form-input" required>
                         <label>Archivo .p12</label><input type="file" id="h-p12" accept=".p12" class="form-input" required style="padding:7px; background:#11141a;">
                         <label style="display:flex; align-items:center; gap:8px; margin:15px 0; color:#cfd8dc;"><input type="checkbox" id="h-prod"> Producción Confirmada</label>
-                        <div style="display:flex; gap:10px;"><button type="submit" class="btn-top btn-t-blue"><i class="fas fa-save"></i> Guardar</button><button type="button" class="btn-top" style="background:#475569;" onclick="window.probarConexionHacienda()"><i class="fas fa-plug"></i> Probar Conexión</button></div>
+                        <div style="display:flex; gap:10px;"><button type="submit" class="btn-top btn-t-green"><i class="fas fa-save"></i> Guardar</button><button type="button" class="btn-top" style="background:#475569;" onclick="window.probarConexionHacienda()"><i class="fas fa-plug"></i> Probar Conexión</button></div>
                     </form>
                     <div id="hacienda-status" style="margin-top:20px; padding:15px; border-radius:8px; display:none; font-weight:600; font-size:13px;"></div>
                 </div>
@@ -971,7 +949,7 @@
 
         window.crearTicket = function(e) {
             e.preventDefault();
-            const body = { contacto: document.getElementById('t-contacto').value, whatsapp: document.getElementById('t-whats').value, asunto: document.getElementById('t-asunto').value, descripcion: document.getElementById('t-desc').value, prioridad: document.getElementById('t-prio').value, empresa_id: userDataCache.empresa_id };
+            const body = { contacto: document.getElementById('t-contacto').value, whatsapp: document.getElementById('t-whats').value, asunto: document.getElementById('t-asunto').value, descripcion: document.getElementById('t-desc').value, prioridad: document.getElementById('t-prio').value, empresa_id: window.userDataCache.empresa_id };
             fetch('/api/tickets/crear', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) }).then(()=> { alert('Ticket reportado exitosamente.'); window.renderModulo('Tickets Activos'); });
         };
 
@@ -986,7 +964,7 @@
                     ${lista.map(t => `<tr>
                         <td>${new Date(t.fecha).toLocaleDateString()}</td>
                         <td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td>
-                        <td style="color:${t.prioridad === 'Alta' ? 'var(--del)' : 'var(--btn-yellow)'}">${t.prioridad}</td>
+                        <td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${t.prioridad}</td>
                         <td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${t.estado}</td>
                         <td>${t.atendido_por}</td>
                     </tr>`).join('')}
@@ -994,42 +972,48 @@
             });
         };
 
-        // --- INICIALIZADOR GLOBAL (FIX DE CARGA SEGURO) ---
+        // --- INICIALIZADOR SEGURO ---
         window.onload = async () => {
             try {
+                // 1. Verificar sesión
                 const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
                 if (res.status === 401) { window.location.href = '/login.html'; return; }
                 const data = await res.json();
                 
                 if(data.usuario) {
-                    // SE CORRIGIERON LAS CONSTANTES PARA PREVENIR EL ENCALLAMIENTO DEL OPERADOR DEL SCRIPT
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
                     if (headerUserName) headerUserName.innerText = data.usuario;
                     if (headerUserInitial) headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
                 }
                 
+                // 2. Traer datos de facturación
                 const opsRes = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
-                userDataCache = await opsRes.json();
+                window.userDataCache = await opsRes.json();
                 
-                // SE SETEA EL NOMBRE COMPLETO DE LA COMPAÑÍA EN EL BADGE SIN COLGARSE
+                // 3. Colocar el Badge de la Empresa (Validando que no explote)
                 const badge = document.getElementById('nombre-empresa-badge');
-                if(badge) badge.innerText = userDataCache.empresa || "Cliente Corporativo";
+                if(badge) {
+                    badge.innerText = window.userDataCache.empresa || data.empresa || "Cliente Corporativo";
+                }
 
-                // LÓGICA DE DUAL LOGO: Cargar el logo del cliente desde el endpoint de configuración
+                // 4. Lógica de Dual Logo
                 try {
                     const confRes = await fetch('/api/facturacion/config-empresa', {credentials: 'include'});
                     const confData = await confRes.json();
-                    if(confData.logo && userDataCache.plan !== 'Gratis') {
+                    if(confData.logo && window.userDataCache.plan !== 'Gratis') {
                         document.getElementById('client-logo-wrapper').style.display = 'flex';
                         document.getElementById('client-logo-img').src = confData.logo;
                     }
-                } catch(err) { console.log('Logo corporativo no encontrado.'); }
+                } catch(err) { console.log('Sin logo customizado'); }
 
-                fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d);
-                fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d);
+                // 5. Cargar utilidades
+                fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => window.clientesCache = d);
+                fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => window.productosCache = d);
 
-            } catch (e) { console.warn("backend offline"); }
+            } catch (e) { 
+                console.warn("Fallo general", e); 
+            }
         };
 
         async function logout() {

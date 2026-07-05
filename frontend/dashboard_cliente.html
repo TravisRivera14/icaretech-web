@@ -29,7 +29,6 @@
         th { color: var(--accent); text-align: left; padding: 15px; border-bottom: 2px solid var(--accent); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* Estilos extras para formularios */
         .fact-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; background: #0b0c10; border: 1px solid #444; color: white; font-size: 14px; }
         .fact-btn { padding: 12px 25px; background: var(--accent); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: black; }
         .fact-btn-del { padding: 6px 12px; background: rgba(255,59,48,0.2); border: 1px solid var(--del); color: var(--del); border-radius: 4px; cursor: pointer; font-size: 12px;}
@@ -178,7 +177,6 @@
     async function renderModulo(nombre) {
         const cont = document.getElementById('contenido-dinamico');
         
-        // --- 1. MÓDULO DE CLIENTES ---
         if (nombre === 'Clientes') {
             cont.innerHTML = `
                 <h2>Directorio de Clientes (Receptores)</h2>
@@ -220,7 +218,6 @@
             cargarClientesFact();
         }
 
-        // --- 2. MÓDULO DE PRODUCTOS ---
         else if (nombre === 'Productos') {
             cont.innerHTML = `
                 <h2>Catálogo de Productos y Servicios (CABYS)</h2>
@@ -268,7 +265,6 @@
             cargarProductosFact();
         }
 
-        // --- 3. MÓDULO DE NUEVA FACTURA ---
         else if (nombre === 'Nueva factura') {
             cont.innerHTML = `
                 <h2>Crear Nueva Factura Electrónica v4.3</h2>
@@ -292,15 +288,13 @@
                     <button class="fact-btn" style="width:100%; margin-top:20px; background:#444; color:white; cursor:not-allowed;" disabled>Emitir Comprobante (En espera de Paso 3)</button>
                 </div>
             `;
-            // Cargar los clientes para el selector de la factura
             fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
                 const select = document.getElementById('nf-cliente');
-                if(!data || data.length === 0) { select.innerHTML = '<option value="">No tienes clientes registrados aún</option>'; }
+                if(data.error || !data || data.length === 0) { select.innerHTML = '<option value="">No tienes clientes registrados aún</option>'; }
                 else { select.innerHTML = '<option value="">-- Selecciona el cliente --</option>' + data.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
-            });
+            }).catch(()=>{});
         }
 
-        // --- LOS MÓDULOS ANTERIORES SIGUEN AQUÍ ---
         else if (nombre === 'Crear Nuevo Ticket') {
             cont.innerHTML = `
                 <h2>Reportar Nuevo Requerimiento</h2>
@@ -420,10 +414,13 @@
         }
     }
 
-    // --- FUNCIONES API CLIENTES ---
+    // --- BLINDAJE DE FUNCIONES API CLIENTES ---
     function cargarClientesFact() {
-        fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
-            const list = document.getElementById('tabla-clientes-fact');
+        const list = document.getElementById('tabla-clientes-fact');
+        fetch('/api/facturacion/clientes', {credentials: 'include'})
+        .then(r => r.json())
+        .then(data => {
+            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
             if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>No tienes clientes registrados.</p>"; return; }
             
             list.innerHTML = `<table><thead><tr><th>Nombre</th><th>Identificación</th><th>Correo</th><th>Acción</th></tr></thead><tbody>
@@ -434,12 +431,18 @@
                     <td><button class="fact-btn-del" onclick="borrarClienteFact(${c.id})"><i class="fas fa-trash"></i></button></td>
                 </tr>`).join('')}
             </tbody></table>`;
+        })
+        .catch(e => {
+            list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`;
         });
     }
 
     function guardarClienteFact(e) {
         e.preventDefault();
-        const btn = e.submitter; btn.innerHTML = "Guardando..."; btn.disabled = true;
+        const btn = e.submitter; 
+        btn.innerHTML = "Guardando..."; 
+        btn.disabled = true;
+        
         const body = {
             nombre: document.getElementById('fc-nombre').value,
             tipo_identificacion: document.getElementById('fc-tipo').value,
@@ -447,24 +450,41 @@
             correo: document.getElementById('fc-correo').value,
             telefono: document.getElementById('fc-telefono').value
         };
+        
         fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(r=>r.json()).then(data => {
-            if(data.success) { alert("Cliente guardado"); document.getElementById('form-nuevo-cliente').reset(); cargarClientesFact(); }
-            else { alert("Error: " + data.message); }
-            btn.innerHTML = "Guardar Cliente"; btn.disabled = false;
+        .then(r => {
+            if(!r.ok) throw new Error("Fallo en el servidor");
+            return r.json();
+        })
+        .then(data => {
+            if(data.success) { 
+                alert("Cliente guardado"); 
+                document.getElementById('form-nuevo-cliente').reset(); 
+                cargarClientesFact(); 
+            } else { 
+                alert("Error: " + (data.message || data.error)); 
+            }
+        })
+        .catch(err => alert("Error de base de datos. Verifica que la cuenta esté vinculada a una empresa."))
+        .finally(() => { 
+            btn.innerHTML = "Guardar Cliente"; 
+            btn.disabled = false; 
         });
     }
 
     function borrarClienteFact(id) {
         if(!confirm("¿Eliminar cliente de tu base de datos?")) return;
         fetch('/api/eliminar/clientes_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
-        .then(r=>r.json()).then(()=> { cargarClientesFact(); });
+        .then(r=>r.json()).then(()=> { cargarClientesFact(); }).catch(()=>{});
     }
 
-    // --- FUNCIONES API PRODUCTOS ---
+    // --- BLINDAJE DE FUNCIONES API PRODUCTOS ---
     function cargarProductosFact() {
-        fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(data => {
-            const list = document.getElementById('tabla-productos-fact');
+        const list = document.getElementById('tabla-productos-fact');
+        fetch('/api/facturacion/productos', {credentials: 'include'})
+        .then(r => r.json())
+        .then(data => {
+            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
             if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>Tu catálogo está vacío.</p>"; return; }
             
             list.innerHTML = `<table><thead><tr><th>CABYS</th><th>Descripción</th><th>Precio</th><th>IVA</th><th>Acción</th></tr></thead><tbody>
@@ -476,12 +496,18 @@
                     <td><button class="fact-btn-del" onclick="borrarProductoFact(${p.id})"><i class="fas fa-trash"></i></button></td>
                 </tr>`).join('')}
             </tbody></table>`;
+        })
+        .catch(e => {
+            list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`;
         });
     }
 
     function guardarProductoFact(e) {
         e.preventDefault();
-        const btn = e.submitter; btn.innerHTML = "Añadiendo..."; btn.disabled = true;
+        const btn = e.submitter; 
+        btn.innerHTML = "Añadiendo..."; 
+        btn.disabled = true;
+
         const body = {
             codigo_cabys: document.getElementById('fp-cabys').value,
             descripcion: document.getElementById('fp-desc').value,
@@ -490,17 +516,30 @@
             impuesto: document.getElementById('fp-iva').value
         };
         fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(r=>r.json()).then(data => {
-            if(data.success) { alert("Producto guardado"); document.getElementById('form-nuevo-producto').reset(); cargarProductosFact(); }
-            else { alert("Error: " + data.message); }
-            btn.innerHTML = "Añadir al Catálogo"; btn.disabled = false;
+        .then(r => {
+            if(!r.ok) throw new Error("Fallo en el servidor");
+            return r.json();
+        })
+        .then(data => {
+            if(data.success) { 
+                alert("Producto guardado"); 
+                document.getElementById('form-nuevo-producto').reset(); 
+                cargarProductosFact(); 
+            } else { 
+                alert("Error: " + (data.message || data.error)); 
+            }
+        })
+        .catch(err => alert("Error de base de datos. Verifica que la cuenta esté vinculada a una empresa."))
+        .finally(() => { 
+            btn.innerHTML = "Añadir al Catálogo"; 
+            btn.disabled = false; 
         });
     }
 
     function borrarProductoFact(id) {
         if(!confirm("¿Eliminar producto del catálogo?")) return;
         fetch('/api/eliminar/productos_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
-        .then(r=>r.json()).then(()=> { cargarProductosFact(); });
+        .then(r=>r.json()).then(()=> { cargarProductosFact(); }).catch(()=>{});
     }
 
     // --- RESTO DE FUNCIONES (Hacienda y Tickets) ---

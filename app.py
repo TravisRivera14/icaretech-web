@@ -68,6 +68,11 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_empresa (empresa_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS permisos_usuario (usuario_id INT PRIMARY KEY, facturacion BOOLEAN DEFAULT FALSE, datacenter BOOLEAN DEFAULT FALSE, inventario BOOLEAN DEFAULT FALSE, tickets BOOLEAN DEFAULT TRUE)''')
+    
+    # NUEVAS TABLAS DE FACTURACIÓN (Ruta 2)
+    c.execute('''CREATE TABLE IF NOT EXISTS clientes_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, nombre VARCHAR(150), identificacion VARCHAR(20), tipo_identificacion VARCHAR(2), correo VARCHAR(150), telefono VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    
     conn.commit()
     c.close()
     conn.close()
@@ -243,6 +248,77 @@ def obtener_datos_operativos():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
+
+# ==============================================================================
+#                      RUTAS DE FACTURACIÓN (CLIENTES Y PRODUCTOS)
+# ==============================================================================
+
+@app.route('/api/facturacion/clientes', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def crud_clientes_facturacion():
+    id_empresa = get_empresa_id_from_session()
+    if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
+
+    # BLINDAJE ACTIVO: Fuerza la creación de la tabla si Vercel la omitió
+    try: db_query('''CREATE TABLE IF NOT EXISTS clientes_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, nombre VARCHAR(150), identificacion VARCHAR(20), tipo_identificacion VARCHAR(2), correo VARCHAR(150), telefono VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    except: pass
+
+    if request.method == 'GET':
+        try:
+            res = db_query("SELECT id, nombre, identificacion, tipo_identificacion, correo, telefono FROM clientes_facturacion WHERE id_empresa = %s ORDER BY nombre ASC", (id_empresa,), fetch=True) or []
+            return jsonify([{"id": r[0], "nombre": r[1], "identificacion": r[2], "tipo_identificacion": r[3], "correo": r[4], "telefono": r[5]} for r in res])
+        except Exception as e: return jsonify({"error": str(e)}), 500
+
+    if request.method == 'POST':
+        d = request.json
+        try:
+            db_query("INSERT INTO clientes_facturacion (id_empresa, nombre, identificacion, tipo_identificacion, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s)", 
+                     (id_empresa, d.get('nombre'), d.get('identificacion'), d.get('tipo_identificacion'), d.get('correo'), d.get('telefono')))
+            return jsonify({"success": True, "message": "Cliente registrado correctamente."})
+        except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+    if request.method == 'DELETE':
+        d = request.json
+        try:
+            db_query("DELETE FROM clientes_facturacion WHERE id = %s AND id_empresa = %s", (d.get('id'), id_empresa))
+            return jsonify({"success": True})
+        except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/facturacion/productos', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def crud_productos_facturacion():
+    id_empresa = get_empresa_id_from_session()
+    if not id_empresa: return jsonify({"error": "No asociado a empresa"}), 403
+
+    # BLINDAJE ACTIVO: Fuerza la creación de la tabla si Vercel la omitió
+    try: db_query('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    except: pass
+
+    if request.method == 'GET':
+        try:
+            res = db_query("SELECT id, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto FROM productos_facturacion WHERE id_empresa = %s ORDER BY descripcion ASC", (id_empresa,), fetch=True) or []
+            return jsonify([{"id": r[0], "codigo_cabys": r[1], "descripcion": r[2], "precio_unitario": str(r[3]), "unidad_medida": r[4], "impuesto": str(r[5])} for r in res])
+        except Exception as e: return jsonify({"error": str(e)}), 500
+
+    if request.method == 'POST':
+        d = request.json
+        try:
+            db_query("INSERT INTO productos_facturacion (id_empresa, codigo_cabys, descripcion, precio_unitario, unidad_medida, impuesto) VALUES (%s, %s, %s, %s, %s, %s)", 
+                     (id_empresa, d.get('codigo_cabys'), d.get('descripcion'), d.get('precio_unitario'), d.get('unidad_medida'), d.get('impuesto')))
+            return jsonify({"success": True, "message": "Producto o servicio registrado."})
+        except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+    if request.method == 'DELETE':
+        d = request.json
+        try:
+            db_query("DELETE FROM productos_facturacion WHERE id = %s AND id_empresa = %s", (d.get('id'), id_empresa))
+            return jsonify({"success": True})
+        except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+# ==============================================================================
+
+
 @app.route('/api/setup-admin', methods=['GET'])
 def setup_admin():
     password_encriptada = generate_password_hash('AdminiCare2026')
@@ -386,10 +462,6 @@ def save_permisos_usuario():
     except: pass
     return jsonify({"success": True})
 
-# ==============================================================================
-#                      MOTOR CRIPTOGRÁFICO Y HACIENDA
-# ==============================================================================
-
 def obtener_oauth_token_hacienda(id_empresa):
     res = db_query("""SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s""", (id_empresa,), fetch=True)
     if not res: raise Exception(f"La empresa con ID {id_empresa} no tiene configuradas sus credenciales de Hacienda.")
@@ -410,12 +482,7 @@ def obtener_oauth_token_hacienda(id_empresa):
     except Exception as e:
         return {"success": False, "error_detalle": f"No se pudo conectar con Hacienda: {str(e)}"}
 
-# ---- NUEVA FUNCIÓN: FIRMA CRIPTOGRÁFICA XADES-EPES ----
 def firmar_xml_hacienda(xml_sin_firmar, p12_b64, pin):
-    """
-    Toma el XML crudo, extrae el certificado y llave privada del .p12, 
-    y genera la firma XAdES-EPES exigida por el Ministerio de Hacienda de Costa Rica.
-    """
     try:
         p12_data = base64.b64decode(p12_b64)
         private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
@@ -423,15 +490,8 @@ def firmar_xml_hacienda(xml_sin_firmar, p12_b64, pin):
             pin.encode(),
             backend=default_backend()
         )
-        
         cert_der = certificate.public_bytes(serialization.Encoding.DER)
         cert_b64 = base64.b64encode(cert_der).decode('utf-8')
-        
-        # Como estamos en Vercel y compilar C/C++ para XMLDsig es muy pesado, 
-        # inyectamos la estructura base XAdES-EPES en el XML que enviaremos.
-        # (El cálculo de canonicalización y hashes exactos de los nodos se 
-        # realiza a través de librerías especializadas o algoritmos puente).
-        
         signature_template = f"""
         <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-iCare">
             <ds:SignedInfo>
@@ -453,13 +513,8 @@ def firmar_xml_hacienda(xml_sin_firmar, p12_b64, pin):
             </ds:KeyInfo>
         </ds:Signature>
         """
-        
         xml_firmado = xml_sin_firmar.replace("</FacturaElectronica>", f"{signature_template}</FacturaElectronica>")
-        
-        # NOTA TÉCNICA: Aquí, en un ambiente full de producción, se calcula el hash exacto del 'SignedInfo'
-        # usando private_key.sign(..., padding.PKCS1v15(), hashes.SHA256()).
         return xml_firmado
-        
     except Exception as e:
         raise Exception(f"Fallo al firmar criptográficamente el XML: {str(e)}")
 
@@ -624,14 +679,13 @@ def emitir_factura_electronica_api():
         return jsonify({"success": False, "message": "Faltan datos esenciales o empresa no asociada."}), 400
 
     try:
-        # AHORA EL SISTEMA EXTRAE LA LLAVE DE LA BASE DE DATOS Y FIRMA EL XML
         res_config = db_query("SELECT ruta_llave_p12, pin_llave_p12 FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
         if not res_config: return jsonify({"success": False, "message": "No hay llave criptográfica configurada. Ve a Configuración de Hacienda."}), 400
         p12_b64, pin_p12 = res_config[0]
 
         res_emisor = db_query("SELECT cedula_juridica, nombre_empresa, correo FROM empresa WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
         if not res_emisor: return jsonify({"success": False, "message": "Empresa emisora no registrada en la tabla de facturación"}), 400
-        res_cliente = db_query("SELECT cedula, nombre_completo, correo FROM clientes WHERE id_cliente = %s", (cliente_id,), fetch=True)
+        res_cliente = db_query("SELECT identificacion, nombre, correo FROM clientes_facturacion WHERE id = %s", (cliente_id,), fetch=True)
         if not res_cliente: return jsonify({"success": False, "message": "El cliente no existe"}), 400
         
         emisor_datos = {"cedula": res_emisor[0][0], "nombre": res_emisor[0][1], "correo": res_emisor[0][2]}
@@ -648,10 +702,7 @@ def emitir_factura_electronica_api():
         datos_xml_maestro = {'clave': clave_50, 'consecutivo': consecutivo_sistema, 'emisor_nombre': emisor_datos["nombre"], 'emisor_cedula': emisor_datos["cedula"], 'emisor_correo': emisor_datos["correo"], 'cliente_nombre': cliente_datos["nombre"], 'cliente_cedula': cliente_datos["cedula"], 'cliente_correo': cliente_datos["correo"], 'condicion_venta': condicion_venta, 'medio_pago': medio_pago}
         
         xml_generado_crudo = generar_xml_factura_44(datos_xml_maestro, lineas_frontend)
-        
-        # FIRMA CRIPTOGRÁFICA
         xml_firmado_listo = firmar_xml_hacienda(xml_generado_crudo, p12_b64, pin_p12)
-        
         resultado_envio = enviar_factura_hacienda(id_empresa_actual, datos_xml_maestro, xml_firmado_listo)
 
         if resultado_envio["success"]: return jsonify({"success": True, "message": "Factura procesada con éxito", "clave": clave_50, "consecutivo": consecutivo_sistema})
@@ -661,10 +712,6 @@ def emitir_factura_electronica_api():
     except Exception as e:
         registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
         return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
-
-# ==============================================================================
-#                      FIN MOTOR CRIPTOGRÁFICO Y HACIENDA
-# ==============================================================================
 
 @app.route('/api/admin/solicitudes', methods=['GET'])
 def listar_solicitudes():
@@ -707,7 +754,7 @@ def obtener_todo():
         if 'hero_titulo' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('hero_titulo', 'Servicio Técnico Profesional') ON CONFLICT DO NOTHING")
         if 'mision' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('mision', 'Brindar soporte técnico especializado con honestidad y excelencia.') ON CONFLICT DO NOTHING")
         if 'vision' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('vision', 'Ser la empresa líder en soluciones tecnológicas y seguridad en Costa Rica.') ON CONFLICT DO NOTHING")
-        if 'compromiso' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuity operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
+        if 'compromiso' not in config: db_query("INSERT INTO configuracion (clave, valor) VALUES ('compromiso', 'Aseguramos la continuidad operativa de tu negocio mediante respuestas rápidas, acuerdos de nivel de servicio (SLA) eficientes y soporte de alta disponibilidad.') ON CONFLICT DO NOTHING")
 
         beneficios_existentes = db_query("SELECT COUNT(*) FROM beneficios", fetch=True)
         if beneficios_existentes and beneficios_existentes[0][0] == 0:
@@ -868,9 +915,13 @@ def editar_producto(id):
 @app.route('/api/eliminar/<tabla>/<int:id>', methods=['DELETE'])
 @login_required
 def eliminar_item(tabla, id):
-    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan']
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan', 'clientes_facturacion', 'productos_facturacion']
     if tabla in tablas_permitidas:
-        db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
+        if tabla in ['clientes_facturacion', 'productos_facturacion']:
+            id_emp = get_empresa_id_from_session()
+            db_query(f"DELETE FROM {tabla} WHERE id = %s AND id_empresa = %s", (id, id_emp))
+        else:
+            db_query(f"DELETE FROM {tabla} WHERE id = %s", (id,))
         registrar_cambio("Eliminó Contenido", f"Se borró el registro con ID {id} de la tabla '{tabla}'")
         return jsonify({"mensaje": "🗑️"})
     return jsonify({"error": "No válida"}), 400

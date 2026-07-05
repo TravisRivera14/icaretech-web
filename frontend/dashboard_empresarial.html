@@ -11,14 +11,13 @@
     
     <style>
         :root {
-            /* FONDOS OSCUROS PREMIUM CORREGIDOS (DARK THEME EXACTO) */
-            --bg-dark: #0b0c10; 
+            --bg-dark: #f8fafc; 
             --sidebar-bg: #11141a;
             --card-bg: #1f2833;
             --card-hover: #2a3645;
             --text-light: #f5f5f7;
             --text-muted: #8a99ad;
-            --neon-blue: #55bbcc; /* Turquesa solicitado */
+            --neon-blue: #55bbcc; 
             --border-color: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s ease;
             --btn-green: #10b981;
@@ -27,288 +26,622 @@
             --del: #ff3b30;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        body {
-            background: var(--bg-dark);
-            color: var(--text-light);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-            font-size: 14px;
-            -webkit-font-smoothing: antialiased;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
         }
         
-        /* BARRA LATERAL (SIDEBAR) */
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-light); 
+            display: flex; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            font-size: 14px; 
+            -webkit-font-smoothing: antialiased; 
+        }
+        
+        .sidebar { 
+            width: 280px; 
+            background: var(--sidebar-bg); 
+            border-right: 1px solid var(--border-color); 
+            display: flex; 
+            flex-direction: column; 
+            position: fixed; 
+            height: 100vh; 
+            z-index: 100; 
+            overflow-y: auto; 
+        }
+
+        .sidebar::-webkit-scrollbar { 
+            width: 6px; 
+        }
+
+        .sidebar::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+        }
+        
+        .sidebar-header { 
+            padding: 30px 20px 15px 20px; 
+            text-align: center; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        .logo-dual-container { 
+            padding: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 15px; 
+        }
+
+        .main-logo-img { 
+            height: 65px; 
+            object-fit: contain; 
+            filter: brightness(0) invert(1); 
+        }
+
+        #client-logo-img { 
+            height: 45px; 
+            object-fit: contain; 
+            background: white; 
+            padding: 4px; 
+            border-radius: 6px; 
+        }
+        
+        .empresa-badge { 
+            background: rgba(85, 187, 204, 0.1); 
+            color: var(--neon-blue); 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            display: inline-block; 
+        }
+        
+        .nav-menu { 
+            padding: 15px 0; 
+        }
+
+        .nav-item { 
+            padding: 12px 25px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: var(--text-muted); 
+            text-decoration: none; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            font-weight: 500; 
+            font-size: 14px; 
+        }
+
+        .nav-item:hover, 
+        .nav-item.active { 
+            color: var(--neon-blue); 
+            background: rgba(255,255,255,0.02); 
+            border-left: 4px solid var(--neon-blue); 
+        }
+
+        .nav-item i.main-icon { 
+            width: 25px; 
+            font-size: 16px; 
+        }
+
+        .dropdown-container { 
+            display: none; 
+            background: #0d0f14; 
+            border-left: 1px solid var(--border-color); 
+        }
+
+        .dropdown-container a { 
+            padding: 10px 25px 10px 55px; 
+            display: block; 
+            color: var(--text-muted); 
+            text-decoration: none; 
+            font-size: 13px; 
+            transition: var(--transition); 
+            cursor: pointer; 
+        }
+
+        .dropdown-container a:hover { 
+            color: var(--text-light); 
+            background: rgba(255,255,255,0.03); 
+        }
+
+        .logout-btn { 
+            padding: 15px; 
+            border-top: 1px solid var(--border-color); 
+            margin-top: 10px; 
+        }
+
+        .logout-btn a { 
+            display: block; 
+            text-align: center; 
+            padding: 10px; 
+            background: rgba(255, 59, 48, 0.1); 
+            color: #ff3b30; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 13px; 
+            transition: var(--transition); 
+            cursor: pointer;
+        }
+
+        .logout-btn a:hover { 
+            background: #ff3b30; 
+            color: white; 
+        }
+
+        .main-content { 
+            flex: 1; 
+            margin-left: 280px; 
+            padding: 35px 45px; 
             overflow-y: auto;
         }
         
-        .sidebar::-webkit-scrollbar { width: 6px; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        
-        /* LOGOS DUALES EN EL SIDEBAR */
-        .sidebar-header {
-            padding: 30px 20px 15px 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .logo-dual-container {
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .main-logo-img {
-            height: 65px; 
-            object-fit: contain;
-            filter: brightness(0) invert(1); /* BLANCO PURO SIN FONDO */
-        }
-        
-        #client-logo-img {
-            height: 45px;
-            object-fit: contain;
-            background: white; 
-            padding: 4px;
-            border-radius: 6px;
-        }
-        
-        .empresa-badge {
-            background: rgba(85, 187, 204, 0.1);
-            color: var(--neon-blue);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            display: inline-block;
-        }
-        
-        .nav-menu { padding: 15px 0; }
-        
-        .nav-item {
-            padding: 12px 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--text-muted);
-            text-decoration: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 500;
-            font-size: 14px;
-        }
-        
-        .nav-item:hover, .nav-item.active {
-            color: var(--neon-blue);
-            background: rgba(255,255,255,0.02);
-            border-left: 4px solid var(--neon-blue);
-        }
-        
-        .nav-item i.main-icon { width: 25px; font-size: 16px; }
-
-        /* TARJETAS DE SERVICIOS FLOTANTES EN SIDEBAR */
-        .sidebar-upsell-title {
-            font-size: 10px; color: #64748b; text-transform: uppercase; margin: 15px 20px 5px; font-weight: 700; letter-spacing: 1px;
-        }
-        
-        .sidebar-upsell-card {
-            background: rgba(85, 187, 204, 0.15); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(85, 187, 204, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 10px 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: var(--transition);
-        }
-        
-        .sidebar-upsell-card:hover {
-            transform: translateY(-3px);
-            background: rgba(85, 187, 204, 0.25);
-            border-color: rgba(85, 187, 204, 0.5);
-        }
-        
-        .sidebar-upsell-card h3 {
-            color: #fff;
-            font-size: 13.5px;
-            margin: 0 0 5px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .sidebar-upsell-card p {
-            color: rgba(255,255,255,0.8);
-            font-size: 11.5px;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-        
-        .sidebar-upsell-btn {
-            background: #fff;
-            color: var(--neon-blue);
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .sidebar-upsell-btn:hover {
-            background: var(--neon-blue);
-            color: #fff;
-        }
-        
-        .logout-btn { padding: 15px; border-top: 1px solid var(--border-color); margin-top: 10px; }
-        .logout-btn a { display: block; text-align: center; padding: 10px; background: rgba(255, 59, 48, 0.1); color: #ff3b30; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: var(--transition); cursor: pointer;}
-        .logout-btn a:hover { background: #ff3b30; color: white; }
-
-        /* CONTENIDO PRINCIPAL */
-        .main-content { flex: 1; margin-left: 280px; padding: 35px 45px; overflow-y: auto;}
-        
         .topbar { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
-            padding-bottom: 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 35px; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
         }
         
-        /* BOTONES TOPBAR UNIFICADOS EN TURQUESA */
-        .top-buttons { display: flex; gap: 10px; flex-wrap: wrap;}
-        .btn-top {
-            padding: 9px 16px; border-radius: 6px; border: none; color: white; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .top-buttons { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap;
         }
-        .btn-top:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .btn-t-blue { background: var(--neon-blue); color: #fff; }
 
-        /* BURBUJA DE REDES SOCIALES (TOPBAR) */
-        .dropdown-menu-container {
-            position: relative;
-            display: inline-block;
+        .btn-top { 
+            padding: 9px 16px; 
+            border-radius: 6px; 
+            border: none; 
+            color: white; 
+            font-weight: 600; 
+            font-size: 13px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: 0.2s; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(10px);
-            background-color: var(--sidebar-bg);
-            min-width: 180px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1100;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
+
+        .btn-top:hover { 
+            opacity: 0.9; 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
         }
-        .dropdown-content a {
-            color: #f5f5f7;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-            font-size: 13.5px;
+
+        .btn-t-blue { 
+            background: var(--neon-blue); 
+            color: #fff; 
+        }
+
+        .dropdown-menu-container { 
+            position: relative; 
+            display: inline-block; 
+        }
+
+        .dropdown-content { 
+            display: none; 
+            position: absolute; 
+            top: 100%; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(10px); 
+            background-color: var(--sidebar-bg); 
+            min-width: 180px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            border-radius: 8px; 
+            padding: 10px 0; 
+            z-index: 1100; 
+            border: 1px solid var(--border-color); 
+            transition: var(--transition); 
+        }
+
+        .dropdown-content a { 
+            color: #f5f5f7; 
+            padding: 12px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-start; 
+            gap: 12px; 
+            font-size: 13.5px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        .dropdown-content a:last-child { 
+            border-bottom: none; 
+        }
+
+        .dropdown-content a:hover { 
+            background-color: rgba(255,255,255,0.05); 
+            color: var(--neon-blue); 
+        }
+
+        .dropdown-menu-container:hover .dropdown-content { 
+            display: block; 
+            transform: translateX(-50%) translateY(0); 
+        }
+
+        .user-profile { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding-left: 18px; 
+            border-left: 1px solid var(--border-color); 
+            cursor: pointer; 
+        }
+
+        .user-initial { 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 50%; 
+            background: var(--neon-blue); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #fff; 
+            font-weight: 800; 
+            font-size: 16px; 
+        }
+
+        .user-meta { 
+            display: flex; 
+            flex-direction: column; 
+            text-align: right; 
+        }
+
+        .user-meta b { 
+            font-size: 14px; 
+            color: #fff; 
+        }
+
+        .user-meta span { 
+            font-size: 11.5px; 
+            color: var(--del); 
+            font-weight: 600; 
+            transition: 0.3s;
+        }
+
+        .user-meta span:hover { 
+            color: #ff6b6b; 
+        }
+
+        .page-title { 
+            margin: 0 0 20px 0; 
+            font-size: 22px; 
+            font-weight: 700; 
+            color: #fff; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 15px;
+        }
+
+        .breadcrumb { 
+            font-size: 12.5px; 
+            color: #64748b; 
+            margin-bottom: 20px; 
             font-weight: 600;
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .dropdown-content a:last-child { border-bottom: none; }
-        .dropdown-content a:hover {
-            background-color: rgba(255,255,255,0.05);
-            color: var(--neon-blue);
-        }
-        .dropdown-menu-container:hover .dropdown-content {
-            display: block;
-            transform: translateX(-50%) translateY(0);
         }
 
-        .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid var(--border-color); cursor: pointer; }
-        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
-        .user-meta { display: flex; flex-direction: column; text-align: right; }
-        .user-meta b { font-size: 14px; color: #fff; }
-        .user-meta span { font-size: 11.5px; color: var(--del); font-weight: 600; transition: 0.3s;}
-        .user-meta span:hover { color: #ff6b6b; }
+        .breadcrumb span { 
+            color: var(--neon-blue); 
+            font-weight: 700; 
+        }
 
-        .page-title { margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;}
-        .breadcrumb { font-size: 12.5px; color: #64748b; margin-bottom: 20px; font-weight: 600;}
-        .breadcrumb span { color: var(--neon-blue); font-weight: 700; }
-        .section-title { margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #fff;}
+        .section-title { 
+            margin: 0 0 15px 0; 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #fff;
+        }
 
         .card { 
             background: var(--card-bg); 
             padding: 30px; 
             border-radius: 12px; 
             border: 1px solid var(--border-color); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            margin-bottom: 25px; 
         }
 
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
-        .metric-box { background: #11141a; padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .metric-box p { margin: 0 0 8px 0; font-size: 11.5px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; text-transform:uppercase;}
-        .metric-box h3 { margin: 0; font-size: 24px; font-weight: 700; color: #fff; }
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            margin-bottom: 25px; 
+        }
 
-        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .metric-box { 
+            background: #11141a; 
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+        }
+
+        .metric-box p { 
+            margin: 0 0 8px 0; 
+            font-size: 11.5px; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            letter-spacing: 0.5px; 
+            text-transform: uppercase;
+        }
+
+        .metric-box h3 { 
+            margin: 0; 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: #fff; 
+        }
+
+        .split-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 25px; 
+        }
 
         .form-input { 
-            width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 8px; background: #11141a; border: 1px solid var(--border-color); color: #fff; font-size: 14px; transition: 0.3s; box-sizing: border-box; font-family: inherit;
+            width: 100%; 
+            padding: 12px 15px; 
+            margin-bottom: 15px; 
+            border-radius: 8px; 
+            background: #11141a; 
+            border: 1px solid var(--border-color); 
+            color: #fff; 
+            font-size: 14px; 
+            transition: 0.3s; 
+            box-sizing: border-box; 
+            font-family: inherit; 
         }
-        .form-input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);}
-        label { color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;}
 
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; color: #fff;}
-        .admin-table th { color: var(--text-muted); text-align: left; padding: 14px 15px; border-bottom: 2px solid var(--border-color); font-weight: 600; text-transform: uppercase; font-size: 11.5px; background: #11141a; }
-        .admin-table td { padding: 15px; border-bottom: 1px solid var(--border-color); color: #cfd8dc; }
-        .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .form-input:focus { 
+            border-color: var(--neon-blue); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+        }
 
-        .fact-btn-del { padding: 8px 12px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s;}
-        .fact-btn-del:hover { background: #ef4444; color: white;}
-        .fact-btn-view { padding: 8px 14px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--btn-green); border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; margin-right: 5px; font-weight: 600;}
-        .fact-btn-view:hover { background: var(--btn-green); color: white;}
+        label { 
+            color: var(--text-muted); 
+            font-size: 13px; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            display: block;
+        }
 
-        .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; gap: 10px; }
-        .tab-link { padding: 12px 20px; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: 0.2s; }
-        .tab-link:hover { color: #fff; }
-        .tab-link.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); }
+        .admin-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            font-size: 14px; 
+            color: #fff;
+        }
 
-        .pricing-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; justify-content: flex-start; align-items: flex-end;}
-        .price-card { background: var(--card-bg); border-radius: 12px; width: 300px; overflow: hidden; text-align: center; color: var(--text-light); display: flex; flex-direction: column; border: 1px solid var(--border-color); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
-        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--neon-blue); z-index: 10; margin: 0 10px;}
-        .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px;}
+        .admin-table th { 
+            color: var(--text-muted); 
+            text-align: left; 
+            padding: 14px 15px; 
+            border-bottom: 2px solid var(--border-color); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 11.5px; 
+            background: #11141a; 
+        }
+
+        .admin-table td { 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border-color); 
+            color: #cfd8dc; 
+        }
+
+        .admin-table tr:hover td { 
+            background: rgba(255,255,255,0.02); 
+        }
+
+        .fact-btn-del { 
+            padding: 8px 12px; 
+            background: rgba(239,68,68,0.1); 
+            border: 1px solid rgba(239,68,68,0.3); 
+            color: #ef4444; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.3s;
+        }
+
+        .fact-btn-del:hover { 
+            background: #ef4444; 
+            color: white;
+        }
+
+        .fact-btn-view { 
+            padding: 8px 14px; 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+            color: var(--btn-green); 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.3s; 
+            margin-right: 5px; 
+            font-weight: 600;
+        }
+
+        .fact-btn-view:hover { 
+            background: var(--btn-green); 
+            color: white;
+        }
+
+        .tabs-header { 
+            display: flex; 
+            border-bottom: 1px solid var(--border-color); 
+            margin-bottom: 25px; 
+            gap: 10px; 
+        }
+
+        .tab-link { 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            color: var(--text-muted); 
+            border-bottom: 2px solid transparent; 
+            margin-bottom: -1px; 
+            transition: 0.2s; 
+        }
+
+        .tab-link:hover { 
+            color: #fff; 
+        }
+
+        .tab-link.active { 
+            color: var(--neon-blue); 
+            border-bottom-color: var(--neon-blue); 
+        }
+
+        .pricing-grid { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            margin-top: 20px; 
+            justify-content: flex-start; 
+            align-items: flex-end;
+        }
+
+        .price-card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            width: 300px; 
+            overflow: hidden; 
+            text-align: center; 
+            color: var(--text-light); 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid var(--border-color); 
+            position: relative; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .price-card.recommended { 
+            transform: scale(1.05); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
+            border: 2px solid var(--neon-blue); 
+            z-index: 10; 
+            margin: 0 10px;
+        }
+
+        .price-header { 
+            padding: 15px; 
+            font-weight: 800; 
+            font-size: 14px; 
+            letter-spacing: 1px;
+        }
+
+        .bg-dark { background: #11141a; color: white; }
         .bg-blue { background: #0077b6; color: white; }
         .bg-green { background: var(--neon-blue); color: #fff; }
-        .bg-dark { background: #11141a; color: white; }
-        .price-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--del); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800;}
-        .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid var(--border-color); }
-        .price-amount h2 { font-size: 38px; color: #fff; margin: 0; font-weight: 800;}
-        .price-amount .colones { font-size: 13px; color: var(--text-muted); margin: 5px 0;}
-        .price-amount .period { font-size: 13px; color: var(--text-muted); font-weight: 600;}
-        .price-features { padding: 20px; list-style: none; margin: 0; flex: 1; }
-        .price-features li { padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; color: #cfd8dc; }
-        .price-features li:last-child { border-bottom: none; }
-        .price-features b { color: var(--neon-blue); }
-        .price-btn-box { padding: 20px; background: #11141a; border-top: 1px solid var(--border-color);}
-        .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
-        .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
-        .btn-outline:hover { background: var(--neon-blue); color: #000; }
-        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
-        .btn-solid:hover { opacity: 0.9; }
-        .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
+
+        .price-amount { 
+            padding: 25px 20px 10px; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        .price-amount h2 { 
+            font-size: 38px; 
+            color: #fff; 
+            margin: 0; 
+            font-weight: 800;
+        }
+
+        .price-amount .colones { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            margin: 5px 0;
+        }
+
+        .price-amount .period { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            font-weight: 600;
+        }
+
+        .price-features { 
+            padding: 20px; 
+            list-style: none; 
+            margin: 0; 
+            flex: 1; 
+        }
+
+        .price-features li { 
+            padding: 12px 0; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 13px; 
+            color: #cfd8dc; 
+        }
+
+        .price-features li:last-child { 
+            border-bottom: none; 
+        }
+
+        .price-features b { 
+            color: var(--neon-blue); 
+        }
+
+        .price-btn-box { 
+            padding: 20px; 
+            background: #11141a; 
+            border-top: 1px solid var(--border-color);
+        }
+
+        .price-btn { 
+            padding: 12px 25px; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            text-decoration: none; 
+            display: inline-block; 
+            width: 100%; 
+            box-sizing: border-box; 
+            font-size: 13px; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+
+        .btn-outline { 
+            border: 2px solid var(--neon-blue); 
+            color: var(--neon-blue); 
+            background: transparent; 
+        }
+
+        .btn-outline:hover { 
+            background: var(--neon-blue); 
+            color: #000; 
+        }
+
+        .btn-solid { 
+            border: 2px solid var(--neon-blue); 
+            background: var(--neon-blue); 
+            color: white; 
+        }
+
+        .btn-solid:hover { 
+            opacity: 0.9; 
+        }
+
+        .btn-disabled { 
+            border: 2px solid #334155; 
+            background: #1e293b; 
+            color: #64748b; 
+            cursor: default; 
+        }
     </style>
 </head>
 <body>
@@ -327,28 +660,6 @@
         
         <div class="nav-menu" id="sidebar-dynamic-menu">
             </div>
-
-        <div id="sidebar-upsell-container" style="display: none;">
-            <div class="sidebar-upsell-title">Adquirir Servicios</div>
-            
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-file-invoice-dollar"></i> Sistema de Facturación</h3>
-                <p>Planes contables desde $0 hasta $29.99/mes.</p>
-                <button class="sidebar-upsell-btn" onclick="showSection('facturacion'); setTimeout(()=>renderModulo('Mi plan'), 200);">Ver Planes</button>
-            </div>
-
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-server"></i> Cloud & Data Center</h3>
-                <p>Servidores VPS rápidos y Almacenamiento seguro.</p>
-                <button class="sidebar-upsell-btn" onclick="openWA('Hola, deseo cotizar un servidor en el Data Center de iCare')">Cotizar Servidor</button>
-            </div>
-
-            <div class="sidebar-upsell-card">
-                <h3><i class="fas fa-laptop-code"></i> Creación de Página Web</h3>
-                <p>Diseño y desarrollo web corporativo a la medida.</p>
-                <button class="sidebar-upsell-btn" onclick="openWA('Hola, estoy interesado en cotizar la creación de una página web profesional para mi negocio')">Cotizar Página Web</button>
-            </div>
-        </div>
         
         <div class="logout-btn">
             <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
@@ -358,20 +669,37 @@
     <main class="main-content">
         <div class="topbar">
             <div class="top-buttons">
-                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)"><i class="fas fa-file-invoice"></i> Nueva factura</button>
-                <button class="btn-top btn-t-blue" onclick="window.location.href='tienda_servicios.html'"><i class="fas fa-shopping-cart"></i> Tienda</button>
+                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Nueva Factura', null)">
+                    <i class="fas fa-file-invoice"></i> Nueva factura
+                </button>
+                
+                <button class="btn-top btn-t-blue" onclick="window.location.href='tienda_servicios.html'">
+                    <i class="fas fa-shopping-cart"></i> Tienda
+                </button>
                 
                 <div class="dropdown-menu-container">
-                    <button class="btn-top btn-t-blue dropdown-trigger"><i class="fab fa-whatsapp"></i> Contáctanos</button>
+                    <button class="btn-top btn-t-blue dropdown-trigger">
+                        <i class="fab fa-whatsapp"></i> Contáctanos
+                    </button>
                     <div class="dropdown-content">
-                        <a href="https://www.instagram.com/icaretechcr/" target="_blank"><i class="fab fa-instagram" style="color:#E1306C; font-size:18px;"></i> Instagram</a>
-                        <a href="https://www.facebook.com/iCareTechCR/" target="_blank"><i class="fab fa-facebook-f" style="color:#1877F2; font-size:18px;"></i> Facebook</a>
-                        <a href="https://www.tiktok.com/@icaretechcr" target="_blank"><i class="fab fa-tiktok" style="color:#fff; font-size:18px;"></i> TikTok</a>
-                        <a href="#" onclick="openWA('Hola iCare Tech')"><i class="fab fa-whatsapp" style="color:#25D366; font-size:18px;"></i> WhatsApp</a>
+                        <a href="https://www.instagram.com/icaretechcr/" target="_blank">
+                            <i class="fab fa-instagram" style="color:#E1306C; font-size:18px;"></i> Instagram
+                        </a>
+                        <a href="https://www.facebook.com/iCareTechCR/" target="_blank">
+                            <i class="fab fa-facebook-f" style="color:#1877F2; font-size:18px;"></i> Facebook
+                        </a>
+                        <a href="https://www.tiktok.com/@icaretechcr" target="_blank">
+                            <i class="fab fa-tiktok" style="color:#fff; font-size:18px;"></i> TikTok
+                        </a>
+                        <a href="#" onclick="openWA('Hola iCare Tech')">
+                            <i class="fab fa-whatsapp" style="color:#25D366; font-size:18px;"></i> WhatsApp
+                        </a>
                     </div>
                 </div>
 
-                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Datos de la Empresa', null)"><i class="fas fa-database"></i> Datos de facturación</button>
+                <button class="btn-top btn-t-blue fact-top-btn" style="display:none;" onclick="renderModulo('Datos de la Empresa', null)">
+                    <i class="fas fa-database"></i> Datos de facturación
+                </button>
             </div>
             
             <div style="display:flex; align-items:center; gap: 20px;">
@@ -390,24 +718,39 @@
 
         <div id="vista-principal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
             
-            <div class="card" onclick="showSection('tickets')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('tickets')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-ticket-alt"></i></div>
-                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Centro de Soporte</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Gestiona tickets y reporta averías.</p></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0 0 5px 0; font-size:18px;">Centro de Soporte</h3>
+                        <p style="margin:0; color:var(--text-muted); font-size:14px;">Gestiona tickets y reporta averías.</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="card" onclick="showSection('facturacion')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('facturacion')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-file-invoice-dollar"></i></div>
-                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Módulo Contable</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Facturación electrónica y proformas.</p></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0 0 5px 0; font-size:18px;">Módulo Contable</h3>
+                        <p style="margin:0; color:var(--text-muted); font-size:14px;">Facturación electrónica y proformas.</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="card" onclick="showSection('datacenter')" style="cursor:pointer;">
+            <div class="card" onclick="window.showSection('datacenter')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-server"></i></div>
-                    <div><h3 style="margin:0 0 5px 0; font-size:18px;">Cloud & Data Center</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Monitoreo y respaldos de servidores.</p></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0 0 5px 0; font-size:18px;">Cloud & Data Center</h3>
+                        <p style="margin:0; color:var(--text-muted); font-size:14px;">Monitoreo y respaldos de servidores.</p>
+                    </div>
                 </div>
             </div>
 
@@ -415,8 +758,8 @@
     </main>
 
     <script>
-        // CÓDIGO JS TOTALMENTE EXTENDIDO PARA EVITAR CUALQUIER FALLO
-        window.userDataCache = {};
+        // Declaraciones Globales
+        window.userDataCache = { permisos: { facturacion: false, datacenter: false, tickets: true } };
         window.lineasDocumento = []; 
         window.clientesCache = [];
         window.productosCache = [];
@@ -450,9 +793,47 @@
             ]
         };
 
+        window.mostrarPantallaBloqueada = function(nombreModulo) {
+            const contenedor = document.getElementById('vista-principal');
+            contenedor.style.display = 'block';
+            
+            const menuHtml = document.getElementById('sidebar-dynamic-menu');
+            menuHtml.innerHTML = `
+                <div class="nav-item" onclick="cargarVista('inicio')" style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:20px;">
+                    <div><i class="fas fa-arrow-left main-icon"></i> Volver al Menú Principal</div>
+                </div>
+            `;
+            
+            document.querySelectorAll('.fact-top-btn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+            
+            contenedor.innerHTML = `
+                <div class="card" style="text-align: center; padding: 80px 20px;">
+                    <i class="fas fa-lock" style="font-size: 60px; color: var(--text-muted); margin-bottom: 20px;"></i>
+                    <h2 class="page-title" style="border: none; margin-bottom: 10px; justify-content:center; display:flex;">Acceso Restringido</h2>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px;">Tu cuenta no tiene un plan activo para el módulo de <b>${nombreModulo}</b>.</p>
+                    <button class="btn-top btn-t-blue" style="margin: 0 auto; font-size: 16px; padding: 12px 24px;" onclick="window.location.href='tienda_servicios.html'">
+                        Ver Planes y Adquirir
+                    </button>
+                </div>
+            `;
+        };
+
         window.showSection = function(sec) {
+            // VERIFICACIÓN DE PERMISOS DESDE LA BASE DE DATOS
+            if (sec === 'facturacion' && window.userDataCache.permisos && window.userDataCache.permisos.facturacion === false) {
+                window.mostrarPantallaBloqueada('Sistema de Facturación');
+                return;
+            }
+            if (sec === 'datacenter' && window.userDataCache.permisos && window.userDataCache.permisos.datacenter === false) {
+                window.mostrarPantallaBloqueada('Cloud & Data Center');
+                return;
+            }
+
             const menuHtml = document.getElementById('sidebar-dynamic-menu');
             let items = menuData[sec];
+            if (!items) return;
             
             let html = `
                 <div class="nav-item" onclick="cargarVista('inicio')" style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:20px;">
@@ -471,40 +852,36 @@
             
             setTimeout(() => {
                 const el = menuHtml.querySelector('.nav-item.active');
-                if(el) { window.renderModulo(items[0].nombre, el); }
+                if (el) { 
+                    window.renderModulo(items[0].nombre, el); 
+                }
             }, 50);
         };
 
         window.cargarVista = function(vista) {
-            if(vista === 'inicio') {
+            if (vista === 'inicio') {
                 location.reload(); 
             }
         };
 
         window.renderModulo = function(opcion, el) {
-            if(el) {
-                document.querySelectorAll('.sidebar .nav-item').forEach(i => i.classList.remove('active'));
+            if (el) {
+                document.querySelectorAll('.sidebar .nav-item').forEach(i => {
+                    i.classList.remove('active');
+                });
                 el.classList.add('active');
             }
 
             const contenedor = document.getElementById('vista-principal');
             contenedor.style.display = 'block';
 
-            // VISIBILIDAD DE BOTONES DEL TOPBAR Y UPSELL
             const isFacturacion = ['Inicio Facturador', 'Mi plan', 'Clientes', 'Catálogo CABYS', 'Nueva Factura', 'Historial de Facturas', 'Nueva Proforma', 'Proformas Generadas', 'Datos de la Empresa', 'Llave Hacienda (.p12)'].includes(opcion);
             
             document.querySelectorAll('.fact-top-btn').forEach(btn => {
                 btn.style.display = isFacturacion ? 'flex' : 'none';
             });
-            
-            const upsellContainer = document.getElementById('sidebar-upsell-container');
-            if (upsellContainer) {
-                upsellContainer.style.display = isFacturacion ? 'block' : 'none';
-            }
 
-            // ==========================================
-            // MÓDULO DATA CENTER
-            // ==========================================
+            // ---------- MÓDULO DATA CENTER ----------
             if (opcion === 'Resumen Data Center') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Cloud & Data Center / <span>Resumen</span></div>
@@ -580,9 +957,7 @@
                 `;
             }
 
-            // ==========================================
-            // MÓDULO CONTABLE (FACTURACIÓN)
-            // ==========================================
+            // ---------- MÓDULO CONTABLE (FACTURACIÓN) ----------
             else if (opcion === 'Inicio Facturador') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>Información general</span></div>
@@ -624,10 +999,10 @@
                     <div class="breadcrumb">Modulo Contable / <span>Mi plan</span></div>
                     <h2 class="page-title">Suscripción y Límites del Sistema</h2>
                     
-                    <div class="card" style="background:#11141a; border:1px solid var(--neon-blue); margin-bottom:30px;">
+                    <div class="card" style="background:rgba(85, 187, 204, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px;">
                         <h3 class="section-title" style="color:var(--neon-blue); font-weight:700;"><i class="fas fa-chart-pie"></i> Consumo de Documentos del Mes</h3>
-                        <p style="margin:0 0 15px 0; color:#cbd5e1; font-weight:500;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
-                        <div style="font-size:16px; font-weight:700; color:#f8fafc;">Llevas emitidas: <b style="color:#ef4444; font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
+                        <p style="margin:0 0 15px 0; color:#cfd8dc; font-weight:500;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
+                        <div style="font-size:16px; font-weight:700; color:var(--text-light);">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
                     </div>
 
                     <div class="pricing-grid">
@@ -721,9 +1096,7 @@
                 window.renderConfigHacienda();
             }
 
-            // ==========================================
-            // MÓDULO TICKETS (SOPORTE)
-            // ==========================================
+            // ---------- MÓDULO TICKETS (SOPORTE) ----------
             else if (opcion === 'Reportar Avería') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Soporte iCare / <span>Reportar Avería</span></div>
@@ -1280,66 +1653,67 @@
             });
         };
 
-        // --- INICIALIZADOR SEGURO PARA QUE NO SE CUELGUE LA PÁGINA ---
+        // --- INICIALIZADOR SEGURO CORREGIDO ---
         window.onload = async () => {
             try {
-                // 1. Iniciar petición de sesión
+                // 1. Obtener la sesión para pintar el nombre inmediatamente y sin depender de otras cosas
                 const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
-                
                 if (res.status === 401) { 
                     window.location.href = '/login.html'; 
                     return; 
                 }
                 
                 const data = await res.json();
-                
-                // 2. Colocar el nombre de usuario de inmediato
                 if(data.usuario) {
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
-                    if (headerUserName) headerUserName.innerText = data.usuario;
-                    if (headerUserInitial) headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
+                    if (headerUserName) {
+                        headerUserName.innerText = data.usuario;
+                    }
+                    if (headerUserInitial) {
+                        headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
+                    }
                 }
                 
-                // 3. Traer datos de facturación e inventario
+                // 2. Traer permisos y datos operativos
                 const opsRes = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
                 window.userDataCache = await opsRes.json();
                 
-                // 4. Colocar la empresa
+                // 3. Pintar la empresa
                 const badge = document.getElementById('nombre-empresa-badge');
                 if(badge) {
                     badge.innerText = window.userDataCache.empresa || data.empresa || "Cliente Corporativo";
                 }
 
-                // 5. Cargar Logo de Empresa si existe
+                // 4. Lógica de Dual Logo
                 try {
                     const confRes = await fetch('/api/facturacion/config-empresa', {credentials: 'include'});
                     const confData = await confRes.json();
                     if(confData.logo && window.userDataCache.plan !== 'Gratis') {
                         const wrapper = document.getElementById('client-logo-wrapper');
                         const img = document.getElementById('client-logo-img');
-                        if (wrapper && img) {
+                        if(wrapper && img) {
                             wrapper.style.display = 'flex';
                             img.src = confData.logo;
                         }
                     }
                 } catch(err) { 
-                    console.log('No hay logo personalizado.'); 
+                    console.log('Logo corporativo no encontrado.'); 
                 }
 
-                // 6. Cargar base de datos al fondo para no detener la pantalla
+                // 5. Cargar tablas en background
                 fetch('/api/facturacion/clientes', {credentials: 'include'})
                 .then(r => r.json())
                 .then(d => window.clientesCache = d)
-                .catch(e => console.log('Error clientes', e));
+                .catch(e => console.log(e));
                 
                 fetch('/api/facturacion/productos', {credentials: 'include'})
                 .then(r => r.json())
                 .then(d => window.productosCache = d)
-                .catch(e => console.log('Error productos', e));
+                .catch(e => console.log(e));
 
             } catch (e) { 
-                console.warn("Fallo de conexión al backend:", e); 
+                console.warn("backend offline"); 
             }
         };
 

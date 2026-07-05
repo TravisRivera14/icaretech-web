@@ -29,7 +29,7 @@
         .submenu li:hover { color: white; }
         .submenu li.active { color: var(--accent); font-weight: 600;}
         
-        .main-content { flex: 1; padding: 30px; background: #0e1014;}
+        .main-content { flex: 1; padding: 30px; background: #0e1014; overflow-y:auto;}
         .card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
         
         h2 { margin: 0 0 25px 0; font-size: 22px; font-weight: 700;}
@@ -45,21 +45,54 @@
         .fact-input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);}
         .fact-btn { padding: 11px 20px; background: var(--accent); border: none; border-radius: 6px; font-weight: 700; cursor: pointer; color: black; font-size: 13.5px; transition: 0.3s; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; justify-content: center;}
         .fact-btn:hover { background: white; transform: translateY(-1px);}
-        .fact-btn:disabled { background: #444; color: #8a99ad; cursor: not-allowed; transform: none;}
+        .fact-btn:disabled { background: #444 !important; color: #8a99ad !important; cursor: not-allowed; transform: none;}
         
+        /* ESTILOS TARJETAS DE PRECIOS */
+        .pricing-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; justify-content: flex-start; align-items: flex-end;}
+        .price-card { background: white; border-radius: 12px; width: 280px; overflow: hidden; text-align: center; color: #333; display: flex; flex-direction: column; border: 1px solid #e1e4e8; position: relative;}
+        .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid #2ea043; z-index: 10; margin: 0 10px;}
+        .price-card.dark-card { background: #161b22; border-color: #30363d; color: #f5f5f7; }
+        
+        .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px;}
+        .bg-blue { background: #0071e3; color: white; }
+        .bg-green { background: #2ea043; color: white; }
+        .bg-dark { background: #333; color: white; }
+        
+        .price-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #da3633; color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800;}
+        .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid #f0f0f0; }
+        .dark-card .price-amount { border-bottom-color: #30363d; }
+        
+        .price-amount h2 { font-size: 38px; color: #111; margin: 0; font-weight: 800;}
+        .dark-card .price-amount h2 { color: #fff; }
+        .price-amount .colones { font-size: 13px; color: #666; margin: 5px 0;}
+        .dark-card .price-amount .colones { color: #8a99ad; }
+        .price-amount .period { font-size: 13px; color: #2ea043; font-weight: 600;}
+        .dark-card .price-amount .period { color: #8a99ad; }
+        
+        .price-features { padding: 20px; list-style: none; margin: 0; flex: 1; }
+        .price-features li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #444; }
+        .dark-card .price-features li { border-bottom-color: #30363d; color: #cfd8dc; }
+        .price-features li:last-child { border-bottom: none; }
+        .price-features b { color: #111; }
+        .dark-card .price-features b { color: var(--accent); }
+        
+        .price-btn-box { padding: 20px; background: #fafafa; border-top: 1px solid #e1e4e8;}
+        .dark-card .price-btn-box { background: #11141a; border-top-color: #30363d; }
+        .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
+        
+        .btn-outline { border: 2px solid #0071e3; color: #0071e3; background: transparent; }
+        .btn-outline:hover { background: #0071e3; color: white; }
+        .btn-solid { border: 2px solid #2ea043; background: #2ea043; color: white; }
+        .btn-solid:hover { background: #238636; border-color: #238636; }
+        .btn-disabled { border: 2px solid #555; background: #333; color: #888; cursor: default; }
+
         .fact-btn-del { padding: 6px 10px; background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.3); color: var(--del); border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s;}
         .fact-btn-del:hover { background: var(--del); color: white; border-color: var(--del);}
-        
         .fact-btn-view { padding: 6px 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--green); border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.3s; margin-right: 5px;}
         .fact-btn-view:hover { background: var(--green); color: white; border-color: var(--green);}
-
-        label { color: #8a99ad; font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;}
         
-        /* Estilos para la tabla de líneas de factura/proforma */
         .lineas-table th { background: #11141a; padding: 10px; font-size: 10px;}
         .lineas-table td { padding: 8px 10px; background: #161a22; border-bottom: 1px solid #0b0c10;}
-        .input-grid { padding: 6px 10px; margin: 0; background: #0b0c10; border: 1px solid #333;}
-        
         #total-box p { margin: 5px 0; display: flex; justify-content: space-between; color: #8a99ad; }
         #total-box p b { color: white; font-size: 15px;}
     </style>
@@ -92,9 +125,14 @@
 
 <script>
     let userDataCache = {};
-    let lineasDocumento = []; // Para guardar las líneas de la factura/proforma actual
+    let lineasDocumento = []; 
     let clientesCache = [];
     let productosCache = [];
+
+    // Función de contacto a WhatsApp para ventas
+    function openWA(msg) {
+        window.open(`https://wa.me/50686390631?text=${encodeURIComponent(msg)}`, '_blank');
+    }
 
     const menuData = {
         'datacenter': [{nombre: 'Resumen'}, {nombre: 'Monitoreo'}, {nombre: 'Respaldos'}],
@@ -123,7 +161,6 @@
             } else { sidebar.innerHTML += `<div class="nav-item" onclick="render('${item.nombre}', this)">${item.nombre}</div>`; }
         });
         
-        // Cargar primera opción por defecto
         const firstItem = sidebar.querySelector('.nav-item');
         if(firstItem) firstItem.click();
     }
@@ -153,7 +190,6 @@
             if (firstSec) showSection(firstSec);
             else document.getElementById('contenido-dinamico').innerHTML = "<h2>Sin Módulos</h2><p>No tienes acceso a ningún módulo operativo.</p>";
             
-            // Pre-cargar catálogos
             fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d);
             fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d);
 
@@ -175,15 +211,129 @@
         else document.getElementById('contenido-dinamico').innerHTML = `<h2>${opcion}</h2><p style="color:#8a99ad;">Módulo en construcción...</p>`;
     }
 
-    // --- RENDERIZADO DE MÓDULOS ---
-
+    // --- NUEVO INICIO CON GUÍA Y PLANES (REQ: IMAGEN) ---
     function renderInicioFact() {
+        const plan = userDataCache.plan || 'Gratis';
+        const usadas = userDataCache.facturas_mes_actual || 0;
+        
+        let headerMensaje = `Actualmente tu empresa está en el plan <b style="color:var(--accent);">${plan.toUpperCase()}</b>.`;
+        if (plan === 'Gratis') {
+            headerMensaje += `<br><br><div style="background:rgba(255,149,0,0.1); border:1px solid #ff9500; color:#ff9500; padding:15px; border-radius:8px; display:inline-block;">
+                <i class="fas fa-chart-pie"></i> Has emitido <b>${usadas} de 3</b> facturas gratuitas este mes.
+            </div>`;
+        }
+
         document.getElementById('contenido-dinamico').innerHTML = `
-            <h2>Panel de Facturación y Proformas</h2>
-            <p style="color:#8a99ad; line-height:1.6; max-width:700px;">Bienvenido al centro de control comercial. Desde aquí podrás emitir facturas electrónicas válidas ante Hacienda, generar proformas profesionales para tus clientes, gestionar tu catálogo de productos CABYS y configurar la identidad visual de tus documentos.</p>
-            <div style="margin-top:30px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
-                <div class="card" style="background:#11141a; text-align:center; cursor:pointer;" onclick="render('Nueva Factura')"><i class="fas fa-file-invoice-dollar" style="font-size:30px; color:var(--accent);"></i><h3 style="margin:15px 0 0 0;">Nueva Factura</h3></div>
-                <div class="card" style="background:#11141a; text-align:center; cursor:pointer;" onclick="render('Nueva Proforma')"><i class="fas fa-file-contract" style="font-size:30px; color:var(--green);"></i><h3 style="margin:15px 0 0 0;">Nueva Proforma</h3></div>
+            <h2><i class="fas fa-rocket" style="color:var(--accent);"></i> Bienvenido al Facturador iCareTech CR</h2>
+            
+            <div class="card" style="background:#11141a; padding:25px; border-radius:8px; margin-bottom:40px;">
+                <h3 style="color:var(--accent); border-bottom:1px solid #333; padding-bottom:10px;"><i class="fas fa-book-open"></i> ¿Cómo empezar a facturar?</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-top:20px;">
+                    <div style="background:#0b0c10; padding:15px; border-radius:8px; border:1px solid #333;">
+                        <h4 style="color:white; margin:0 0 10px 0; font-size:15px;"><span style="color:var(--accent); margin-right:5px;">1.</span> Configura Hacienda</h4>
+                        <p style="color:#8a99ad; font-size:13px; margin:0;">Sube tu llave .p12 y PIN en "Configuración" para autorizar tus documentos.</p>
+                    </div>
+                    <div style="background:#0b0c10; padding:15px; border-radius:8px; border:1px solid #333;">
+                        <h4 style="color:white; margin:0 0 10px 0; font-size:15px;"><span style="color:var(--accent); margin-right:5px;">2.</span> Ingresa tu Catálogo</h4>
+                        <p style="color:#8a99ad; font-size:13px; margin:0;">Registra a tus clientes frecuentes y agrega tus productos con su código CABYS.</p>
+                    </div>
+                    <div style="background:#0b0c10; padding:15px; border-radius:8px; border:1px solid #333;">
+                        <h4 style="color:white; margin:0 0 10px 0; font-size:15px;"><span style="color:var(--accent); margin-right:5px;">3.</span> Emite Documentos</h4>
+                        <p style="color:#8a99ad; font-size:13px; margin:0;">Usa el botón "Nueva Factura" o "Proforma". El sistema calculará y firmará todo.</p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:15px; margin-top:25px; flex-wrap:wrap;">
+                    <button class="fact-btn" onclick="render('Nueva Factura', document.querySelectorAll('.submenu li')[0])"><i class="fas fa-file-invoice-dollar"></i> Emitir Nueva Factura</button>
+                    <button class="fact-btn" style="background:#11141a; border:1px solid var(--green); color:var(--green);" onclick="render('Nueva Proforma', document.querySelectorAll('.submenu li')[2])"><i class="fas fa-file-contract"></i> Generar Proforma</button>
+                </div>
+            </div>
+
+            <h2 style="border-top:1px solid #333; padding-top:30px;"><i class="fas fa-star" style="color:#f59e0b;"></i> Planes y Suscripciones</h2>
+            <p style="color:#8a99ad; font-size:15px; margin-bottom:10px;">${headerMensaje}</p>
+
+            <div class="pricing-grid">
+                
+                <div class="price-card dark-card">
+                    <div class="price-header bg-dark">BÁSICO / GRATIS</div>
+                    <div class="price-amount">
+                        <h2>$0.00</h2>
+                        <div class="colones">₡0.00</div>
+                        <div class="period">Mensual</div>
+                    </div>
+                    <ul class="price-features">
+                        <li><b>3 Documentos</b> al mes</li>
+                        <li>Personas Físicas y Jurídicas</li>
+                        <li>1 Usuario de Acceso</li>
+                        <li>Multi-Moneda (USD/CRC)</li>
+                        <li>Resguardo Básico XML</li>
+                    </ul>
+                    <div class="price-btn-box">
+                        <button class="price-btn btn-disabled">PLAN ACTUAL</button>
+                    </div>
+                </div>
+
+                <div class="price-card">
+                    <div class="price-header bg-blue">PAGO POR USO</div>
+                    <div class="price-amount">
+                        <h2>$21.99</h2>
+                        <div class="colones">₡10,036.68 <i class="fas fa-info-circle"></i></div>
+                        <div class="period">Anual + IVA</div>
+                    </div>
+                    <ul class="price-features">
+                        <li><b>70 Documentos</b> (Vigencia 1 año)</li>
+                        <li>Físicas / Jurídicas / Dimex / Nite</li>
+                        <li>Usuarios <b>2</b> + Contador Gratuito</li>
+                        <li>Multi-Moneda – <b>USD/CRC</b></li>
+                        <li>Logo en la factura y proformas</li>
+                        <li>Facturación Walmart, Gessa, PriceSmart</li>
+                        <li>5 años de Resguardo de XML</li>
+                        <li>Video Tutoriales</li>
+                    </ul>
+                    <div class="price-btn-box"><button class="price-btn btn-outline" onclick="openWA('Hola, me interesa el plan de facturación PAGO POR USO')">ADQUIRIR PLAN</button></div>
+                </div>
+
+                <div class="price-card recommended">
+                    <div class="price-badge">RECOMENDADO</div>
+                    <div class="price-header bg-green" style="padding-top:25px;">PROFESIONAL</div>
+                    <div class="price-amount">
+                        <h2>$11.99</h2>
+                        <div class="colones">₡5,472.48 <i class="fas fa-info-circle"></i></div>
+                        <div class="period">Mensual + IVA</div>
+                    </div>
+                    <ul class="price-features">
+                        <li>Documentos <b>ilimitados</b> Emisión/Recepción</li>
+                        <li>Físicas / Jurídicas / Dimex / Nite</li>
+                        <li>Usuarios <b>3</b> + Contador Gratuito</li>
+                        <li>Multi-Moneda – <b>USD/CRC</b></li>
+                        <li>Logo en la factura y Proformas</li>
+                        <li>Facturación Walmart, Gessa, PriceSmart</li>
+                        <li>5 años de Resguardo de XML</li>
+                        <li>Módulo inventario: 1 Bodega $6/mes</li>
+                        <li>Asistencia Técnica 24/365</li>
+                    </ul>
+                    <div class="price-btn-box"><button class="price-btn btn-solid" onclick="openWA('Hola, me interesa el plan de facturación PROFESIONAL')">ACTUALIZAR PLAN</button></div>
+                </div>
+
+                <div class="price-card">
+                    <div class="price-header bg-blue">EMPRESARIAL</div>
+                    <div class="price-amount">
+                        <h2>$29.99</h2>
+                        <div class="colones">₡13,688.04 <i class="fas fa-info-circle"></i></div>
+                        <div class="period">Mensual + IVA</div>
+                    </div>
+                    <ul class="price-features">
+                        <li>Documentos <b>ilimitados</b> Emisión/Recepción</li>
+                        <li>Físicas / Jurídicas / Dimex / Nite</li>
+                        <li>Usuarios <b>Ilimitados</b> + Contador</li>
+                        <li>Multi-Moneda – <b>Ilimitados</b></li>
+                        <li>Logo y Banner personalizable</li>
+                        <li>Sucursales, Terminales y Costos</li>
+                        <li>5 años de Resguardo de XML</li>
+                        <li>Módulo inventario: 1 Bodega incluida</li>
+                        <li>Asistencia Técnica Premium</li>
+                    </ul>
+                    <div class="price-btn-box"><button class="price-btn btn-outline" onclick="openWA('Hola, me interesa el plan de facturación EMPRESARIAL')">ADQUIRIR PLAN</button></div>
+                </div>
             </div>
         `;
     }
@@ -194,7 +344,7 @@
             <div style="display:flex; gap:25px; flex-wrap:wrap;">
                 <div class="card" style="flex:1; min-width:300px; background:#11141a; padding:25px;">
                     <h3><i class="fas fa-user-plus" style="color:var(--accent);"></i> Nuevo Cliente</h3>
-                    <form id="form-cliente" onsubmit="guardarCliente(event)">
+                    <form id="form-cliente" onsubmit="guardarClienteFact(event)">
                         <label>Nombre o Razón Social</label><input type="text" id="fc-nombre" class="fact-input" required>
                         <label>Tipo Identificación</label><select id="fc-tipo" class="fact-input"><option value="01">Física</option><option value="02">Jurídica</option></select>
                         <label>Identificación</label><input type="text" id="fc-cedula" class="fact-input" required>
@@ -205,11 +355,11 @@
                 </div>
                 <div class="card" style="flex:2; min-width:400px; background:#11141a; padding:25px;">
                     <h3><i class="fas fa-users" style="color:var(--accent);"></i> Lista de Clientes</h3>
-                    <div id="tabla-clientes">Cargando...</div>
+                    <div id="tabla-clientes-fact">Cargando...</div>
                 </div>
             </div>
         `;
-        cargarClientes();
+        cargarClientesFact();
     }
 
     function renderProductos() {
@@ -218,7 +368,7 @@
             <div style="display:flex; gap:25px; flex-wrap:wrap;">
                 <div class="card" style="flex:1; min-width:300px; background:#11141a; padding:25px;">
                     <h3><i class="fas fa-box-open" style="color:var(--green);"></i> Nuevo Artículo</h3>
-                    <form id="form-producto" onsubmit="guardarProducto(event)">
+                    <form id="form-producto" onsubmit="guardarProductoFact(event)">
                         <label>Código CABYS</label><input type="text" id="fp-cabys" class="fact-input" required placeholder="13 dígitos">
                         <label>Descripción</label><input type="text" id="fp-desc" class="fact-input" required>
                         <label>Precio Unitario (₡)</label><input type="number" id="fp-precio" class="fact-input" step="0.01" required>
@@ -231,14 +381,13 @@
                 </div>
                 <div class="card" style="flex:2; min-width:400px; background:#11141a; padding:25px;">
                     <h3><i class="fas fa-list" style="color:var(--green);"></i> Catálogo Activo</h3>
-                    <div id="tabla-productos">Cargando...</div>
+                    <div id="tabla-productos-fact">Cargando...</div>
                 </div>
             </div>
         `;
-        cargarProductos();
+        cargarProductosFact();
     }
 
-    // --- EDITOR COMÚN PARA FACTURAS Y PROFORMAS ---
     function renderEditorDocumento(tipo) {
         lineasDocumento = [];
         const color = tipo === 'Factura' ? 'var(--accent)' : 'var(--green)';
@@ -256,7 +405,7 @@
                 <h3 style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-list-ol" style="color:${color};"></i> Detalle de Líneas</h3>
                 <div style="display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; gap:10px; margin-bottom:15px; align-items:end;">
                     <div><label>Buscar Producto (CABYS o Desc.)</label><input type="text" id="busca-prod" class="fact-input" style="margin:0;" placeholder="Escribe para buscar..."></div>
-                    <div><label>Cantidad</label><input type="number" id="busca-cant" class="fact-input" style="margin:0;" value="1"></div>
+                    <div><label>Cantidad</label><input type="number" id="busca-cant" class="fact-input" style="margin:0;" value="1" min="0.1"></div>
                     <div><label>Precio</label><input type="text" id="busca-precio" class="fact-input" style="margin:0;" disabled></div>
                     <div><label>Total</label><input type="text" id="busca-total" class="fact-input" style="margin:0;" disabled></div>
                     <button class="fact-btn" style="background:${color};" onclick="agregarLinea()"><i class="fas fa-plus"></i></button>
@@ -268,20 +417,19 @@
                     <div style="color:#8a99ad; font-size:13px; max-width:50%;"><i class="fas fa-info-circle"></i> ${tipo === 'Factura' ? 'Esta factura se firmará digitalmente y se enviará automáticamente al Ministerio de Hacienda.' : 'Esta proforma es un documento informativo y no tiene validez tributaria.'}</div>
                     <div id="total-box" style="background:#0b0c10; padding:20px; border-radius:8px; width:250px;">
                         <p>Subtotal: <span id="t-sub">₡0.00</span></p>
-                        <p>IVA (13%): <span id="t-iva">₡0.00</span></p>
+                        <p>IVA: <span id="t-iva">₡0.00</span></p>
                         <p style="border-top:1px solid #333; padding-top:10px; margin-top:10px; font-weight:bold; color:white;">Total: <span id="t-total" style="color:var(--green);">₡0.00</span></p>
                     </div>
                 </div>
                 
-                <button class="fact-btn" style="width:100%; margin-top:25px; background:${color}; font-size:15px;" onclick="emitirDocumento('${tipo}')"><i class="fas ${icono}"></i> Finalizar y Emitir ${tipo}</button>
+                <button id="btn-emitir-doc" class="fact-btn" data-color="${color}" style="width:100%; margin-top:25px; background:#444; font-size:15px; cursor:not-allowed;" disabled onclick="emitirDocumento('${tipo}')"><i class="fas ${icono}"></i> Finalizar y Emitir ${tipo}</button>
             </div>
         `;
         
-        // Llenar clientes
         const selC = document.getElementById('doc-cliente');
-        selC.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join('');
+        if(!clientesCache || clientesCache.length === 0) { selC.innerHTML = '<option value="">No tienes clientes registrados aún</option>'; }
+        else { selC.innerHTML = '<option value="">-- Selecciona el cliente --</option>' + clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
         
-        // Lógica de búsqueda de productos (Autocomplete simple)
         const buscaProd = document.getElementById('busca-prod');
         let prodSeleccionado = null;
         
@@ -290,10 +438,10 @@
             if(txt.length < 2) return;
             const match = productosCache.find(p => p.descripcion.toLowerCase().includes(txt) || p.codigo_cabys.includes(txt));
             if(match) {
-                prodSeleccionado = match;
+                window.prodSeleccionado = match;
                 document.getElementById('busca-precio').value = match.precio_unitario;
                 actualizarTotalLinea();
-            } else { prodSeleccionado = null; }
+            } else { window.prodSeleccionado = null; }
         });
         
         document.getElementById('busca-cant').addEventListener('input', actualizarTotalLinea);
@@ -306,11 +454,110 @@
     }
 
     function agregarLinea() {
-        // Lógica para tomar prodSeleccionado, cantidad, calcular IVA y añadir a lineasDocumento y re-renderizar tabla
-        alert("Lógica para añadir línea (Paso 3)");
+        if(!window.prodSeleccionado) return alert("Busca y selecciona un producto primero.");
+        const cant = parseFloat(document.getElementById('busca-cant').value) || 1;
+        
+        lineasDocumento.push({
+            codigo_cabys: window.prodSeleccionado.codigo_cabys,
+            descripcion: window.prodSeleccionado.descripcion,
+            cantidad: cant,
+            precio_unitario: window.prodSeleccionado.precio_unitario,
+            monto_total: cant * window.prodSeleccionado.precio_unitario,
+            impuesto: window.prodSeleccionado.impuesto,
+            unidad_medida: window.prodSeleccionado.unidad_medida
+        });
+        
+        document.getElementById('busca-prod').value = "";
+        document.getElementById('busca-cant').value = "1";
+        document.getElementById('busca-precio').value = "";
+        document.getElementById('busca-total').value = "";
+        window.prodSeleccionado = null;
+        
+        renderLineasDocumento();
     }
 
-    // --- CONFIGURACIÓN DE EMPRESA Y PERSONALIZACIÓN ---
+    function renderLineasDocumento() {
+        const tbody = document.getElementById('doc-body');
+        let html = '';
+        let sub = 0; let iva = 0;
+        
+        lineasDocumento.forEach((l, i) => {
+            html += `<tr>
+                <td>${l.cantidad}</td>
+                <td>${l.codigo_cabys}</td>
+                <td>${l.descripcion}</td>
+                <td>₡${l.precio_unitario}</td>
+                <td>${l.impuesto}%</td>
+                <td style="color:var(--green);">₡${l.monto_total.toFixed(2)}</td>
+                <td><button class="fact-btn-del" onclick="lineasDocumento.splice(${i},1); renderLineasDocumento();"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+            sub += l.monto_total;
+            iva += l.monto_total * (parseFloat(l.impuesto)/100);
+        });
+        
+        tbody.innerHTML = html;
+        document.getElementById('t-sub').innerText = `₡${sub.toFixed(2)}`;
+        document.getElementById('t-iva').innerText = `₡${iva.toFixed(2)}`;
+        document.getElementById('t-total').innerText = `₡${(sub+iva).toFixed(2)}`;
+        
+        const btnEmitir = document.getElementById('btn-emitir-doc');
+        if(lineasDocumento.length > 0) {
+            btnEmitir.disabled = false;
+            btnEmitir.style.background = btnEmitir.dataset.color;
+            btnEmitir.style.cursor = 'pointer';
+        } else {
+            btnEmitir.disabled = true;
+            btnEmitir.style.background = '#444';
+            btnEmitir.style.cursor = 'not-allowed';
+        }
+    }
+
+    async function emitirDocumento(tipo) {
+        const cliente_id = document.getElementById('doc-cliente').value;
+        if(!cliente_id) return alert("Selecciona un cliente.");
+        if(lineasDocumento.length === 0) return alert("Agrega al menos una línea.");
+        
+        const btn = document.getElementById('btn-emitir-doc');
+        btn.innerText = "Procesando..."; btn.disabled = true;
+        
+        let sub = 0; let iva = 0;
+        lineasDocumento.forEach(l => { sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100); });
+
+        const payload = {
+            cliente_id: cliente_id,
+            condicion_venta: document.getElementById('doc-condicion').value,
+            medio_pago: document.getElementById('doc-medio').value,
+            lineas: lineasDocumento,
+            total_gravado: sub,
+            total_impuesto: iva,
+            total_comprobante: sub + iva
+        };
+
+        const endpoint = tipo === 'Factura' ? '/api/facturacion/emitir' : '/api/facturacion/proformas/emitir';
+        
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert(`¡${tipo} generada con éxito!\nConsecutivo: ${data.consecutivo}`);
+                render(tipo === 'Factura' ? 'Historial de Facturas' : 'Proformas Generadas');
+            } else {
+                alert("Error: " + data.message);
+                btn.innerText = `Finalizar y Emitir ${tipo}`; btn.disabled = false;
+            }
+        } catch(e) {
+            alert("Error de red o conexión al servidor.");
+            btn.innerText = `Finalizar y Emitir ${tipo}`; btn.disabled = false;
+        }
+    }
+
+    function visualizarDocumento(tipo, id) {
+        window.open(`/api/facturacion/imprimir?tipo=${tipo}&id=${id}`, '_blank');
+    }
+
     function renderConfigEmpresa() {
         document.getElementById('contenido-dinamico').innerHTML = `
             <h2>Configuración Visual de la Empresa</h2>
@@ -331,7 +578,6 @@
                 </form>
             </div>
         `;
-        // Cargar datos actuales
         fetch('/api/facturacion/config-empresa', {credentials: 'include'}).then(r=>r.json()).then(data => {
             if(data.nombre_comercial) {
                 document.getElementById('emp-nombre').value = data.nombre_comercial;
@@ -361,7 +607,7 @@
             nombre: document.getElementById('emp-nombre').value,
             telefono: document.getElementById('emp-telefono').value,
             correo: document.getElementById('emp-correo').value,
-            logo: logoBase64 // Si no cambió, se envía null y el backend no lo actualiza
+            logo: logoBase64 
         };
         fetch('/api/facturacion/config-empresa', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
         .then(r=>r.json()).then(data => {
@@ -370,7 +616,28 @@
         });
     }
 
-    // --- HISTORIALES ---
+    function renderHistorialFacturas() {
+        const cont = document.getElementById('contenido-dinamico');
+        cont.innerHTML = `<h2>Facturas Emitidas</h2><div id="tabla-facturas">Cargando...</div>`;
+        
+        fetch('/api/cliente/datos-operativos', {credentials: 'include'}).then(r=>r.json()).then(data => {
+            const list = document.getElementById('tabla-facturas');
+            if(!data.facturas || data.facturas.length === 0) { list.innerHTML = "<p style='color:#8a99ad;'>No hay facturas emitidas.</p>"; return; }
+            
+            list.innerHTML = `<table><thead><tr><th>Fecha</th><th>Consecutivo</th><th>Estado Hacienda</th><th>Monto</th><th>Acciones</th></tr></thead><tbody>
+                ${data.facturas.map(f => `<tr>
+                    <td>${new Date(f.fecha).toLocaleDateString()}</td>
+                    <td style="color:white; font-weight:600;">${f.consecutivo}</td>
+                    <td style="color:${f.estado === 'Rechazado' ? 'var(--del)' : 'var(--accent)'};">${f.estado}</td>
+                    <td style="color:var(--accent);">₡${f.monto}</td>
+                    <td>
+                        <button class="fact-btn-view" onclick="visualizarDocumento('factura', ${f.id})"><i class="fas fa-eye"></i> Ver / Imprimir PDF</button>
+                    </td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        });
+    }
+
     function renderHistorialProformas() {
         const cont = document.getElementById('contenido-dinamico');
         cont.innerHTML = `<h2>Proformas Generadas</h2><div id="tabla-proformas">Cargando...</div>`;
@@ -386,26 +653,180 @@
                     <td>${p.cliente}</td>
                     <td style="color:var(--green);">₡${p.monto}</td>
                     <td>
-                        <button class="fact-btn-view" onclick="visualizarDocumento('proforma', ${p.id})"><i class="fas fa-eye"></i> Ver / Imprimir</button>
+                        <button class="fact-btn-view" onclick="visualizarDocumento('proforma', ${p.id})"><i class="fas fa-eye"></i> Ver / Imprimir PDF</button>
                     </td>
                 </tr>`).join('')}
             </tbody></table>`;
         });
     }
 
-    function visualizarDocumento(tipo, id) {
-        // Lógica para llamar a la API que genera el HTML imprimible y abrirlo en nueva ventana
-        // window.open(`/api/facturacion/imprimir?tipo=${tipo}&id=${id}`, '_blank');
-        alert(`Visualizando ${tipo} ID: ${id}. Aquí se generará el diseño profesional azul de la imagen.`);
+    // --- API FUNCIONES ---
+    function cargarClientesFact() {
+        const list = document.getElementById('tabla-clientes-fact');
+        fetch('/api/facturacion/clientes', {credentials: 'include'})
+        .then(r => r.json())
+        .then(data => {
+            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
+            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>No tienes clientes registrados.</p>"; return; }
+            
+            list.innerHTML = `<table><thead><tr><th>Nombre</th><th>Identificación</th><th>Correo</th><th>Acción</th></tr></thead><tbody>
+                ${data.map(c => `<tr>
+                    <td><b>${c.nombre}</b></td>
+                    <td style="color:#8a99ad;">${c.identificacion}</td>
+                    <td style="color:#8a99ad;">${c.correo}</td>
+                    <td><button class="fact-btn-del" onclick="borrarClienteFact(${c.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        })
+        .catch(e => { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`; });
     }
 
-    // --- RESTO DE FUNCIONES (Soporte, etc. - Mantenidas igual) ---
+    function guardarClienteFact(e) {
+        e.preventDefault();
+        const btn = e.submitter; btn.innerHTML = "Guardando..."; btn.disabled = true;
+        const body = {
+            nombre: document.getElementById('fc-nombre').value,
+            tipo_identificacion: document.getElementById('fc-tipo').value,
+            identificacion: document.getElementById('fc-cedula').value,
+            correo: document.getElementById('fc-correo').value,
+            telefono: document.getElementById('fc-telefono').value
+        };
+        fetch('/api/facturacion/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) { alert("Cliente guardado"); document.getElementById('form-nuevo-cliente').reset(); cargarClientesFact(); fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d); } 
+            else { alert("Error: " + (data.message || data.error)); }
+        })
+        .finally(() => { btn.innerHTML = "Guardar Cliente"; btn.disabled = false; });
+    }
+
+    function borrarClienteFact(id) {
+        if(!confirm("¿Eliminar cliente de tu base de datos?")) return;
+        fetch('/api/eliminar/clientes_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
+        .then(r=>r.json()).then(()=> { cargarClientesFact(); fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => clientesCache = d); }).catch(()=>{});
+    }
+
+    function cargarProductosFact() {
+        const list = document.getElementById('tabla-productos-fact');
+        fetch('/api/facturacion/productos', {credentials: 'include'})
+        .then(r => r.json())
+        .then(data => {
+            if(data.error) { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error: ${data.error}</p>`; return; }
+            if(!data || data.length === 0) { list.innerHTML = "<p style='color:#8a99ad; font-size:14px;'>Tu catálogo está vacío.</p>"; return; }
+            
+            list.innerHTML = `<table><thead><tr><th>CABYS</th><th>Descripción</th><th>Precio</th><th>IVA</th><th>Acción</th></tr></thead><tbody>
+                ${data.map(p => `<tr>
+                    <td style="color:#8a99ad; font-size:12px;">${p.codigo_cabys}</td>
+                    <td><b>${p.descripcion}</b></td>
+                    <td style="color:var(--accent);">₡${p.precio_unitario}</td>
+                    <td style="color:#8a99ad;">${p.impuesto}%</td>
+                    <td><button class="fact-btn-del" onclick="borrarProductoFact(${p.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        })
+        .catch(e => { list.innerHTML = `<p style="color:var(--del); font-size:14px;">Error de conexión. Actualiza la página.</p>`; });
+    }
+
+    function guardarProductoFact(e) {
+        e.preventDefault();
+        const btn = e.submitter; btn.innerHTML = "Añadiendo..."; btn.disabled = true;
+        const body = {
+            codigo_cabys: document.getElementById('fp-cabys').value,
+            descripcion: document.getElementById('fp-desc').value,
+            precio_unitario: document.getElementById('fp-precio').value,
+            unidad_medida: document.getElementById('fp-unidad').value,
+            impuesto: document.getElementById('fp-iva').value
+        };
+        fetch('/api/facturacion/productos', { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) { alert("Producto guardado"); document.getElementById('form-nuevo-producto').reset(); cargarProductosFact(); fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d); } 
+            else { alert("Error: " + (data.message || data.error)); }
+        })
+        .finally(() => { btn.innerHTML = "Añadir al Catálogo"; btn.disabled = false; });
+    }
+
+    function borrarProductoFact(id) {
+        if(!confirm("¿Eliminar producto del catálogo?")) return;
+        fetch('/api/eliminar/productos_facturacion/'+id, { method: 'DELETE', credentials: 'include' })
+        .then(r=>r.json()).then(()=> { cargarProductosFact(); fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => productosCache = d); }).catch(()=>{});
+    }
+
+    function renderConfigHacienda() {
+        document.getElementById('contenido-dinamico').innerHTML = `
+            <h2>Configuración del Contribuyente (Hacienda)</h2>
+            <div class="card" style="background:#1f2833; padding:25px; border-radius:8px; margin-top:15px;">
+                <p style="color:#8a99ad; margin-bottom:20px;">Ingresa las credenciales de tu Llave Criptográfica (.p12) para enlazar el facturador con el Ministerio de Hacienda.</p>
+                <form id="form-hacienda" style="max-width: 600px;">
+                    <label>Usuario (ATV - IDP):</label><input type="text" id="h-user" class="fact-input" required>
+                    <label>Contraseña (ATV - IDP):</label><input type="password" id="h-pass" class="fact-input" required>
+                    <label>PIN de la Llave Criptográfica:</label><input type="password" id="h-pin" class="fact-input" required>
+                    <label>Archivo de Llave (.p12):</label><input type="file" id="h-p12" accept=".p12" required style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; background:#0b0c10; border:1px solid #444; color:white;">
+                    <label style="color:white; font-size:14px; display:flex; align-items:center; gap:10px; margin-bottom:25px; cursor:pointer;">
+                        <input type="checkbox" id="h-prod" style="width:18px; height:18px; margin:0;"> Activar en Ambiente de PRODUCCIÓN
+                    </label>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="submit" class="fact-btn"><i class="fas fa-save"></i> Guardar Credenciales</button>
+                        <button type="button" class="fact-btn" style="background:#11141a; border:1px solid var(--accent); color:var(--accent);" onclick="probarConexionHacienda()"><i class="fas fa-plug"></i> Probar Conexión</button>
+                    </div>
+                </form>
+                <div id="hacienda-status" style="margin-top:20px; font-size:14px; padding:15px; border-radius:6px; display:none;"></div>
+            </div>
+        `;
+        document.getElementById('form-hacienda').addEventListener('submit', guardarHacienda);
+    }
+
+    async function guardarHacienda(event) {
+        event.preventDefault();
+        const form = new FormData();
+        form.append('usuario_idp', document.getElementById('h-user').value);
+        form.append('password_idp', document.getElementById('h-pass').value);
+        form.append('pin_p12', document.getElementById('h-pin').value);
+        form.append('ambiente', document.getElementById('h-prod').checked ? 'true' : 'false');
+        if (document.getElementById('h-p12').files.length > 0) form.append('archivo_p12', document.getElementById('h-p12').files[0]);
+
+        const btn = event.submitter; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Guardando..."; btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/admin/configuracion-hacienda', { method: 'POST', credentials: 'include', body: form });
+            const data = await res.json();
+            const statusBox = document.getElementById('hacienda-status');
+            statusBox.style.display = 'block';
+            
+            if (data.success) {
+                statusBox.style.background = 'rgba(16, 185, 129, 0.2)'; statusBox.style.border = '1px solid #10b981'; statusBox.style.color = '#10b981';
+                statusBox.innerHTML = "<i class='fas fa-check-circle'></i> " + data.message;
+            } else {
+                statusBox.style.background = 'rgba(255, 59, 48, 0.2)'; statusBox.style.border = '1px solid #ff3b30'; statusBox.style.color = '#ff3b30';
+                statusBox.innerHTML = "<i class='fas fa-times-circle'></i> Error: " + data.message;
+            }
+        } catch (error) { alert("Error de red."); } finally { btn.innerHTML = "<i class='fas fa-save'></i> Guardar Credenciales"; btn.disabled = false; }
+    }
+
+    async function probarConexionHacienda() {
+        const statusBox = document.getElementById('hacienda-status');
+        statusBox.style.display = 'block'; statusBox.style.background = 'rgba(0, 180, 216, 0.1)'; statusBox.style.border = '1px solid var(--accent)'; statusBox.style.color = 'var(--text)';
+        statusBox.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Contactando a Hacienda...";
+
+        try {
+            const res = await fetch('/api/admin/facturacion/probar-conexion', { method: 'GET', credentials: 'include' });
+            const data = await res.json();
+            if (res.ok && data.status === "Conexión Exitosa") {
+                statusBox.style.background = 'rgba(16, 185, 129, 0.2)'; statusBox.style.border = '1px solid #10b981'; statusBox.style.color = '#10b981';
+                statusBox.innerHTML = `<i class='fas fa-check-circle'></i> <b>¡Conexión Exitosa!</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">Autenticado correctamente con Hacienda.</span>`;
+            } else {
+                statusBox.style.background = 'rgba(255, 59, 48, 0.2)'; statusBox.style.border = '1px solid #ff3b30'; statusBox.style.color = '#ff3b30';
+                statusBox.innerHTML = `<i class='fas fa-times-circle'></i> <b>Fallo de Autenticación:</b><br><span style="color:#cfd8dc; font-size:13px; font-weight:normal; margin-top:5px; display:block;">Hacienda rechazó las credenciales.</span>`;
+            }
+        } catch (error) { statusBox.innerHTML = "<i class='fas fa-wifi'></i> Error de red."; }
+    }
+
     function renderNuevoTicket() {
         document.getElementById('contenido-dinamico').innerHTML = `
             <h2>Reportar Nueva Avería o Requerimiento</h2>
             <form id="form-ticket" style="display:flex; flex-direction:column; gap:15px; max-width:600px; margin-top:20px;">
                 <input type="text" id="ticketContacto" placeholder="Tu nombre completo" class="fact-input" required>
-                <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto (Ej: 88887777)" class="fact-input" required>
+                <input type="tel" id="ticketWhatsApp" placeholder="WhatsApp de contacto" class="fact-input" required>
                 <input type="text" id="ticketAsunto" placeholder="Resumen del problema" class="fact-input" required>
                 <textarea id="ticketDescripcion" placeholder="Detalla el inconveniente técnico..." class="fact-input" required style="height:120px; font-family:inherit;"></textarea>
                 <label>Prioridad Sugerida</label>
@@ -436,7 +857,6 @@
         const cont = document.getElementById('contenido-dinamico');
         cont.innerHTML = `<h2>${vista === 'Activos' ? 'Tickets en Proceso' : 'Historial Completo de Soporte'}</h2><div id="lista-tickets" style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">Cargando...</div>`;
         
-        // Recargar datos para tener tickets frescos
         const res = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});
         userDataCache = await res.json();
         let lista = userDataCache.tickets || [];
@@ -463,15 +883,6 @@
             </div>`;
         }).join('');
     }
-
-    // Funciones placeholders para módulos que faltan programar
-    function renderHistorialFacturas() { document.getElementById('contenido-dinamico').innerHTML = "<h2>Historial de Facturas</h2><p style='color:#8a99ad;'>Módulo en construcción (Paso 3)...</p>"; }
-    function renderConfigHacienda() { document.getElementById('contenido-dinamico').innerHTML = "<h2>Configuración de Llave Hacienda</h2><p style='color:#8a99ad;'>Módulo de subida de .p12 y PIN en construcción...</p>"; }
-
-    function cargarClientes() { /* Implementar fetch y render tabla similar a Admin */ }
-    function guardarCliente(e) { e.preventDefault(); /* Implementar fetch POST */ }
-    function cargarProductos() { /* Implementar fetch y render tabla */ }
-    function guardarProducto(e) { e.preventDefault(); /* Implementar fetch POST */ }
 
     function renderError(msg) {
         document.getElementById('contenido-dinamico').innerHTML = `<h2 style="color:var(--del);">Error de Acceso</h2><p>${msg}</p><button onclick="window.location.href='/login.html'" class="fact-btn" style="background:#333; color:white; margin-top:15px;">Volver al Login</button>`;

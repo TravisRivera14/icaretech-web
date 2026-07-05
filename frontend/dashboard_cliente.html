@@ -133,13 +133,13 @@
             background: rgba(255,255,255,0.03);
         }
 
-        /* MEJORA 2: TARJETAS DE SERVICIOS EN SIDEBAR (BURBUJA TURQUESA) */
+        /* TARJETAS DE SERVICIOS EN SIDEBAR (BURBUJA TURQUESA) */
         .sidebar-upsell-title {
             font-size: 10px; color: #64748b; text-transform: uppercase; margin: 15px 20px 5px; font-weight: 700; letter-spacing: 1px;
         }
         
         .sidebar-upsell-card {
-            background: rgba(85, 187, 204, 0.15); /* Turquesa transparente */
+            background: rgba(85, 187, 204, 0.15); 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(85, 187, 204, 0.3);
@@ -310,7 +310,7 @@
         .price-card.recommended { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--neon-blue); z-index: 10; margin: 0 10px;}
         .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px;}
         .bg-blue { background: #0077b6; color: white; }
-        .bg-green { background: var(--neon-blue); color: #fff; }
+        .bg-green { background: var(--neon-blue); color: white; }
         .bg-dark { background: #11141a; color: white; }
         .price-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--del); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800;}
         .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid var(--border-color); }
@@ -324,8 +324,8 @@
         .price-btn-box { padding: 20px; background: #11141a; border-top: 1px solid var(--border-color);}
         .price-btn { padding: 12px 25px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-size: 13px; cursor: pointer; transition:0.2s;}
         .btn-outline { border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent; }
-        .btn-outline:hover { background: var(--neon-blue); color: #fff; }
-        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: #fff; }
+        .btn-outline:hover { background: var(--neon-blue); color: #000; }
+        .btn-solid { border: 2px solid var(--neon-blue); background: var(--neon-blue); color: white; }
         .btn-solid:hover { opacity: 0.9; }
         .btn-disabled { border: 2px solid #334155; background: #1e293b; color: #64748b; cursor: default; }
     </style>
@@ -409,21 +409,21 @@
             
             <div class="card" onclick="showSection('tickets')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-ticket-alt"></i></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-ticket-alt"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Centro de Soporte</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Gestiona tickets y reporta averías.</p></div>
                 </div>
             </div>
             
             <div class="card" onclick="showSection('facturacion')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-file-invoice-dollar"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Módulo Contable</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Facturación electrónica y proformas.</p></div>
                 </div>
             </div>
             
             <div class="card" onclick="showSection('datacenter')" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(0, 180, 216, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-server"></i></div>
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="fas fa-server"></i></div>
                     <div><h3 style="margin:0 0 5px 0; font-size:18px;">Cloud & Data Center</h3><p style="margin:0; color:var(--text-muted); font-size:14px;">Monitoreo y respaldos de servidores.</p></div>
                 </div>
             </div>
@@ -633,10 +633,10 @@
                     <div class="breadcrumb">Modulo Contable / <span>Mi plan</span></div>
                     <h2 class="page-title">Suscripción y Límites del Sistema</h2>
                     
-                    <div class="card" style="background:rgba(0, 180, 216, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px;">
+                    <div class="card" style="background:rgba(85, 187, 204, 0.05); border:1px solid var(--neon-blue); margin-bottom:30px;">
                         <h3 class="section-title" style="color:var(--neon-blue);"><i class="fas fa-chart-pie"></i> Consumo de Documentos del Mes</h3>
-                        <p style="margin:0 0 15px 0; color:#cfd8dc;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
-                        <div style="font-size:16px; font-weight:700; color:var(--text-light);">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
+                        <p style="margin:0 0 15px 0; color:#475569;">Tu plan gratuito incluye un límite estricto de 3 facturas mensuales.</p>
+                        <div style="font-size:16px; font-weight:700; color:#1e293b;">Llevas emitidas: <b style="color:var(--del); font-size:22px;">${usadas} de 3</b> facturas posibles.</div>
                     </div>
 
                     <div class="pricing-grid">
@@ -760,7 +760,7 @@
             }
         };
 
-        // --- FUNCIONALIDAD GLOBAL ---
+        // --- FUNCIONALIDAD GLOBAL (Atada a window) ---
 
         window.cargarClientesFact = function() {
             const list = document.getElementById('tabla-clientes-fact');
@@ -903,7 +903,7 @@
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'#10b981'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'var(--del)':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -1028,8 +1028,8 @@
                     ${lista.map(t => `<tr>
                         <td>${new Date(t.fecha).toLocaleDateString()}</td>
                         <td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td>
-                        <td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${t.prioridad}</td>
-                        <td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${t.estado}</td>
+                        <td style="color:${t.prioridad === 'Alta' ? 'var(--del)' : 'var(--btn-yellow)'}">${t.prioridad}</td>
+                        <td style="color:${t.estado==='Resuelto'?'var(--btn-green)':'var(--neon-blue)'}">${t.estado}</td>
                         <td>${t.atendido_por}</td>
                     </tr>`).join('')}
                 </tbody></table>`;
@@ -1043,11 +1043,18 @@
                 if (res.status === 401) { window.location.href = '/login.html'; return; }
                 const data = await res.json();
                 if(data.usuario) {
-                    document.getElementById('bienvenida-usuario').innerText = `Bienvenido, ${data.usuario}`;
-                    document.getElementById('nombre-empresa-badge').innerText = data.empresa || "Cliente Corporativo";
+                    const welcomeEl = document.getElementById('bienvenida-usuario');
+                    if(welcomeEl) welcomeEl.innerText = `Bienvenido, ${data.usuario}`;
+                    
+                    const badge = document.getElementById('nombre-empresa-badge');
+                    if(badge) badge.innerText = data.empresa || "Cliente Corporativo";
+                    
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
-                    if (headerUserName && headerUserInitial) { headerUserName.innerText = data.usuario; headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase(); }
+                    if (headerUserName && headerUserInitial) { 
+                        headerUserName.innerText = data.usuario; 
+                        headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase(); 
+                    }
                 }
                 
                 const opsRes = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});

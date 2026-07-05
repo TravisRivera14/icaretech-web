@@ -449,6 +449,7 @@
     let imgS = "", imgP = "", imgRev = "", imgPartner = "", imgEmp = "", imgSupportEmp = "", editId = null, editType = null;
     let editSupportEmpId = null;
     let currentOpsEmpresa = null;
+    let currentOpsUsuarios = []; // VARIABLE GLOBAL PARA GUARDAR USUARIOS DEL CENTRO DE OPERACIONES
     let cacheData = { servicios: [], productos: [], resenas: [], socios: [], beneficios: [], objetivos: [], empresas: [], particulares: [] };
     let cacheTickets = [];
     let currentOpenTicket = null;
@@ -918,7 +919,6 @@
                     document.getElementById('compromiso').value = data.config.compromiso || "";
                 }
 
-                // Cargar empresas corporativas en su lista
                 const divBajas = document.getElementById('lista-empresas-soporte-bajas');
                 if (cacheData.empresas.length === 0) {
                     divBajas.innerHTML = `<div style="padding:15px; color:var(--text-secondary); text-align:center;">Sin vínculos corporativos creados.</div>`;
@@ -937,7 +937,6 @@
                 `}).join('');
                 }
 
-                // Cargar clientes particulares en su lista
                 const divParticulares = document.getElementById('lista-particulares');
                 if(divParticulares) {
                     if (cacheData.particulares.length === 0) {
@@ -973,7 +972,6 @@
         const todas = [...cacheData.empresas, ...(cacheData.particulares || [])];
         const optionsGeneral = '<option value="">-- Seleccionar --</option>' + todas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
         
-        // MÓDULO EXCLUSIVO PARA EMPRESAS (Solo Corporativos en Operaciones)
         const optionsCorporativas = '<option value="">-- Selecciona un Cliente Corporativo --</option>' + cacheData.empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
         
         ['select-empresa-alta', 'select-empresa-edit'].forEach(id => {
@@ -985,7 +983,6 @@
             }
         });
         
-        // FILTRO EXCLUSIVO DEL CENTRO DE OPERACIONES
         const selectOps = document.getElementById('select-ops-empresa');
         if(selectOps) {
             const prevVal = selectOps.value;
@@ -1058,7 +1055,7 @@
         }
     }
 
-    // ----------------- LÓGICA DE CENTRO DE OPERACIONES BLINDADA -----------------
+    // ----------------- LÓGICA DE CENTRO DE OPERACIONES BLINDADA Y EN CASCADA -----------------
     function irAOperaciones(empId) {
         switchTab('tab-operaciones', {currentTarget: document.querySelectorAll('.sidebar-item')[4]});
         document.getElementById('select-ops-empresa').value = empId;
@@ -1066,7 +1063,12 @@
     }
 
     function cargarOperaciones(empId) {
-        if(!empId) { document.getElementById('panel-ops-empresa').style.display = 'none'; document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; return; }
+        if(!empId) { 
+            document.getElementById('panel-ops-empresa').style.display = 'none'; 
+            document.getElementById('lista-ops-usuarios').innerHTML = "Selecciona una empresa."; 
+            currentOpsUsuarios = [];
+            return; 
+        }
         currentOpsEmpresa = empId;
         
         fetch(`${API}/admin/operaciones/empresa/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(data => {
@@ -1077,10 +1079,17 @@
             document.getElementById('emp-mod-tck').checked = data.tickets;
         });
 
-        // Este endpoint ahora devuelve SOLO los usuarios vinculados exactamente a ese ID en Neon
         fetch(`${API}/admin/operaciones/usuarios/${empId}`, {credentials: 'include'}).then(r=>r.json()).then(users => {
             const list = document.getElementById('lista-ops-usuarios');
-            if(users.length === 0) { list.innerHTML = "<p style='color:var(--text-muted);'><i class='fas fa-exclamation-circle'></i> No hay trabajadores registrados bajo esta empresa.</p>"; return; }
+            if(users.length === 0) { 
+                currentOpsUsuarios = [];
+                list.innerHTML = "<p style='color:var(--text-muted);'><i class='fas fa-exclamation-circle'></i> No hay trabajadores registrados bajo esta empresa.</p>"; 
+                return; 
+            }
+            
+            // Guardamos los IDs de los usuarios para el Efecto Cascada
+            currentOpsUsuarios = users.map(u => u.id);
+
             list.innerHTML = users.map(u => `
                 <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
                     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1098,16 +1107,42 @@
         });
     }
 
-    function guardarPermisosEmpresa() {
+    async function guardarPermisosEmpresa() {
+        const fact = document.getElementById('emp-mod-fact').checked;
+        const data = document.getElementById('emp-mod-data').checked;
+        const inv = document.getElementById('emp-mod-inv').checked;
+        const tck = document.getElementById('emp-mod-tck').checked;
+
         const body = {
             empresa_id: currentOpsEmpresa,
-            facturacion: document.getElementById('emp-mod-fact').checked,
-            datacenter: document.getElementById('emp-mod-data').checked,
-            inventario: document.getElementById('emp-mod-inv').checked,
-            tickets: document.getElementById('emp-mod-tck').checked
+            facturacion: fact,
+            datacenter: data,
+            inventario: inv,
+            tickets: tck
         };
-        fetch(`${API}/admin/operaciones/empresa`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(() => alert("Permisos de la empresa guardados correctamente."));
+
+        try {
+            // Guardar a nivel de empresa
+            await fetch(`${API}/admin/operaciones/empresa`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) });
+            
+            // SINCRONIZACIÓN EN CASCADA PARA LOS USUARIOS
+            if (window.currentOpsUsuarios && window.currentOpsUsuarios.length > 0) {
+                for (let uId of window.currentOpsUsuarios) {
+                    // Actualizar botones visuales
+                    if(document.getElementById(`u-fact-${uId}`)) document.getElementById(`u-fact-${uId}`).checked = fact;
+                    if(document.getElementById(`u-data-${uId}`)) document.getElementById(`u-data-${uId}`).checked = data;
+                    if(document.getElementById(`u-inv-${uId}`)) document.getElementById(`u-inv-${uId}`).checked = inv;
+                    if(document.getElementById(`u-tck-${uId}`)) document.getElementById(`u-tck-${uId}`).checked = tck;
+
+                    // Actualizar a nivel de base de datos para cada usuario
+                    const uBody = { usuario_id: uId, facturacion: fact, datacenter: data, inventario: inv, tickets: tck };
+                    await fetch(`${API}/admin/operaciones/usuario`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(uBody) });
+                }
+            }
+            alert("Permisos corporativos actualizados. Los accesos de los trabajadores han sido sincronizados en cascada automáticamente.");
+        } catch(e) {
+            alert("Error al actualizar permisos.");
+        }
     }
 
     function guardarPermisosUsuario(uId) {
@@ -1119,7 +1154,7 @@
             tickets: document.getElementById(`u-tck-${uId}`).checked
         };
         fetch(`${API}/admin/operaciones/usuario`, { method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(body) })
-        .then(() => alert("Accesos del usuario actualizados exitosamente."));
+        .then(() => alert("Accesos del trabajador actualizados exitosamente."));
     }
 
 </script>

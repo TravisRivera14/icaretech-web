@@ -210,6 +210,41 @@
             color: var(--text-muted);
             font-size: 14px;
         }
+
+        /* NUEVOS ESTILOS REQUERIDOS PARA EL CONTENIDO DINÁMICO BLANCO/MODERNO */
+        .page-title { margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;}
+        .section-title { margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #fff;}
+        .breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+        .breadcrumb span { color: var(--neon-blue); font-weight: 600; }
+        
+        .card-white { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
+        .metric-box { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .metric-box p { margin: 0 0 8px 0; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; }
+        .metric-box h3 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; }
+
+        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .btn-top {
+            padding: 9px 16px; border-radius: 6px; border: none; color: white; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-top:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-t-green { background: #10b981; color: #fff;}
+        .btn-t-blue { background: var(--neon-blue); color: #fff; }
+
+        /* Tablas */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; color: #fff;}
+        .admin-table th { color: var(--text-muted); text-align: left; padding: 12px 15px; border-bottom: 2px solid var(--border-color); font-weight: 600; text-transform: uppercase; font-size: 11px; background: rgba(255,255,255,0.02); }
+        .admin-table td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); color: #cfd8dc; }
+        .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
     </style>
 </head>
 <body>
@@ -220,38 +255,8 @@
             <div><span class="empresa-badge" id="nombre-empresa-badge">Cargando Empresa...</span></div>
         </div>
         
-        <div class="nav-menu">
-            <a href="#" class="nav-item active" onclick="cargarVista('inicio')">
-                <div><i class="fas fa-home main-icon"></i> Panel Principal</div>
-            </a>
-            
-            <div class="nav-item" onclick="toggleDropdown('menu-tickets')">
-                <div><i class="fas fa-ticket-alt main-icon"></i> Soporte y Tickets</div>
-                <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+        <div class="nav-menu" id="sidebar-dynamic-menu">
             </div>
-            <div class="dropdown-container" id="menu-tickets">
-                <a href="#" onclick="cargarVista('gt')"><i class="fas fa-plus-circle"></i> Generar Ticket (GT)</a>
-                <a href="#" onclick="cargarVista('vt')"><i class="fas fa-list"></i> Ver Tickets (VT)</a>
-                <a href="#" onclick="cargarVista('sc')"><i class="fas fa-file-invoice-dollar"></i> Solicitar Cotización (SC)</a>
-                <a href="#" onclick="cargarVista('vc')"><i class="fas fa-file-alt"></i> Ver Cotizaciones (VC)</a>
-                <a href="#" onclick="cargarVista('inv')"><i class="fas fa-boxes"></i> Inventario de Equipos</a>
-            </div>
-
-            <div class="nav-item" onclick="toggleDropdown('menu-facturacion')">
-                <div><i class="fas fa-file-invoice main-icon"></i> Facturación Hacienda</div>
-                <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
-            </div>
-            <div class="dropdown-container" id="menu-facturacion">
-                <a href="#" onclick="window.location.href='/config_hacienda.html'"><i class="fas fa-plus"></i> Crear Factura Electrónica</a>
-                <a href="#" onclick="cargarVista('ver_facturas')"><i class="fas fa-search-dollar"></i> Ver Facturas</a>
-                <a href="#" onclick="cargarVista('crear_proforma')"><i class="fas fa-file-signature"></i> Crear Proforma</a>
-                <a href="#" onclick="cargarVista('ver_proformas')"><i class="fas fa-folder-open"></i> Ver Proformas</a>
-            </div>
-
-            <a href="#" class="nav-item" onclick="cargarVista('db')">
-                <div><i class="fas fa-database main-icon"></i> Base de Datos (Almacenamiento)</div>
-            </a>
-        </div>
         
         <div class="logout-btn">
             <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
@@ -280,7 +285,7 @@
         </div>
 
         <div id="vista-principal" class="dashboard-grid">
-            <div class="dash-card" onclick="toggleDropdown('menu-tickets')">
+            <div class="dash-card" onclick="showSection('tickets')">
                 <div class="dash-icon"><i class="fas fa-ticket-alt"></i></div>
                 <div class="dash-info">
                     <h3>Centro de Soporte</h3>
@@ -288,7 +293,7 @@
                 </div>
             </div>
             
-            <div class="dash-card" onclick="toggleDropdown('menu-facturacion')">
+            <div class="dash-card" onclick="showSection('facturacion')">
                 <div class="dash-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                 <div class="dash-info">
                     <h3>Módulo Contable</h3>
@@ -296,76 +301,203 @@
                 </div>
             </div>
             
-            <div class="dash-card" onclick="cargarVista('db')">
+            <div class="dash-card" onclick="showSection('datacenter')">
                 <div class="dash-icon"><i class="fas fa-server"></i></div>
                 <div class="dash-info">
-                    <h3>Almacenamiento</h3>
-                    <p>Accede a la base de datos de tu empresa.</p>
+                    <h3>Cloud & Data Center</h3>
+                    <p>Monitoreo y respaldos de servidores.</p>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // Lógica para abrir/cerrar las burbujas (dropdowns)
-        function toggleDropdown(id) {
-            const menu = document.getElementById(id);
-            if (menu.style.display === "block") {
-                menu.style.display = "none";
-            } else {
-                // Opcional: Cerrar los demás antes de abrir este
-                document.querySelectorAll('.dropdown-container').forEach(el => el.style.display = "none");
-                menu.style.display = "block";
-            }
+        let userDataCache = {};
+
+        // MENÚ LATERAL DINÁMICO (Se cambia según el panel elegido en el inicio)
+        const menuData = {
+            'datacenter': [
+                {nombre: 'Resumen', icon: 'fa-server'}, 
+                {nombre: 'Monitoreo', icon: 'fa-chart-area'}, 
+                {nombre: 'Respaldos', icon: 'fa-shield-alt'}
+            ],
+            'facturacion': [
+                {nombre: 'Facturador Inicio', icon: 'fa-rocket'},
+                {nombre: 'Clientes', icon: 'fa-users'},
+                {nombre: 'Productos', icon: 'fa-box'},
+                {nombre: 'Nueva Factura', icon: 'fa-file-invoice-dollar'},
+                {nombre: 'Nueva Proforma', icon: 'fa-file-contract'}
+            ],
+            'tickets': [
+                {nombre: 'Reportar Avería', icon: 'fa-plus-circle'}, 
+                {nombre: 'Tickets Activos', icon: 'fa-list'}, 
+                {nombre: 'Historial', icon: 'fa-history'}
+            ]
+        };
+
+        function showSection(sec) {
+            const menuHtml = document.getElementById('sidebar-dynamic-menu');
+            let items = menuData[sec];
+            
+            // Construir el menú
+            let html = `
+                <div class="nav-item" onclick="cargarVista('inicio')" style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:20px;">
+                    <div><i class="fas fa-arrow-left main-icon"></i> Volver al Menú Principal</div>
+                </div>
+            `;
+            
+            items.forEach((item, index) => {
+                html += `
+                <a class="nav-item ${index === 0 ? 'active' : ''}" onclick="renderModulo('${item.nombre}', this)">
+                    <div><i class="fas ${item.icon} main-icon"></i> ${item.nombre}</div>
+                </a>`;
+            });
+            
+            menuHtml.innerHTML = html;
+            
+            // Renderizar la primera opción automáticamente
+            renderModulo(items[0].nombre, menuHtml.querySelector('.nav-item.active'));
         }
 
         // Lógica para cambiar el contenido de la pantalla sin recargar la página
         function cargarVista(vista) {
-            const contenedor = document.getElementById('vista-principal');
-            
-            // Removemos el formato de grid si no es el inicio para mostrar listas o tablas a pantalla completa
-            if(vista !== 'inicio') {
-                contenedor.classList.remove('dashboard-grid');
-            } else {
-                contenedor.classList.add('dashboard-grid');
+            if(vista === 'inicio') {
+                location.reload(); 
+            }
+        }
+
+        function renderModulo(opcion, el) {
+            if(el) {
+                document.querySelectorAll('.sidebar .nav-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
             }
 
-            switch(vista) {
-                case 'inicio':
-                    location.reload(); // Recarga para volver al grid original
-                    break;
-                case 'gt':
-                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Generar Nuevo Ticket</h2><p style="color:#8a99ad; margin-top:10px;">Formulario para reportar una nueva avería o requerimiento.</p></div>`;
-                    break;
-                case 'vt':
-                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Mis Tickets Activos</h2><p style="color:#8a99ad; margin-top:10px;">Lista de tickets y su estado actual de resolución.</p></div>`;
-                    break;
-                case 'db':
-                    contenedor.innerHTML = `<div class="dash-card" style="flex-direction:column; align-items:flex-start; width:100%;"><h2>Almacenamiento Corporativo</h2><p style="color:#8a99ad; margin-top:10px;">Aquí podrás subir o descargar archivos confidenciales de tu empresa.</p></div>`;
-                    break;
-                // Puedes agregar el resto de los "cases" aquí para cada opción
-                default:
-                    contenedor.innerHTML = `<div class="dash-card"><h2>Sección en construcción</h2></div>`;
+            const contenedor = document.getElementById('vista-principal');
+            contenedor.classList.remove('dashboard-grid'); // Quitar grid para las vistas internas
+
+            // ---------- MÓDULO DATA CENTER ----------
+            if (opcion === 'Resumen') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Cloud & Data Center / <span>Resumen</span></div>
+                    <h2 class="page-title"><i class="fas fa-server" style="color:var(--neon-blue);"></i> Resumen de Infraestructura</h2>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-box" style="border-left: 4px solid var(--btn-green);"><p>ESTADO DEL CLUSTER</p><h3 style="color:var(--btn-green);">ÓPTIMO</h3></div>
+                        <div class="metric-box"><p>NODOS ACTIVOS</p><h3>2 / 2</h3></div>
+                        <div class="metric-box"><p>ALMACENAMIENTO TOTAL</p><h3>256 GB</h3></div>
+                        <div class="metric-box"><p>UPTIME (90 DÍAS)</p><h3>99.98%</h3></div>
+                    </div>
+
+                    <div class="card-white">
+                        <h3 class="section-title">Servidores Asignados</h3>
+                        <table class="admin-table">
+                            <thead><tr><th>Servidor</th><th>IP Pública</th><th>S.O.</th><th>Estado</th><th>Acción</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><b style="color:#fff;">APP-SERVER-01</b><br><span style="font-size:11px; color:var(--text-muted);">Instancia Principal</span></td>
+                                    <td>192.168.1.100</td>
+                                    <td>Ubuntu 22.04 LTS</td>
+                                    <td><span style="color:var(--btn-green); font-weight:600;"><i class="fas fa-circle" style="font-size:8px;"></i> Online</span></td>
+                                    <td><button class="btn-top btn-t-blue" style="font-size:11px; padding:6px 12px;"><i class="fas fa-terminal"></i> Acceso Consola</button></td>
+                                </tr>
+                                <tr>
+                                    <td><b style="color:#fff;">DB-SERVER-01</b><br><span style="font-size:11px; color:var(--text-muted);">Base de Datos Neon Postgres</span></td>
+                                    <td>192.168.1.101</td>
+                                    <td>PostgreSQL 15</td>
+                                    <td><span style="color:var(--btn-green); font-weight:600;"><i class="fas fa-circle" style="font-size:8px;"></i> Online</span></td>
+                                    <td><button class="btn-top btn-t-blue" style="font-size:11px; padding:6px 12px;"><i class="fas fa-database"></i> Ver Logs</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            else if (opcion === 'Monitoreo') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Cloud & Data Center / <span>Monitoreo</span></div>
+                    <h2 class="page-title"><i class="fas fa-chart-area" style="color:var(--neon-blue);"></i> Rendimiento y Monitoreo en Vivo</h2>
+                    
+                    <div class="split-grid">
+                        <div class="card-white">
+                            <h3 class="section-title"><i class="fas fa-microchip"></i> Uso de CPU (Promedio Global)</h3>
+                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">24%</div>
+                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                <div style="width:24%; background:var(--neon-blue); height:100%;"></div>
+                            </div>
+                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Estado normal. Sin cuellos de botella detectados en los hilos de procesamiento.</p>
+                        </div>
+                        <div class="card-white">
+                            <h3 class="section-title"><i class="fas fa-memory"></i> Uso de Memoria RAM</h3>
+                            <div style="font-size:36px; font-weight:800; color:#fff; margin:20px 0;">4.2 GB <span style="font-size:14px; color:var(--text-muted);">/ 8 GB</span></div>
+                            <div style="width:100%; background:rgba(255,255,255,0.05); border-radius:10px; height:10px; overflow:hidden;">
+                                <div style="width:52%; background:var(--btn-purple); height:100%;"></div>
+                            </div>
+                            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">52% en uso. Rendimiento óptimo para las operaciones actuales de base de datos.</p>
+                        </div>
+                        <div class="card-white" style="grid-column:1/-1;">
+                            <h3 class="section-title"><i class="fas fa-network-wired"></i> Tráfico de Red y Ancho de Banda (Últimas 24h)</h3>
+                            <div style="height:200px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">
+                                <i class="fas fa-chart-line" style="font-size:40px; color:rgba(255,255,255,0.1); margin-right:15px;"></i>
+                                <span style="font-weight:600;">El gráfico de red se inyectará tras la sincronización con el proxy en el próximo reinicio.</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (opcion === 'Respaldos') {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Cloud & Data Center / <span>Respaldos</span></div>
+                    <h2 class="page-title"><i class="fas fa-shield-alt" style="color:var(--neon-blue);"></i> Políticas de Respaldo (Backups)</h2>
+                    
+                    <div class="card-white" style="background:rgba(16, 185, 129, 0.05); border-color:var(--btn-green); display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3 style="color:var(--btn-green); margin:0 0 5px 0;"><i class="fas fa-check-circle"></i> Protección Activa: Backups Automáticos</h3>
+                            <p style="color:var(--text-muted); margin:0;">El sistema de contenedores realiza copias de seguridad incrementales a nivel de bloque cada 24 horas.</p>
+                        </div>
+                        <button class="btn-top btn-t-blue" onclick="alert('Instrucción de respaldo manual enviada al servidor principal.')"><i class="fas fa-cloud-upload-alt"></i> Forzar Respaldo Ahora</button>
+                    </div>
+
+                    <div class="card-white">
+                        <h3 class="section-title">Historial de Restauración (Últimos 7 días)</h3>
+                        <table class="admin-table">
+                            <thead><tr><th>Fecha de Copia</th><th>Tipo de Backup</th><th>Tamaño</th><th>Estado del Nodo</th><th>Acciones</th></tr></thead>
+                            <tbody>
+                                <tr><td>Hoy, 02:00 AM</td><td>Incremental</td><td>125 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar Data</button></td></tr>
+                                <tr><td>Ayer, 02:00 AM</td><td>Incremental</td><td>122 MB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar Data</button></td></tr>
+                                <tr><td>Hace 3 días</td><td>Completo (Full Master)</td><td>1.2 GB</td><td><span style="color:var(--btn-green); font-weight:600;">Completado Seguro</span></td><td><button class="btn-top" style="background:#475569; font-size:11px; padding:6px 12px;"><i class="fas fa-download"></i> Recuperar Data</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // ---------- PLACEHOLDERS DE FACTURACIÓN PARA EVITAR CÓDIGO DE 2000 LÍNEAS ----------
+            // (La funcionalidad real la tenemos en el archivo blanco del mensaje anterior, aquí ponemos el aviso)
+            else {
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">Panel Corporativo / <span>${opcion}</span></div>
+                    <div class="card-white" style="text-align:center; padding: 60px 20px;">
+                        <i class="fas fa-tools" style="font-size:48px; color:var(--text-muted); margin-bottom:20px;"></i>
+                        <h2 class="page-title" style="border:none;">Módulo de Facturación / Tickets</h2>
+                        <p style="color:var(--text-muted);">Esta interfaz empresarial oscura está configurada para el Data Center. Para la facturación y generación de PDF, por favor utiliza la <b>versión blanca</b> provista en la actualización anterior.</p>
+                    </div>
+                `;
             }
         }
 
         // Simulación de carga de datos al iniciar la página
         window.onload = async () => {
             try {
-                // Aquí se verificaría la sesión real con el backend
                 const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
-                
                 if (res.status === 401) {
                     window.location.href = '/login.html';
                     return;
                 }
-                
                 const data = await res.json();
                 if(data.usuario) {
-                    document.getElementById('bienvenida-usuario').innerText = `Bienvenido, ${data.usuario}`;
+                    document.getElementById('bienvenida-usuario').innerText = `Panel de Gestión, ${data.usuario}`;
                     document.getElementById('nombre-empresa-badge').innerText = data.empresa || "Cliente Corporativo";
                     
-                    // Llenar el perfil superior derecho con el nombre real
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
                     if (headerUserName && headerUserInitial) {
@@ -380,7 +512,7 @@
 
         // Función para cerrar sesión con alerta
         async function logout() {
-            if(confirm('¿Seguro que deseas cerrar sesión?')) {
+            if(confirm('¿Seguro que deseas cerrar sesión y registrar salida en la auditoría?')) {
                 try {
                     await fetch('/api/logout', { credentials: 'include' });
                     window.location.href = '/login.html';

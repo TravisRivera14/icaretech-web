@@ -72,9 +72,10 @@
             top: 50%;
             transform: translateY(-50%);
             color: #8a99ad;
+            pointer-events: none; /* Evita que el icono bloquee el clic en el select */
         }
         
-        input {
+        input, select {
             width: 100%;
             padding: 14px 14px 14px 45px;
             background: #11141a;
@@ -85,9 +86,16 @@
             font-size: 14px;
             outline: none;
             transition: all 0.3s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
         
-        input:focus {
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input:focus, select:focus {
             border-color: var(--neon-blue);
             box-shadow: 0 0 10px rgba(0, 180, 216, 0.15);
         }
@@ -141,27 +149,36 @@
 
     <div class="register-container">
         <img src="Logo.png" alt="iCare Tech CR Logo">
-        <h2>Solicitud de Acceso Corporativo</h2>
-        <p class="subtitle">Completa los datos para habilitar el portal de tu empresa en nuestra plataforma.</p>
+        <h2 id="form-title">Crear Cuenta Gratis</h2>
+        <p class="subtitle" id="form-subtitle">Ingresa tus datos para empezar a facturar de inmediato.</p>
         
         <div id="success-msg">
             <i class="fas fa-check-circle"></i> Solicitud enviada exitosamente. Nuestro equipo validará los datos y te enviará las credenciales.
         </div>
 
         <form id="registroForm" onsubmit="enviarRegistro(event)">
+            
             <div class="input-group">
+                <i class="fas fa-id-badge"></i>
+                <select id="tipo_cuenta" onchange="cambiarTipoCuenta()" required>
+                    <option value="particular">Cliente Particular (Gratis - Acceso Inmediato)</option>
+                    <option value="empresa">Empresa Corporativa (Requiere Aprobación)</option>
+                </select>
+            </div>
+
+            <div class="input-group" id="field-empresa" style="display:none;">
                 <i class="fas fa-building"></i>
-                <input type="text" id="regEmpresa" placeholder="Empresa en la que trabaja" required>
+                <input type="text" id="regEmpresa" placeholder="Empresa en la que trabaja">
             </div>
             
+            <div class="input-group" id="field-puesto" style="display:none;">
+                <i class="fas fa-briefcase"></i>
+                <input type="text" id="regPuesto" placeholder="Puesto que desempeña">
+            </div>
+
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" id="regNombre" placeholder="Nombre completo" required>
-            </div>
-            
-            <div class="input-group">
-                <i class="fas fa-briefcase"></i>
-                <input type="text" id="regPuesto" placeholder="Puesto que desempeña" required>
+                <input type="text" id="regNombre" placeholder="Nombre completo o Razón Social" required>
             </div>
             
             <div class="input-group">
@@ -173,33 +190,91 @@
                 <i class="fas fa-envelope"></i>
                 <input type="email" id="regCorreo" placeholder="Correo electrónico" required>
             </div>
+
+            <div class="input-group" id="field-password">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="regPassword" placeholder="Crea una contraseña" required>
+            </div>
             
-            <button type="submit" id="btn-submit">Enviar Solicitud</button>
+            <button type="submit" id="btn-submit">Registrarse y Entrar</button>
         </form>
         
         <div class="links">
-            <a href="login.html"><i class="fas fa-arrow-left"></i> Volver al inicio de sesión</a>
+            <a href="/login.html"><i class="fas fa-arrow-left"></i> Volver al inicio de sesión</a>
         </div>
     </div>
 
     <script>
+        function cambiarTipoCuenta() {
+            const tipo = document.getElementById('tipo_cuenta').value;
+            const fieldEmpresa = document.getElementById('field-empresa');
+            const fieldPuesto = document.getElementById('field-puesto');
+            const fieldPassword = document.getElementById('field-password');
+            const btnSubmit = document.getElementById('btn-submit');
+            const title = document.getElementById('form-title');
+            const subtitle = document.getElementById('form-subtitle');
+
+            if (tipo === 'empresa') {
+                // Mostrar campos de empresa
+                fieldEmpresa.style.display = 'block'; document.getElementById('regEmpresa').required = true;
+                fieldPuesto.style.display = 'block'; document.getElementById('regPuesto').required = true;
+                // Ocultar contraseña
+                fieldPassword.style.display = 'none'; document.getElementById('regPassword').required = false;
+                
+                // Cambiar textos
+                title.innerText = "Solicitud de Acceso Corporativo";
+                subtitle.innerText = "Completa los datos para habilitar el portal de tu empresa en nuestra plataforma.";
+                btnSubmit.innerHTML = "Enviar Solicitud";
+            } else {
+                // Ocultar campos de empresa
+                fieldEmpresa.style.display = 'none'; document.getElementById('regEmpresa').required = false;
+                fieldPuesto.style.display = 'none'; document.getElementById('regPuesto').required = false;
+                // Mostrar contraseña
+                fieldPassword.style.display = 'block'; document.getElementById('regPassword').required = true;
+                
+                // Cambiar textos
+                title.innerText = "Crear Cuenta Gratis";
+                subtitle.innerText = "Ingresa tus datos para empezar a facturar de inmediato.";
+                btnSubmit.innerHTML = "Registrarse y Entrar";
+            }
+        }
+
+        // Ejecutar una vez al cargar para establecer el estado inicial
+        window.onload = function() {
+            cambiarTipoCuenta();
+        };
+
         async function enviarRegistro(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "Enviando...";
+            btn.innerText = "Procesando...";
             btn.disabled = true;
 
-            const payload = {
-                empresa: document.getElementById('regEmpresa').value,
-                nombre: document.getElementById('regNombre').value,
-                puesto: document.getElementById('regPuesto').value,
-                telefono: document.getElementById('regTelefono').value,
-                correo: document.getElementById('regCorreo').value
-            };
+            const tipo = document.getElementById('tipo_cuenta').value;
+            let payload = {};
+            let endpoint = '';
+
+            if (tipo === 'particular') {
+                payload = {
+                    nombre: document.getElementById('regNombre').value,
+                    correo: document.getElementById('regCorreo').value,
+                    telefono: document.getElementById('regTelefono').value,
+                    password: document.getElementById('regPassword').value
+                };
+                endpoint = '/api/registro_particular';
+            } else {
+                payload = {
+                    empresa: document.getElementById('regEmpresa').value,
+                    nombre: document.getElementById('regNombre').value,
+                    puesto: document.getElementById('regPuesto').value,
+                    telefono: document.getElementById('regTelefono').value,
+                    correo: document.getElementById('regCorreo').value
+                };
+                endpoint = '/api/registro_corporativo';
+            }
 
             try {
-                // Este endpoint lo crearemos luego en el app.py
-                const res = await fetch('/api/registro_corporativo', {
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
@@ -208,18 +283,24 @@
                 const data = await res.json();
                 
                 if(data.success || res.ok) {
-                    document.getElementById('registroForm').style.display = 'none';
-                    document.getElementById('success-msg').style.display = 'block';
+                    if (tipo === 'particular') {
+                        alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
+                        window.location.href = '/login.html';
+                    } else {
+                        document.getElementById('registroForm').style.display = 'none';
+                        document.getElementById('success-msg').style.display = 'block';
+                        document.getElementById('form-title').style.display = 'none';
+                        document.getElementById('form-subtitle').style.display = 'none';
+                    }
                 } else {
-                    alert("Error al enviar solicitud: " + (data.message || "Intenta nuevamente."));
-                    btn.innerText = "Enviar Solicitud";
+                    alert("Error: " + (data.message || "Intenta nuevamente."));
+                    btn.innerText = tipo === 'particular' ? "Registrarse y Entrar" : "Enviar Solicitud";
                     btn.disabled = false;
                 }
             } catch (error) {
-                // Al ser modo desarrollo, simulamos el éxito si aún no está el backend listo
-                console.warn("Backend no listo aún, simulando éxito.");
-                document.getElementById('registroForm').style.display = 'none';
-                document.getElementById('success-msg').style.display = 'block';
+                alert("Error de conexión al servidor.");
+                btn.innerText = tipo === 'particular' ? "Registrarse y Entrar" : "Enviar Solicitud";
+                btn.disabled = false;
             }
         }
     </script>

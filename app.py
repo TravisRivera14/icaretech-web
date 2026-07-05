@@ -49,6 +49,7 @@ def db_query(query, params=(), fetch=False):
         c.close()
         return res
     except Exception as e:
+        conn.rollback() # BLINDAJE CONTRA CONGELAMIENTO DE BASE DE DATOS
         print(f"Error DB: {e}")
         raise e
     finally:
@@ -160,7 +161,6 @@ def login():
             session['rol'] = user[3]
             session['empresa'] = user[5]
             
-            # --- NUEVA FUNCIÓN: REGISTRAR AUDITORÍA AL ENTRAR AL SISTEMA ---
             registrar_cambio("Inicio de Sesión", f"El usuario {user[1]} ingresó exitosamente al sistema.")
             
             return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4], "usuario_id": user[0]}), 200
@@ -203,7 +203,7 @@ def obtener_datos_operativos():
     empresa_val = session.get('empresa') 
     rol = session.get('rol')
     usuario_id = session.get('usuario_id')
-    usuario_nombre = session.get('usuario', 'Usuario') # Extraemos el nombre para mostrarlo
+    usuario_nombre = session.get('usuario', 'Usuario')
     if not empresa_val: return jsonify({"error": "No asociado a empresa"}), 403
     
     try:
@@ -263,6 +263,136 @@ def obtener_datos_operativos():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
+@app.route('/api/setup-admin', methods=['GET'])
+def setup_admin():
+    password_encriptada = generate_password_hash('AdminiCare2026')
+    db_query("UPDATE usuarios SET password_hash = %s WHERE usuario = 'admin'", (password_encriptada,))
+    return jsonify({"mensaje": "¡Contraseña actualizada a AdminiCare2026!"})
+
+@app.route('/api/admin/usuarios', methods=['GET'])
+@login_required
+def listar_usuarios():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    try:
+        users_raw = db_query("SELECT id, usuario, rol, nombre, empresa, correo, telefono FROM usuarios ORDER BY id ASC", fetch=True) or []
+    except Exception:
+        users_raw = db_query("SELECT id, usuario, rol, nombre, empresa, '', '' FROM usuarios ORDER BY id ASC", fetch=True) or []
+    return jsonify([{"id": r[0], "usuario": r[1], "rol": r[2], "nombre": r[3], "empresa_id": r[4], "correo": r[5], "telefono": r[6]} for r in users_raw])
+
+def error_msg_str(key, error):
+    return key if key in error or "unique constraint" in error else ""
+
+@app.route('/api/admin/crear-usuario', methods=['POST'])
+@login_required
+def crear_usuario():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    d = request.json or {}
+    password_encriptada = generate_password_hash(d.get('password', '12345'))
+    try:
+        db_query("""INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa, correo, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (d.get('nombre'), d.get('usuario'), password_encriptada, d.get('rol'), d.get('empresa_id'), d.get('email'), d.get('telefono')))
+        res = db_query("SELECT id FROM usuarios WHERE usuario = %s", (d.get('usuario'),), fetch=True)
+        if res:
+            try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (res[0][0],))
+            except: pass
+        registrar_cambio("Creó Usuario", f"Se registró a: {d.get('nombre')}")
+        return jsonify({"success": True})
+    except Exception as e:
+        error_str = str(e).lower()
+        campo_invalido = "general"
+        if "usuario" in error_msg_str("usuarios_usuario_key", error_str): campo_invalido = "usuario"
+        elif "correo" in error_msg_str("usuarios_correo_key", error_str) or "email" in error_str: campo_invalido = "correo"
+        elif "telefono" in error_msg_str("usuarios_telefono_key", error_str) or "phone" in error_str: campo_invalido = "telefono"
+        return jsonify({"success": False, "message": str(e), "campo": campo_invalido}), 400
+
+@app.route('/api/admin/editar-usuario', methods=['POST'])
+@login_required
+def editar_usuario():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    d = request.json or {}
+    try:
+        if d.get('password') and d.get('password').strip() != "":
+            db_query("UPDATE usuarios SET usuario = %s, password_hash = %s, nombre = %s, rol = %s, empresa = %s, correo = %s, telefono = %s WHERE id = %s", 
+                     (d.get('usuario'), generate_password_hash(d.get('password')), d.get('nombre'), d.get('rol'), d.get('empresa_id'), d.get('correo'), d.get('telefono'), d.get('id')))
+        else:
+            db_query("UPDATE usuarios SET usuario = %s, nombre = %s, rol = %s, empresa = %s, correo = %s, telefono = %s WHERE id = %s", 
+                     (d.get('usuario'), d.get('nombre'), d.get('rol'), d.get('empresa_id'), d.get('correo'), d.get('telefono'), d.get('id')))
+        registrar_cambio("Modificó Usuario", f"Actualizadas credenciales de {d.get('usuario')}")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+@app.route('/api/admin/eliminar-usuario/<int:id>', methods=['DELETE'])
+@login_required
+def eliminar_usuario(id):
+    if not es_admin(): return jsonify({"message": "denegado"}), 403
+    try:
+        try: db_query("UPDATE tickets_soporte SET usuario_id = NULL WHERE usuario_id = %s", (id,))
+        except: pass
+        try: db_query("DELETE FROM permisos_usuario WHERE usuario_id = %s", (id,))
+        except: pass
+        db_query("DELETE FROM usuarios WHERE id = %s", (id,))
+        registrar_cambio("Eliminó Usuario", f"ID {id}")
+        return jsonify({"success": True})
+    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/logs', methods=['GET'])
+@login_required
+def get_logs():
+    if not es_admin(): return jsonify({"message": "Denegado"}), 403
+    try:
+        logs = db_query("SELECT fecha, usuario_nombre, accion, detalle FROM historial_cambios ORDER BY fecha DESC LIMIT 100", fetch=True) or []
+        return jsonify([{"fecha": str(l[0]), "usuario": l[1], "accion": l[2], "detalle": l[3]} for l in logs])
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/operaciones/empresa/<int:empresa_id>', methods=['GET'])
+@login_required
+def get_permisos_empresa(empresa_id):
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
+    try: p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (empresa_id,), fetch=True)
+    except: p = None
+    if p: return jsonify({"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]})
+    try: db_query("INSERT INTO permisos_empresa (empresa_id, facturacion, datacenter, inventario, tickets) VALUES (%s, false, false, false, true)", (empresa_id,))
+    except: pass
+    return jsonify({"facturacion": False, "datacenter": False, "inventario": False, "tickets": True})
+
+@app.route('/api/admin/operaciones/empresa', methods=['POST'])
+@login_required
+def save_permisos_empresa():
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
+    d = request.json
+    try: db_query("UPDATE permisos_empresa SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE empresa_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('empresa_id')))
+    except: pass
+    return jsonify({"success": True})
+
+@app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
+@login_required
+def get_permisos_usuarios_empresa(empresa_id):
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
+    res_emp = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (empresa_id,), fetch=True)
+    nombre_empresa = res_emp[0][0] if res_emp else ""
+    users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s OR empresa = %s", (str(empresa_id), nombre_empresa), fetch=True) or []
+    lista = []
+    for u in users:
+        u_id = u[0]
+        try: p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_usuario WHERE usuario_id = %s", (u_id,), fetch=True)
+        except: p = None
+        if not p:
+            try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (u_id,))
+            except: pass
+            p = [(True, True, True, True)]
+        lista.append({"id": u_id, "nombre": u[1], "rol": u[2], "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}})
+    return jsonify(lista)
+
+@app.route('/api/admin/operaciones/usuario', methods=['POST'])
+@login_required
+def save_permisos_usuario():
+    if not es_admin(): return jsonify({"error": "Denegado"}), 403
+    d = request.json
+    try: db_query("UPDATE permisos_usuario SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE usuario_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('usuario_id')))
+    except: pass
+    return jsonify({"success": True})
+
 @app.route('/api/registro_particular', methods=['POST'])
 def registro_particular():
     d = request.get_json(silent=True) or {}
@@ -283,12 +413,6 @@ def registro_particular():
         db_query("""INSERT INTO usuarios (nombre, usuario, password_hash, rol, empresa, correo, telefono) VALUES (%s, %s, %s, 'cliente_admin', %s, %s, %s)""",
             (nombre, correo, password_encriptada, str(id_empresa), correo, telefono))
             
-        res_user = db_query("SELECT id FROM usuarios WHERE correo = %s ORDER BY id DESC LIMIT 1", (correo,), fetch=True)
-        u_id = res_user[0][0]
-        
-        try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, false, false, true)", (u_id,))
-        except Exception: pass
-        
         return jsonify({"success": True})
     except Exception as e: 
         error_str = str(e).lower()
@@ -337,126 +461,51 @@ def imprimir_documento():
 
         html = f"""
         <!DOCTYPE html>
-        <html lang="es">
+        <html>
         <head>
             <meta charset="UTF-8">
-            <title>{tipo.upper()} {consecutivo}</title>
+            <title>{tipo.upper()} #{consecutivo}</title>
             <style>
                 @page {{ size: A4; margin: 0; }}
-                body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #333; -webkit-print-color-adjust: exact; }}
-                .page {{ width: 21cm; min-height: 29.7cm; margin: 0 auto; position: relative; background: #fff; overflow: hidden; }}
-                
-                .header-curve {{ position: absolute; top: 0; left: 0; width: 100%; height: 160px; background: #0056b3; border-bottom-left-radius: 50% 20%; border-bottom-right-radius: 50% 20%; z-index: 1; overflow: hidden;}}
-                .header-curve::after {{ content: ''; position: absolute; top: -30px; left: -10%; width: 120%; height: 130px; background: #003d82; border-bottom-left-radius: 50% 30%; border-bottom-right-radius: 50% 30%; z-index: -1; }}
-                
-                .footer-curve {{ position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; background: #0056b3; border-top-left-radius: 50% 30%; border-top-right-radius: 50% 30%; z-index: 1; overflow:hidden;}}
-                .footer-curve::after {{ content: ''; position: absolute; bottom: -30px; left: -10%; width: 120%; height: 100px; background: #003d82; border-top-left-radius: 50% 40%; border-top-right-radius: 50% 40%; z-index: -1; }}
-                
-                .content {{ position: relative; z-index: 2; padding: 40px 50px; min-height: calc(29.7cm - 200px); box-sizing: border-box;}}
-                
-                .logo-container {{ text-align: right; margin-bottom: 20px; height: 80px; display:flex; justify-content:flex-end; align-items:center; }}
-                .logo-container img {{ max-height: 70px; max-width: 250px; object-fit: contain; }}
-                .logo-container h1 {{ color: white; margin:0; font-size: 32px; font-weight:800;}}
-                
-                .doc-title {{ font-size: 16px; font-weight: 800; margin-bottom: 30px; color: #111; text-transform: uppercase; margin-top:20px;}}
-                
-                .info-grid {{ display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 12px; line-height: 1.6; }}
-                .info-box {{ width: 45%; }}
-                .info-box h3 {{ font-size: 13px; margin-bottom: 8px; color: #111; font-weight: 800; text-transform:uppercase;}}
-                .info-box p {{ margin: 2px 0; color: #666; }}
-                
-                .date-text {{ font-weight: 800; font-size: 13px; margin-bottom: 10px; display:block; color: #111;}}
-                
-                .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; position:relative; z-index:5; }}
-                .items-table th {{ background: #0056b3; color: white; padding: 10px; text-align: center; border-right: 1px solid #fff; font-weight: 600;}}
-                .items-table th:last-child {{ border-right: none; }}
-                .items-table td {{ padding: 12px 10px; text-align: center; border-bottom: 1px solid #ddd; color: #444; }}
-                .items-table td:nth-child(1) {{ text-align: left; width: 45%;}}
-                
-                .watermark {{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.04; z-index: 0; width: 400px; pointer-events:none;}}
-                
-                .totals-box {{ width: 250px; float: right; font-size: 12px; color: #666; position:relative; z-index:5; }}
-                .totals-box div {{ display: flex; justify-content: space-between; padding: 6px 0; }}
-                .totals-box .final-total {{ font-weight: 800; color: #111; font-size: 16px; border-top: 2px solid #ddd; padding-top: 10px; margin-top: 5px; }}
-                
-                .payment-info {{ margin-top: 100px; font-size: 11px; color: #777; line-height: 1.6; max-width: 60%; position:relative; z-index:5; }}
-                
-                .footer-text {{ position: absolute; bottom: 30px; right: 50px; color: white; z-index: 2; font-weight: 800; font-size: 14px; text-align:right; }}
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; }}
+                .header-curve {{ width: 100%; height: 130px; background: linear-gradient(90deg, #003d82, #0071e3); border-bottom-left-radius: 50% 25%; border-bottom-right-radius: 50% 25%; }}
+                .content {{ padding: 30px 50px; position: relative; }}
+                .logo-text {{ float: right; color: #003d82; font-size: 28px; font-weight: 800; }}
+                .doc-title {{ font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 20px 0; }}
+                .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 50px; font-size: 12px; margin-bottom: 30px; }}
+                .items-table {{ width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }}
+                .items-table th {{ background: #0071e3; color: white; padding: 10px; }}
+                .items-table td {{ padding: 12px 10px; border-bottom: 1px solid #ddd; text-align: center; }}
+                .totals-box {{ width: 220px; float: right; font-size: 12px; margin-top: 20px; line-height: 2; }}
+                .footer-curve {{ position: absolute; bottom: 0; width: 100%; height: 100px; background: linear-gradient(90deg, #003d82, #0071e3); border-top-left-radius: 50% 30%; border-top-right-radius: 50% 30%; text-align: center; color: white; line-height: 100px; font-weight: 700; }}
             </style>
         </head>
         <body>
-            <div class="page">
-                <div class="header-curve"></div>
-                <div class="content">
-                    <div class="logo-container">
-                        {f'<img src="{emp_logo}">' if emp_logo else f'<h1>{emp_nombre}</h1>'}
-                    </div>
-                    
-                    <div class="doc-title">{tipo} #{consecutivo}</div>
-                    
-                    <div class="info-grid">
-                        <div class="info-box">
-                            <h3>DATOS DEL CLIENTE</h3>
-                            <p>Nombre: {cli_nombre}</p>
-                            <p>Identificación: {cli_cedula}</p>
-                            <p>Mail: {cli_correo}</p>
-                            <p>Teléfono: {cli_telefono}</p>
-                        </div>
-                        <div class="info-box">
-                            <h3>DATOS DE LA EMPRESA</h3>
-                            <p>Nombre: {emp_nombre}</p>
-                            <p>Mail: {emp_correo}</p>
-                            <p>Teléfono: {emp_tel}</p>
-                        </div>
-                    </div>
-                    
-                    <span class="date-text">Fecha: {fecha.strftime('%d/%m/%Y')}</span>
-                    
-                    <img src="https://i.ibb.co/3sX8Z3Z/handshake-watermark.png" class="watermark" alt="Watermark" onerror="this.style.display='none'">
-                    
-                    <table class="items-table">
-                        <thead>
-                            <tr>
-                                <th>Concepto</th>
-                                <th>Cantidad</th>
-                                <th>Precio</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {''.join([f"<tr><td>{l.get('descripcion')}</td><td>{l.get('cantidad')}</td><td>₡{float(l.get('precio_unitario')):,.2f}</td><td>₡{float(l.get('monto_total')):,.2f}</td></tr>" for l in lineas])}
-                        </tbody>
-                    </table>
-                    
-                    <div class="totals-box">
-                        <div><span>Subtotal</span><span>₡{float(t_gravado):,.2f}</span></div>
-                        <div><span>IVA</span><span>₡{float(t_impuesto):,.2f}</span></div>
-                        <div><span>DESCUENTO</span><span>₡0.00</span></div>
-                        <div class="final-total"><span>Total</span><span>₡{float(t_total):,.2f}</span></div>
-                    </div>
-                    
-                    <div style="clear:both;"></div>
-                    
-                    <div class="payment-info">
-                        <p>Forma de pago: Transferencia, Sinpe Móvil.<br>
-                        Favor enviar el comprobante de pago.</p>
-                        <p>Sinpe Móvil: {emp_tel}<br>
-                        Cuentas Bancarias: Consultar con el comercio.</p>
-                        <p>Nota: Este documento tiene una validez de 30 días.</p>
-                    </div>
+            <div class="header-curve"></div>
+            <div class="content">
+                <div class="logo-text">{emp_nombre}</div>
+                <div class="doc-title">{tipo.upper()} #{consecutivo}</div>
+                <div class="grid">
+                    <div><b>DATOS DEL CLIENTE</b><p>Nombre: {cli_nombre}<br>Cedula: {cli_cedula}<br>Mail: {cli_correo}</p></div>
+                    <div><b>DATOS DE LA EMPRESA</b><p>Teléfono: {emp_tel}<br>Mail: {emp_correo}</p></div>
                 </div>
-                
-                <div class="footer-curve"></div>
-                <div class="footer-text">¡Muchas Gracias por preferirnos!</div>
+                <table class="items-table">
+                    <thead><tr><th>Concepto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr></thead>
+                    <tbody>
+                        {''.join([f"<tr><td>{l['descripcion']}</td><td>{l['cantidad']}</td><td>₡{l['precio_unitario']}</td><td>₡{l['monto_total']}</td></tr>" for l in lineas])}
+                    </tbody>
+                </table>
+                <div class="totals-box">
+                    Subtotal: ₡{t_gravado}<br>IVA 13%: ₡{t_impuesto}<br><b>Total: ₡{t_total}</b>
+                </div>
             </div>
-            <script>
-                window.onload = function() {{ window.print(); }}
-            </script>
+            <div class="footer-curve">¡Muchas Gracias por preferirnos!</div>
+            <script>window.onload = function() {{ window.print(); }}</script>
         </body>
         </html>
         """
         return html
-    except Exception as e: return f"Error generando documento: {str(e)}", 500
+    except Exception as e: return str(e), 500
 
 @app.route('/api/facturacion/clientes', methods=['GET', 'POST', 'DELETE'])
 @login_required
@@ -573,9 +622,7 @@ def obtener_oauth_token_hacienda(id_empresa):
 
 def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     ahora = datetime.now()
-    dia = str(ahora.day).zfill(2)
-    mes = str(ahora.month).zfill(2)
-    ano = str(ahora.year)[-2:]
+    dia = ahora.strftime("%d"); mes = ahora.strftime("%m"); ano = ahora.strftime("%y")
     cedula_limpia = "".join(filter(str.isdigit, str(cedula_emisor)))
     cedula_12 = cedula_limpia.zfill(12)
     codigo_seguridad = "".join([str(random.randint(0, 9)) for _ in range(8)])
@@ -736,6 +783,52 @@ def emitir_factura_electronica_api():
     except Exception as e:
         registrar_cambio("Error Facturación", f"Fallo crítico emitiendo comprobante: {str(e)}")
         return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
+
+@app.route('/api/admin/facturacion/probar-conexion', methods=['GET'])
+@login_required
+def probar_conexion_hacienda():
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual: return jsonify({"status": "Error", "mensaje": "Usuario no tiene empresa asignada."}), 400
+    try:
+        resultado = obtener_oauth_token_hacienda(id_empresa_actual)
+        if resultado["success"]: return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente.", "token": resultado["access_token"][:15] + "..."})
+        else: return jsonify({"status": "Error de Autenticación", "mensaje": "Hacienda rechazó las credenciales.", "detalles_tecnicos": resultado}), 400
+    except Exception as e: return jsonify({"status": "Error Interno", "error": str(e)}), 500
+
+@app.route('/api/admin/configuracion-hacienda', methods=['POST'])
+@login_required
+def guardar_configuracion_hacienda():
+    rol = str(session.get('rol', '')).lower().strip()
+    if rol not in ['admin', 'personal', 'personal_admin', 'cliente_admin']: return jsonify({"message": "Acceso denegado"}), 403
+        
+    usuario_idp = request.form.get('usuario_idp')
+    password_idp = request.form.get('password_idp')
+    pin_p12 = request.form.get('pin_p12')
+    ambiente = request.form.get('ambiente')
+    ambiente_produccion = True if ambiente in ['true', 'on', True] else False
+    archivo_p12 = request.files.get('archivo_p12')
+    
+    id_empresa_actual = get_empresa_id_from_session()
+    if not id_empresa_actual: return jsonify({"success": False, "message": "Tu cuenta no está vinculada a una empresa."}), 400
+    if not usuario_idp or not password_idp or not pin_p12 or not archivo_p12: return jsonify({"success": False, "message": "Todos los campos de Hacienda son requeridos"}), 400
+
+    try:
+        contenido_binario = archivo_p12.read()
+        p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
+        existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
+        if existe: db_query("""UPDATE configuracionhacienda SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s WHERE id_empresa = %s""", (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
+        else: db_query("""INSERT INTO configuracionhacienda (id_empresa, hacienda_usuario_idp, hacienda_password_idp, ruta_llave_p12, pin_llave_p12, ambiente_produccion) VALUES (%s, %s, %s, %s, %s, %s)""", (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
+        return jsonify({"success": True, "message": "Configuración guardada correctamente."})
+    except Exception as e: return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
+
+@app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
+@login_required
+def verificar_configuracion_hacienda():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    id_empresa = request.args.get('id_empresa', 1)
+    res = db_query("SELECT hacienda_usuario_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa,), fetch=True)
+    if res: return jsonify({"configurado": True, "usuario_idp": res[0][0], "ambiente": "Producción" if res[0][1] else "Pruebas / Sandbox"})
+    return jsonify({"configurado": False})
 
 @app.route('/api/admin/solicitudes', methods=['GET'])
 def listar_solicitudes():

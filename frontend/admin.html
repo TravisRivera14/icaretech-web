@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin iCare | Control Maestro</title>
     <link rel="icon" href="Logo_Admin_v2.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -18,19 +17,11 @@
         }
         
         :root { 
-            /* DISEÑO UNIFICADO AL DASHBOARD CLIENTE */
-            --bg-dark: #f8fafc; 
-            --card-bg: #1f2833; 
-            --turquoise-main: #55bbcc; 
-            --turquoise-dark: #0077b6; 
-            --turquoise-light: #90e0ef; 
-            --del: #ff3b30; 
-            --text-light: #f5f5f7; 
-            --text-secondary: #8a99ad; 
-            --border-smooth: rgba(255, 255, 255, 0.08); 
-            --radius-premium: 16px; 
-            --transition-smooth: all 0.3s ease; 
-            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.15); 
+            --bg-dark: #f8fafc; --card-bg: #1f2833; --turquoise-main: #55bbcc; 
+            --turquoise-dark: #0077b6; --turquoise-light: #90e0ef; --del: #ff3b30; 
+            --text-light: #f5f5f7; --text-secondary: #8a99ad; 
+            --border-smooth: rgba(255, 255, 255, 0.08); --radius-premium: 16px; 
+            --transition-smooth: all 0.3s ease; --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.15); 
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px; }
@@ -48,7 +39,6 @@
         .sidebar-item.active i { color: var(--turquoise-main); }
 
         .main-content { margin-left: 280px; flex: 1; padding: 40px 50px; max-width: 1200px; }
-        
         .header-area { margin-bottom: 35px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
         .header-area h1 { font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: -0.8px; }
         .header-area p { font-size: 14px; color: #64748b; margin-top: 4px; }
@@ -57,7 +47,6 @@
         .tab-section.active { display: grid; grid-template-columns: 1fr; gap: 25px; }
 
         @keyframes techFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .grid-two-columns { display: grid; grid-template-columns: 1fr; gap: 25px; }
         @media (min-width: 901px) { .grid-two-columns { grid-template-columns: 1fr 1fr; } }
 
@@ -146,7 +135,7 @@
         <li class="sidebar-item" onclick="switchTab('tab-auditoria', event)"><i class="fas fa-history"></i> Auditoría</li>
         
         <hr style="border: 0; border-top: 1px solid var(--border-smooth); margin: 10px 0;">
-        <li class="sidebar-item" onclick="irAlPortalEmpresarial()"><i class="fas fa-desktop"></i> Portal Empresarial</li>
+        <li class="sidebar-item" onclick="window.open('/dashboard_empresarial.html', '_blank')"><i class="fas fa-desktop"></i> Portal Empresarial</li>
     </ul>
 </aside>
 
@@ -231,16 +220,14 @@
                     <button style="margin-top:15px;" onclick="guardarPermisosEmpresa()">Guardar Permisos Generales</button>
 
                     <div style="border-top: 1px solid var(--border-smooth); margin-top:25px; padding-top:20px;">
-                        <h3 style="font-size:14px; margin-bottom:15px; color:white;"><i class="fas fa-file-invoice" style="color:var(--turquoise-main);"></i> Acceso para Contador</h3>
-                        <div id="ops-contador-info" style="margin-bottom:15px;">
-                            <p style="color:var(--text-muted); font-size:13px;">Verificando contador...</p>
-                        </div>
-                        <div id="form-contador-box" style="display:none; background:var(--card-bg); padding:20px; border-radius:8px; border:1px dashed var(--turquoise-main);">
-                            <input type="text" id="cont-nombre" placeholder="Nombre del Contador" style="padding:12px; margin-bottom:10px; font-size:13px;">
-                            <input type="email" id="cont-correo" placeholder="Correo (Será el Usuario)" style="padding:12px; margin-bottom:10px; font-size:13px;">
-                            <input type="password" id="cont-pass" placeholder="Contraseña de acceso" style="padding:12px; margin-bottom:15px; font-size:13px;">
-                            <button onclick="crearContadorEmpresa()" style="font-size:13px;">Guardar Contador</button>
-                            <button onclick="document.getElementById('form-contador-box').style.display='none'" style="font-size:13px; margin-top:10px; background:#475569; color:white;">Cancelar</button>
+                        <h3 style="font-size:14px; margin-bottom:15px; color:white;"><i class="fas fa-user-tie" style="color:var(--turquoise-main);"></i> Contadores Asignados a esta Empresa</h3>
+                        <div id="ops-contador-info" style="margin-bottom:15px;"></div>
+                        
+                        <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                            <select id="select-vincular-contador" class="form-input" style="margin:0; padding:10px; font-size:13px;">
+                                <option value="">Cargando contadores...</option>
+                            </select>
+                            <button class="btn-top" style="margin:0; white-space:nowrap; padding:10px 15px; font-size:13px;" onclick="vincularContadorExistente()">Vincular</button>
                         </div>
                     </div>
                 </div>
@@ -1155,22 +1142,29 @@
                 `).join('');
             }
 
-            const contador = users.find(u => u.rol === 'contador');
+            fetch('/api/admin/contadores', {credentials: 'include'}).then(rc=>rc.json()).then(contadores => {
+                const selectVincular = document.getElementById('select-vincular-contador');
+                if (selectVincular) {
+                    selectVincular.innerHTML = '<option value="">-- Seleccionar contador existente --</option>' + 
+                                               contadores.map(c => `<option value="${c.id}">${c.nombre} (${c.correo})</option>`).join('');
+                }
+            });
+
+            const contadoresVinculados = users.filter(u => u.rol === 'contador');
             const infoBox = document.getElementById('ops-contador-info');
-            if(contador) {
-                infoBox.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:#161a22; padding:12px; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3);">
+            if(contadoresVinculados.length > 0) {
+                infoBox.innerHTML = contadoresVinculados.map(contador => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#161a22; padding:12px; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom: 10px;">
                         <div>
                             <div style="color:var(--btn-green); font-weight:bold; font-size:14px;"><i class="fas fa-user-tie"></i> ${contador.nombre}</div>
                             <div style="color:var(--text-muted); font-size:12px; margin-top:4px;">${contador.usuario}</div>
                         </div>
-                        <button class="btn-del" style="margin:0;" onclick="eliminarUsuario(${contador.id}, '${contador.nombre}')" title="Remover Contador"><i class="fas fa-trash"></i></button>
+                        <button class="btn-del" style="margin:0;" onclick="desvincularContadorExistente(${contador.id})" title="Remover Contador"><i class="fas fa-trash"></i></button>
                     </div>
-                `;
+                `).join('');
             } else {
                 infoBox.innerHTML = `
                     <p style="color:var(--text-muted); font-size:13px; margin-bottom:10px;">Esta empresa aún no tiene un contador asignado.</p>
-                    <button class="btn-brand-accent" style="width:100%; padding:10px; font-size:13px; border-radius:8px;" onclick="document.getElementById('form-contador-box').style.display='block'">+ Asignar Contador</button>
                 `;
             }
         });
@@ -1217,6 +1211,42 @@
         .then(() => alert("Accesos del trabajador actualizados exitosamente."));
     }
 
+    window.vincularContadorExistente = async function() {
+        const contadorId = document.getElementById('select-vincular-contador').value;
+        if (!contadorId) return alert("Por favor, selecciona un contador de la lista.");
+        
+        try {
+            const res = await fetch(`${API}/admin/vincular_contador`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include',
+                body: JSON.stringify({ contador_id: contadorId, empresa_id: currentOpsEmpresa })
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert("Contador vinculado a la empresa con éxito.");
+                cargarOperaciones(currentOpsEmpresa);
+            } else {
+                alert("Error al vincular: " + data.message);
+            }
+        } catch(e) { alert("Error de red."); }
+    };
+
+    window.desvincularContadorExistente = async function(contadorId) {
+        if (!confirm("¿Seguro que deseas remover a este contador de esta empresa? (No se borrará su cuenta, solo perderá acceso a estos datos).")) return;
+        
+        try {
+            const res = await fetch(`${API}/admin/vincular_contador/${contadorId}/${currentOpsEmpresa}`, {
+                method: 'DELETE', credentials: 'include'
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert("Contador desvinculado con éxito.");
+                cargarOperaciones(currentOpsEmpresa);
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch(e) { alert("Error de red."); }
+    };
+
     window.crearContadorEmpresa = function() {
         const nombre = document.getElementById('cont-nombre').value;
         const correo = document.getElementById('cont-correo').value;
@@ -1255,7 +1285,7 @@
     // =========================================================
     // IMPORTACIÓN MASIVA DE CSV (CÓDIGOS CABYS)
     // =========================================================
-    window.subirCSVCabys = async function() {
+    window.subirCSVCabys = async function(event) {
         const fileInput = document.getElementById('csvCabysFile');
         if (!fileInput.files[0]) return alert("Selecciona un archivo CSV primero.");
         
@@ -1264,7 +1294,7 @@
         
         const btn = event.currentTarget;
         const textoOriginal = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando al Diccionario Global...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando Catálogo...';
         btn.disabled = true;
         
         try {
@@ -1277,11 +1307,12 @@
             if (data.success) {
                 alert(data.message);
                 fileInput.value = "";
+                loadContent(); 
             } else {
                 alert("Error: " + data.message);
             }
         } catch(e) {
-            alert("Error de conexión subiendo el archivo CSV.");
+            alert("Error crítico subiendo el archivo. Revisa tu conexión a internet.");
         }
         
         btn.innerHTML = textoOriginal;

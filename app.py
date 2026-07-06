@@ -16,19 +16,13 @@ import csv
 import io
 
 app = Flask(__name__)
-
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-
 CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 
-app.config.update(
-    SESSION_COOKIE_SECURE=True, 
-    SESSION_COOKIE_SAMESITE='Lax', 
-    SESSION_COOKIE_HTTPONLY=True
-)
+app.config.update(SESSION_COOKIE_SECURE=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_HTTPONLY=True)
 
 DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
@@ -59,7 +53,8 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS servicios (id SERIAL PRIMARY KEY, icono TEXT, titulo TEXT, descripcion TEXT, imagen TEXT, proceso TEXT, beneficios TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, usuario VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, rol VARCHAR(20) NOT NULL DEFAULT 'cliente', nombre VARCHAR(100) NOT NULL, fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, empresa VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), debe_cambiar_pass BOOLEAN DEFAULT FALSE, correo VARCHAR(150))''')
     c.execute('''CREATE TABLE IF NOT EXISTS historial_cambios (id SERIAL PRIMARY KEY, usuario_id INT NULL, usuario_nombre VARCHAR(50) NOT NULL, accion VARCHAR(100) NOT NULL, detalle TEXT NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '', plan VARCHAR(50) DEFAULT 'Gratis', tipo VARCHAR(20) DEFAULT 'corporativo')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS empresas_recomiendan (id SERIAL PRIMARY KEY, nombre TEXT NOT NULL, imagen TEXT DEFAULT '', plan VARCHAR(50) DEFAULT 'Gratis', tipo VARCHAR(20) DEFAULT 'corporativo', creador_id INT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS contador_empresas (contador_id INT, empresa_id INT, PRIMARY KEY(contador_id, empresa_id))''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracionhacienda (id_configuracion SERIAL PRIMARY KEY, id_empresa INT NOT NULL, cedula_juridica VARCHAR(20) DEFAULT '3101000000', hacienda_usuario_idp TEXT NOT NULL, hacienda_password_idp TEXT NOT NULL, ruta_llave_p12 TEXT NOT NULL, pin_llave_p12 VARCHAR(10) NOT NULL, ambiente_produccion BOOLEAN DEFAULT FALSE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS tickets_soporte (id SERIAL PRIMARY KEY, empresa_id INT REFERENCES empresas_recomiendan(id) ON DELETE CASCADE, usuario_id INT, contacto VARCHAR(100) NOT NULL, asunto VARCHAR(200) NOT NULL, descripcion TEXT NOT NULL, prioridad VARCHAR(20) NOT NULL, estado VARCHAR(20) DEFAULT 'Abierto', whatsapp VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión')''')
     c.execute('''CREATE TABLE IF NOT EXISTS solicitudes_registro (id SERIAL PRIMARY KEY, empresa VARCHAR(150), nombre_completo VARCHAR(150), puesto VARCHAR(100), telefono VARCHAR(20), correo VARCHAR(150) UNIQUE)''')
@@ -70,8 +65,6 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS empresa_datos_visuales (id_empresa INT PRIMARY KEY, nombre_comercial VARCHAR(150), telefono VARCHAR(20), correo VARCHAR(150), logo_base64 TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS Facturas (id SERIAL PRIMARY KEY, Id_Empresa INT, Id_Cliente INT, Consecutivo VARCHAR(50), Clave_50_Digitos VARCHAR(50), Condicion_Venta VARCHAR(2), Medio_Pago VARCHAR(2), Total_Servicios_Gravados NUMERIC, Total_Impuesto NUMERIC, Total_Comprobante NUMERIC, Estado_Hacienda VARCHAR(50), Mensaje_Hacienda TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, lineas_json TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT)''')
-    
-    # NUEVA TABLA GLOBAL PARA LOS CODIGOS CABYS DE HACIENDA
     c.execute('''CREATE TABLE IF NOT EXISTS cabys_maestro (id SERIAL PRIMARY KEY, codigo VARCHAR(20) UNIQUE, descripcion TEXT, impuesto NUMERIC(5,2))''')
     conn.commit()
     c.close()
@@ -85,7 +78,8 @@ def init_db():
         "ALTER TABLE tickets_soporte ADD COLUMN atendido_por VARCHAR(100) DEFAULT 'Pendiente revisión'",
         "ALTER TABLE Facturas ADD COLUMN lineas_json TEXT",
         "ALTER TABLE empresas_recomiendan ADD COLUMN plan VARCHAR(50) DEFAULT 'Gratis'",
-        "ALTER TABLE empresas_recomiendan ADD COLUMN tipo VARCHAR(20) DEFAULT 'corporativo'"
+        "ALTER TABLE empresas_recomiendan ADD COLUMN tipo VARCHAR(20) DEFAULT 'corporativo'",
+        "ALTER TABLE empresas_recomiendan ADD COLUMN creador_id INT"
     ]
     for mig in migraciones:
         try: db_query(mig)
@@ -131,12 +125,7 @@ def get_empresa_id_from_session():
 def login():
     if request.method == 'GET':
         if 'usuario_id' in session:
-            return jsonify({
-                "success": True, 
-                "usuario": session.get('usuario'), 
-                "empresa": session.get('empresa', 'iCareTech CR'),
-                "rol": session.get('rol')
-            })
+            return jsonify({"success": True, "usuario": session.get('usuario'), "empresa": session.get('empresa', 'iCareTech CR'), "rol": session.get('rol')})
         return jsonify({"success": False}), 401
 
     data = request.json
@@ -145,8 +134,7 @@ def login():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        try:
-            cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s) OR LOWER(correo) = LOWER(%s) OR telefono = %s", (usr, usr, usr))
+        try: cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s) OR LOWER(correo) = LOWER(%s) OR telefono = %s", (usr, usr, usr))
         except Exception:
             conn.rollback()
             cur.execute("SELECT id, nombre, password_hash, rol, debe_cambiar_pass, empresa FROM usuarios WHERE LOWER(usuario) = LOWER(%s)", (usr,))
@@ -159,9 +147,7 @@ def login():
             session['usuario'] = user[1]
             session['rol'] = user[3]
             session['empresa'] = user[5]
-            
-            registrar_cambio("Inicio de Sesión", f"El usuario {user[1]} ingresó exitosamente al sistema.")
-            
+            registrar_cambio("Inicio de Sesión", f"El usuario {user[1]} ingresó al sistema.")
             return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4], "usuario_id": user[0]}), 200
         return jsonify({"success": False, "message": "Credenciales incorrectas"}), 401
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
@@ -178,8 +164,7 @@ def acceso_empresarial():
     if not es_admin(): return jsonify({"error": "Denegado"}), 403
     try:
         res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = 'iCareTech CR'", fetch=True)
-        if res: 
-            id_empresa = res[0][0]
+        if res: id_empresa = res[0][0]
         else:
             db_query("INSERT INTO empresas_recomiendan (nombre) VALUES ('iCareTech CR')")
             res = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = 'iCareTech CR'", fetch=True)
@@ -203,11 +188,15 @@ def obtener_datos_operativos():
     rol = session.get('rol')
     usuario_id = session.get('usuario_id')
     usuario_nombre = session.get('usuario', 'Usuario')
-    if not empresa_val: return jsonify({"error": "No asociado a empresa"}), 403
     
+    # SOLUCIÓN AL BUG DEL "8": CONVERTIR EL ID EN EL NOMBRE REAL DE LA EMPRESA
     try:
         id_empresa = get_empresa_id_from_session()
         if not id_empresa: return jsonify({"error": "Empresa no registrada"}), 404
+        
+        res_nom = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (id_empresa,), fetch=True)
+        if res_nom:
+            empresa_val = res_nom[0][0]
             
         try: perm_emp = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_empresa WHERE empresa_id = %s", (id_empresa,), fetch=True)
         except: perm_emp = None
@@ -240,11 +229,9 @@ def obtener_datos_operativos():
         tickets = []
         try:
             if rol in ['cliente_admin', 'contador'] or es_admin():
-                try: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
-                except: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
             else:
-                try: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
-                except: tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
             
             for t in tickets_raw:
                 atendido = t[5] if len(t) > 5 and t[5] else "Pendiente revisión"
@@ -299,6 +286,10 @@ def crear_usuario():
             if rol_asignado == 'contador':
                 try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, false, false, false)", (usuario_nuevo_id,))
                 except: pass
+                # VINCULAR MULTI-EMPRESA AUTOMÁTICAMENTE
+                if d.get('empresa_id'):
+                    try: db_query("INSERT INTO contador_empresas (contador_id, empresa_id) VALUES (%s, %s) ON CONFLICT DO NOTHING", (usuario_nuevo_id, d.get('empresa_id')))
+                    except: pass
             else:
                 try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, true, true, true)", (usuario_nuevo_id,))
                 except: pass
@@ -339,6 +330,8 @@ def eliminar_usuario(id):
         except: pass
         try: db_query("DELETE FROM permisos_usuario WHERE usuario_id = %s", (id,))
         except: pass
+        try: db_query("DELETE FROM contador_empresas WHERE contador_id = %s", (id,))
+        except: pass
         db_query("DELETE FROM usuarios WHERE id = %s", (id,))
         registrar_cambio("Eliminó Usuario", f"ID {id}")
         return jsonify({"success": True})
@@ -373,6 +366,7 @@ def save_permisos_empresa():
     except: pass
     return jsonify({"success": True})
 
+# =============== LÓGICA DE USUARIOS Y CONTADORES MULTI-EMPRESA ==================
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
@@ -381,21 +375,25 @@ def get_permisos_usuarios_empresa(empresa_id):
     if not res_emp: return jsonify([])
     nombre_empresa = res_emp[0][0]
     
-    users = db_query("SELECT id, nombre, rol FROM usuarios WHERE empresa = %s OR empresa = %s", (str(empresa_id), nombre_empresa), fetch=True) or []
+    # SE OBTIENEN LOS CLIENTES DE LA EMPRESA Y LOS CONTADORES VINCULADOS
+    users = db_query("""
+        SELECT id, nombre, rol, usuario FROM usuarios WHERE empresa = %s OR empresa = %s
+        UNION
+        SELECT u.id, u.nombre, u.rol, u.usuario FROM usuarios u JOIN contador_empresas ce ON u.id = ce.contador_id WHERE ce.empresa_id = %s
+    """, (str(empresa_id), nombre_empresa, empresa_id), fetch=True) or []
     
     lista = []
     for u in users:
         u_id = u[0]
         try: p = db_query("SELECT facturacion, datacenter, inventario, tickets FROM permisos_usuario WHERE usuario_id = %s", (u_id,), fetch=True)
         except: p = None
-        
         if not p:
             try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, false, false, false, true)", (u_id,))
             except: pass
             p = [(False, False, False, True)]
             
         lista.append({
-            "id": u_id, "nombre": u[1], "rol": u[2], 
+            "id": u_id, "nombre": u[1], "rol": u[2], "usuario": u[3],
             "permisos": {"facturacion": p[0][0], "datacenter": p[0][1], "inventario": p[0][2], "tickets": p[0][3]}
         })
     return jsonify(lista)
@@ -408,6 +406,74 @@ def save_permisos_usuario():
     try: db_query("UPDATE permisos_usuario SET facturacion=%s, datacenter=%s, inventario=%s, tickets=%s WHERE usuario_id=%s", (d.get('facturacion'), d.get('datacenter'), d.get('inventario'), d.get('tickets'), d.get('usuario_id')))
     except: pass
     return jsonify({"success": True})
+
+@app.route('/api/admin/contadores', methods=['GET'])
+@login_required
+def listar_contadores_existentes():
+    if not es_admin(): return jsonify([])
+    res = db_query("SELECT id, nombre, usuario FROM usuarios WHERE rol = 'contador'", fetch=True) or []
+    return jsonify([{"id":r[0], "nombre":r[1], "correo":r[2]} for r in res])
+
+@app.route('/api/admin/vincular_contador', methods=['POST'])
+@login_required
+def vincular_contador_empresa():
+    if not es_admin(): return jsonify({"success":False}), 403
+    d = request.json
+    try:
+        db_query("INSERT INTO contador_empresas (contador_id, empresa_id) VALUES (%s, %s) ON CONFLICT DO NOTHING", (d.get('contador_id'), d.get('empresa_id')))
+        return jsonify({"success":True})
+    except Exception as e: return jsonify({"success":False, "message": str(e)}), 500
+
+@app.route('/api/admin/vincular_contador/<int:c_id>/<int:e_id>', methods=['DELETE'])
+@login_required
+def desvincular_contador(c_id, e_id):
+    if not es_admin(): return jsonify({"success":False}), 403
+    db_query("DELETE FROM contador_empresas WHERE contador_id = %s AND empresa_id = %s", (c_id, e_id))
+    return jsonify({"success":True})
+
+# =============== API EXCLUSIVA PARA CONTADORES ==================
+@app.route('/api/contador/empresas', methods=['GET', 'POST'])
+@login_required
+def contador_empresas_api():
+    if session.get('rol') != 'contador': return jsonify([]), 403
+    contador_id = session.get('usuario_id')
+    
+    if request.method == 'GET':
+        res = db_query("""
+            SELECT e.id, e.nombre, e.plan,
+            (SELECT COUNT(*) FROM Facturas f WHERE f.id_empresa = e.id) as docs
+            FROM empresas_recomiendan e
+            JOIN contador_empresas ce ON e.id = ce.empresa_id
+            WHERE ce.contador_id = %s ORDER BY e.id DESC
+        """, (contador_id,), fetch=True)
+        return jsonify([{"id": r[0], "nombre": r[1], "plan": r[2], "documentos": r[3]} for r in (res or [])])
+        
+    if request.method == 'POST':
+        d = request.json
+        nombre = d.get('nombre')
+        if not nombre: return jsonify({"success":False, "message": "Falta el nombre"}), 400
+        
+        db_query("INSERT INTO empresas_recomiendan (nombre, plan, tipo, creador_id) VALUES (%s, 'Gratis', 'corporativo', %s)", (nombre, contador_id))
+        res_emp = db_query("SELECT id FROM empresas_recomiendan WHERE nombre = %s AND creador_id = %s ORDER BY id DESC LIMIT 1", (nombre, contador_id), fetch=True)
+        id_empresa = res_emp[0][0]
+        
+        db_query("INSERT INTO contador_empresas (contador_id, empresa_id) VALUES (%s, %s)", (contador_id, id_empresa))
+        db_query("INSERT INTO permisos_empresa (empresa_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, false, false, true)", (id_empresa,))
+        
+        return jsonify({"success":True, "message": "Empresa registrada con éxito."})
+
+@app.route('/api/contador/seleccionar_empresa', methods=['POST'])
+@login_required
+def seleccionar_empresa_contador():
+    if session.get('rol') != 'contador': return jsonify({"success":False}), 403
+    emp_id = request.json.get('empresa_id')
+    res = db_query("SELECT nombre FROM empresas_recomiendan WHERE id = %s", (emp_id,), fetch=True)
+    if res:
+        session['empresa'] = str(emp_id)
+        return jsonify({"success": True, "nombre": res[0][0]})
+    return jsonify({"success": False, "message": "Empresa no encontrada"}), 404
+
+# ================================================================
 
 @app.route('/api/registro_particular', methods=['POST'])
 def registro_particular():
@@ -512,7 +578,7 @@ def imprimir_documento():
                     </tbody>
                 </table>
                 <div class="totals-box">
-                    Subtotal: ₡{t_gravado}<br>IVA 13%: ₡{t_impuesto}<br><b>Total: ₡{t_total}</b>
+                    Subtotal: ₡{t_gravado}<br>IVA: ₡{t_impuesto}<br><b>Total: ₡{t_total}</b>
                 </div>
             </div>
             <div class="footer-curve">¡Muchas Gracias por preferirnos!</div>
@@ -644,7 +710,6 @@ def buscar_cabys():
     q = request.args.get('q', '').lower()
     if not q or len(q) < 3: return jsonify([])
     
-    # Busca tanto en el código como en la descripción del diccionario maestro
     res = db_query("SELECT codigo, descripcion, impuesto FROM cabys_maestro WHERE LOWER(descripcion) LIKE %s OR codigo LIKE %s LIMIT 50", (f'%{q}%', f'%{q}%'), fetch=True)
     return jsonify([{"codigo": r[0], "descripcion": r[1], "impuesto": float(r[2])} for r in (res or [])])
 

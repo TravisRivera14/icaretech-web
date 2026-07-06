@@ -13,8 +13,11 @@
     { "src": "/config_hacienda(?:\\.html)?", "dest": "frontend/config_hacienda.html" },
     { "src": "/servicio(?:\\.html)?", "dest": "frontend/servicio.html" },
     { "src": "/tienda(?:\\.html)?", "dest": "frontend/tienda.html" },
+    { "src": "/tienda_servicios(?:\\.html)?", "dest": "frontend/tienda_servicios.html" },
     { "src": "/dashboard(?:\\.html)?", "dest": "frontend/dashboard.html" },
     { "src": "/dashboard_cliente(?:\\.html)?", "dest": "frontend/dashboard_cliente.html" },
+    { "src": "/dashboard_contador(?:\\.html)?", "dest": "frontend/dashboard_contador.html" },
+    { "src": "/dashboard_empresarial(?:\\.html)?", "dest": "frontend/dashboard_empresarial.html" },
     { "src": "/assets/(.*)", "dest": "frontend/assets/$1" },
     { "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp))", "dest": "frontend/$1" },
     { "src": "/(.*)", "dest": "frontend/index.html" }

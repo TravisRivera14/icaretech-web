@@ -129,7 +129,6 @@
             font-weight: 600;
         }
 
-        /* MODAL DE CAMBIO DE CONTRASEÑA OBLIGATORIO */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -224,17 +223,18 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    // SI ES ADMINISTRADOR O PERSONAL -> PANEL MAESTRO (Se agregó personal_admin)
                     if (data.rol === 'admin' || data.rol === 'personal' || data.rol === 'personal_admin') {
                         window.location.href = '/admin.html';
                     } 
-                    // SI ES CLIENTE Y DEBE CAMBIAR CONTRASEÑA OBLIGATORIAMENTE
                     else if (data.debe_cambiar_pass === true) {
                         tempUsuarioId = data.usuario_id;
                         document.getElementById('login-box').style.display = 'none';
                         document.getElementById('modal-cambio-pass').style.display = 'flex';
                     } 
-                    // SI ES CLIENTE NORMAL -> DASHBOARD
+                    // REDIRECCIÓN DIRECTA AL PORTAL DEL CONTADOR
+                    else if (data.rol === 'contador') {
+                        window.location.href = '/dashboard_contador.html';
+                    }
                     else {
                         window.location.href = '/dashboard_cliente.html';
                     }

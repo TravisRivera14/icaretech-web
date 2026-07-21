@@ -11,7 +11,6 @@
     
     <style>
         :root {
-            /* COLORES Y VARIABLES ORIGINALES */
             --bg-dark: #f8fafc; 
             --sidebar-bg: #11141a;
             --card-bg: #1f2833;
@@ -27,791 +26,126 @@
             --del: #ff3b30;
         }
         
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body { 
-            background: var(--bg-dark); 
-            color: #1e293b; 
-            display: flex; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            font-size: 14px; 
-            -webkit-font-smoothing: antialiased; 
-        }
+        body { background: var(--bg-dark); color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; font-size: 14px; -webkit-font-smoothing: antialiased; }
         
-        /* BARRA LATERAL (SIDEBAR) */
-        .sidebar { 
-            width: 280px; 
-            background: var(--sidebar-bg); 
-            border-right: 1px solid #e2e8f0; 
-            display: flex; 
-            flex-direction: column; 
-            position: fixed; 
-            height: 100vh; 
-            z-index: 100; 
-            overflow-y: auto; 
-        }
-
-        .sidebar::-webkit-scrollbar { 
-            width: 6px; 
-        }
-
-        .sidebar::-webkit-scrollbar-thumb { 
-            background: rgba(255,255,255,0.1); 
-            border-radius: 10px; 
-        }
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; overflow-y: auto; }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
-        .sidebar-header { 
-            padding: 30px 20px 15px 20px; 
-            text-align: center; 
-            border-bottom: 1px solid var(--border-color); 
-        }
+        .sidebar-header { padding: 30px 20px 15px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .logo-dual-container { padding: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .main-logo-img { height: 65px; object-fit: contain; filter: brightness(0) invert(1); }
+        #client-logo-img { height: 45px; object-fit: contain; background: white; padding: 4px; border-radius: 6px; }
+        .empresa-badge { background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; }
         
-        .logo-dual-container { 
-            padding: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 15px; 
-            margin-bottom: 15px; 
-        }
+        .nav-menu { padding: 15px 0; }
+        .nav-item { padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: var(--transition); font-weight: 500; font-size: 14px; }
+        .nav-item:hover, .nav-item.active { color: var(--neon-blue); background: rgba(255,255,255,0.02); border-left: 4px solid var(--neon-blue); }
+        .nav-item i.main-icon { width: 25px; font-size: 16px; }
+
+        .dropdown-container { display: none; background: #0d0f14; border-left: 1px solid var(--border-color); }
+        .dropdown-container a { padding: 10px 25px 10px 55px; display: block; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: var(--transition); cursor: pointer; }
+        .dropdown-container a:hover { color: var(--text-light); background: rgba(255,255,255,0.03); }
+
+        .sidebar-upsell-title { font-size: 10px; color: #64748b; text-transform: uppercase; margin: 15px 20px 5px; font-weight: 700; letter-spacing: 1px; }
+        .sidebar-upsell-card { background: rgba(85, 187, 204, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(85, 187, 204, 0.3); border-radius: 12px; padding: 15px; margin: 10px 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: var(--transition); }
+        .sidebar-upsell-card:hover { transform: translateY(-3px); background: rgba(85, 187, 204, 0.25); border-color: rgba(85, 187, 204, 0.5); }
+        .sidebar-upsell-card h3 { color: #fff; font-size: 13.5px; margin: 0 0 5px 0; display: flex; align-items: center; gap: 8px; }
+        .sidebar-upsell-card p { color: rgba(255,255,255,0.8); font-size: 11.5px; margin-bottom: 12px; line-height: 1.4; }
+        .sidebar-upsell-btn { background: #fff; color: var(--neon-blue); width: 100%; padding: 8px; border-radius: 6px; border: none; font-weight: 700; font-size: 12px; cursor: pointer; transition: var(--transition); }
+        .sidebar-upsell-btn:hover { background: var(--neon-blue); color: #fff; }
+
+        .logout-btn { padding: 15px; border-top: 1px solid var(--border-color); margin-top: 10px; }
+        .logout-btn a { display: block; text-align: center; padding: 10px; background: rgba(255, 59, 48, 0.1); color: #ff3b30; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: var(--transition); cursor: pointer;}
+        .logout-btn a:hover { background: #ff3b30; color: white; }
+
+        .main-content { flex: 1; margin-left: 280px; padding: 35px 45px; overflow-y: auto;}
         
-        .main-logo-img { 
-            height: 65px; 
-            object-fit: contain; 
-            filter: brightness(0) invert(1); 
-        }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; }
+        .top-buttons { display: flex; gap: 10px; flex-wrap: wrap;}
+        .btn-top { padding: 9px 16px; border-radius: 6px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: var(--neon-blue); color: #fff; }
+        .btn-top:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        #client-logo-img { 
-            height: 45px; 
-            object-fit: contain; 
-            background: white; 
-            padding: 4px; 
-            border-radius: 6px; 
-        }
+        .dropdown-menu-container { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background-color: var(--sidebar-bg); min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 0; z-index: 1100; border: 1px solid var(--border-color); transition: var(--transition); }
+        .dropdown-content a { color: #f5f5f7; padding: 12px 20px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; font-size: 13.5px; font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: rgba(255,255,255,0.05); color: var(--neon-blue); }
+        .dropdown-menu-container:hover .dropdown-content { display: block; transform: translateX(-50%) translateY(0); }
+
+        .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 2px solid #e2e8f0; cursor: pointer; }
+        .user-initial { width: 38px; height: 38px; border-radius: 50%; background: var(--neon-blue); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
+        .user-meta { display: flex; flex-direction: column; text-align: right; }
+        .user-meta b { font-size: 14px; color: #1e293b; }
+        .user-meta span { font-size: 11.5px; color: var(--del); font-weight: 600; transition: 0.3s;}
+
+        .page-title { margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;}
+        .breadcrumb { font-size: 12.5px; color: #64748b; margin-bottom: 20px; font-weight: 600;}
+        .breadcrumb span { color: var(--neon-blue); font-weight: 700; }
+
+        .section-title { margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #fff;}
+        .card { background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 25px; color: var(--text-light);}
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+        .metric-box { background: #11141a; padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .metric-box p { margin: 0 0 8px 0; font-size: 11.5px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;}
+        .metric-box h3 { margin: 0; font-size: 24px; font-weight: 700; color: #fff; }
+
+        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .form-input { width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 8px; background: #11141a; border: 1px solid var(--border-color); color: #fff; font-size: 14px; transition: 0.3s; box-sizing: border-box; font-family: inherit; }
+        .form-input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);}
+        label { color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;}
+
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; color: #fff;}
+        .admin-table th { color: var(--text-muted); text-align: left; padding: 14px 15px; border-bottom: 2px solid var(--border-color); font-weight: 600; text-transform: uppercase; font-size: 11.5px; background: #11141a; }
+        .admin-table td { padding: 15px; border-bottom: 1px solid var(--border-color); color: #cfd8dc; }
+        .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .fact-btn-del { padding: 8px 12px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s;}
+        .fact-btn-del:hover { background: #ef4444; color: white;}
+        .fact-btn-view { padding: 8px 14px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--btn-green); border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; margin-right: 5px; font-weight: 600;}
+        .fact-btn-view:hover { background: var(--btn-green); color: white;}
+
+        .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; gap: 10px; }
+        .tab-link { padding: 12px 20px; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: 0.2s; }
+        .tab-link:hover { color: #fff; }
+        .tab-link.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); }
+
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; align-items: start;}
+        .price-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; text-align: center; color: var(--text-light); display: flex; flex-direction: column; border: 1px solid var(--border-color); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .price-card.recommended { transform: scale(1.03); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid var(--neon-blue); z-index: 10;}
+        .price-header { padding: 15px; font-weight: 800; font-size: 14px; letter-spacing: 1px; background: #11141a; color: white; text-transform: uppercase;}
+        .price-header.featured { background: var(--neon-blue); color: #fff; }
+        .price-amount { padding: 25px 20px 10px; border-bottom: 1px solid var(--border-color); }
+        .price-amount h2 { font-size: 38px; color: #fff; margin: 0; font-weight: 800;}
+        .price-features { padding: 20px; list-style: none; margin: 0; flex: 1; text-align: left;}
+        .price-features li { padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; color: #cfd8dc; display: flex; align-items: center; gap: 10px;}
+        .price-features li i { color: var(--neon-blue); }
+        .price-btn-box { padding: 20px; background: #11141a; border-top: 1px solid var(--border-color);}
+        .btn-add-cart { padding: 12px 20px; border-radius: 6px; font-weight: 700; width: 100%; border: none; cursor: pointer; transition:0.2s; background: rgba(85, 187, 204, 0.1); color: var(--neon-blue); border: 1px solid var(--neon-blue);}
+        .btn-add-cart:hover { background: var(--neon-blue); color: #000; }
         
-        .empresa-badge { 
-            background: rgba(85, 187, 204, 0.1); 
-            color: var(--neon-blue); 
-            padding: 5px 10px; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            font-weight: 700; 
-            display: inline-block; 
-        }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .service-upsell-card { background: rgba(85, 187, 204, 0.05); border: 1px solid rgba(85, 187, 204, 0.2); border-radius: 12px; padding: 25px; text-align: center; transition: var(--transition);}
+        .service-upsell-card:hover { transform: translateY(-5px); border-color: var(--neon-blue); background: rgba(85, 187, 204, 0.1); }
+        .upsell-icon { font-size: 45px; color: var(--neon-blue); margin-bottom: 20px; }
+        .service-upsell-card h3 { font-size: 20px; color: white; margin-bottom: 12px; }
+        .service-upsell-card p { font-size: 14.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
         
-        .nav-menu { 
-            padding: 15px 0; 
-        }
-
-        .nav-item { 
-            padding: 12px 25px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            cursor: pointer; 
-            transition: var(--transition); 
-            font-weight: 500; 
-            font-size: 14px; 
-        }
-
-        .nav-item:hover, 
-        .nav-item.active { 
-            color: var(--neon-blue); 
-            background: rgba(255,255,255,0.02); 
-            border-left: 4px solid var(--neon-blue); 
-        }
-
-        .nav-item i.main-icon { 
-            width: 25px; 
-            font-size: 16px; 
-        }
-
-        .dropdown-container { 
-            display: none; 
-            background: #0d0f14; 
-            border-left: 1px solid var(--border-color); 
-        }
-
-        .dropdown-container a { 
-            padding: 10px 25px 10px 55px; 
-            display: block; 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            font-size: 13px; 
-            transition: var(--transition); 
-            cursor: pointer; 
-        }
-
-        .dropdown-container a:hover { 
-            color: var(--text-light); 
-            background: rgba(255,255,255,0.03); 
-        }
-
-        /* TARJETAS UPSELL SIDEBAR */
-        .sidebar-upsell-title { 
-            font-size: 10px; 
-            color: #64748b; 
-            text-transform: uppercase; 
-            margin: 15px 20px 5px; 
-            font-weight: 700; 
-            letter-spacing: 1px; 
-        }
-
-        .sidebar-upsell-card { 
-            background: rgba(85, 187, 204, 0.15); 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px); 
-            border: 1px solid rgba(85, 187, 204, 0.3); 
-            border-radius: 12px; 
-            padding: 15px; 
-            margin: 10px 15px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
-            transition: var(--transition); 
-        }
-
-        .sidebar-upsell-card:hover { 
-            transform: translateY(-3px); 
-            background: rgba(85, 187, 204, 0.25); 
-            border-color: rgba(85, 187, 204, 0.5); 
-        }
-
-        .sidebar-upsell-card h3 { 
-            color: #fff; 
-            font-size: 13.5px; 
-            margin: 0 0 5px 0; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-
-        .sidebar-upsell-card p { 
-            color: rgba(255,255,255,0.8); 
-            font-size: 11.5px; 
-            margin-bottom: 12px; 
-            line-height: 1.4; 
-        }
-
-        .sidebar-upsell-btn { 
-            background: #fff; 
-            color: var(--neon-blue); 
-            width: 100%; 
-            padding: 8px; 
-            border-radius: 6px; 
-            border: none; 
-            font-weight: 700; 
-            font-size: 12px; 
-            cursor: pointer; 
-            transition: var(--transition); 
-        }
-
-        .sidebar-upsell-btn:hover { 
-            background: var(--neon-blue); 
-            color: #fff; 
-        }
-
-        .logout-btn { 
-            padding: 15px; 
-            border-top: 1px solid var(--border-color); 
-            margin-top: 10px; 
-        }
-
-        .logout-btn a { 
-            display: block; 
-            text-align: center; 
-            padding: 10px; 
-            background: rgba(255, 59, 48, 0.1); 
-            color: #ff3b30; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-weight: 600; 
-            font-size: 13px; 
-            transition: var(--transition); 
-            cursor: pointer;
-        }
-
-        .logout-btn a:hover { 
-            background: #ff3b30; 
-            color: white; 
-        }
-
-        /* CONTENIDO PRINCIPAL */
-        .main-content { 
-            flex: 1; 
-            margin-left: 280px; 
-            padding: 35px 45px; 
-            overflow-y: auto;
-        }
-        
-        .topbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 35px; 
-            padding-bottom: 20px; 
-            border-bottom: 2px solid #e2e8f0; 
-        }
-        
-        .top-buttons { 
-            display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap;
-        }
-
-        .btn-top { 
-            padding: 9px 16px; 
-            border-radius: 6px; 
-            border: none; 
-            font-weight: 600; 
-            font-size: 13px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            transition: 0.2s; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            background: var(--neon-blue); 
-            color: #fff; 
-        }
-
-        .btn-top:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px); 
-        }
-
-        .dropdown-menu-container { 
-            position: relative; 
-            display: inline-block; 
-        }
-
-        .dropdown-content { 
-            display: none; 
-            position: absolute; 
-            top: 100%; 
-            left: 50%; 
-            transform: translateX(-50%) translateY(10px); 
-            background-color: var(--sidebar-bg); 
-            min-width: 180px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            border-radius: 8px; 
-            padding: 10px 0; 
-            z-index: 1100; 
-            border: 1px solid var(--border-color); 
-            transition: var(--transition); 
-        }
-
-        .dropdown-content a { 
-            color: #f5f5f7; 
-            padding: 12px 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-start; 
-            gap: 12px; 
-            font-size: 13.5px; 
-            font-weight: 600; 
-            text-decoration: none; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-        }
-
-        .dropdown-content a:last-child { 
-            border-bottom: none; 
-        }
-
-        .dropdown-content a:hover { 
-            background-color: rgba(255,255,255,0.05); 
-            color: var(--neon-blue); 
-        }
-
-        .dropdown-menu-container:hover .dropdown-content { 
-            display: block; 
-            transform: translateX(-50%) translateY(0); 
-        }
-
-        .user-profile { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            padding-left: 18px; 
-            border-left: 2px solid #e2e8f0; 
-            cursor: pointer; 
-        }
-
-        .user-initial { 
-            width: 38px; 
-            height: 38px; 
-            border-radius: 50%; 
-            background: var(--neon-blue); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: #fff; 
-            font-weight: 800; 
-            font-size: 16px; 
-        }
-
-        .user-meta { 
-            display: flex; 
-            flex-direction: column; 
-            text-align: right; 
-        }
-
-        .user-meta b { 
-            font-size: 14px; 
-            color: #1e293b; 
-        }
-
-        .user-meta span { 
-            font-size: 11.5px; 
-            color: var(--del); 
-            font-weight: 600; 
-            transition: 0.3s;
-        }
-
-        .page-title { 
-            margin: 0 0 20px 0; 
-            font-size: 22px; 
-            font-weight: 700; 
-            color: #1e293b; 
-            border-bottom: 2px solid #e2e8f0; 
-            padding-bottom: 15px;
-        }
-
-        .breadcrumb { 
-            font-size: 12.5px; 
-            color: #64748b; 
-            margin-bottom: 20px; 
-            font-weight: 600;
-        }
-
-        .breadcrumb span { 
-            color: var(--neon-blue); 
-            font-weight: 700; 
-        }
-
-        .section-title { 
-            margin: 0 0 15px 0; 
-            font-size: 16px; 
-            font-weight: 600; 
-            color: #fff;
-        }
-
-        .card { 
-            background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            margin-bottom: 25px; 
-            color: var(--text-light);
-        }
-
-        .metrics-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 20px; 
-            margin-bottom: 25px; 
-        }
-
-        .metric-box { 
-            background: #11141a; 
-            padding: 20px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-        }
-
-        .metric-box p { 
-            margin: 0 0 8px 0; 
-            font-size: 11.5px; 
-            color: var(--text-muted); 
-            font-weight: 700; 
-            letter-spacing: 0.5px; 
-            text-transform: uppercase;
-        }
-
-        .metric-box h3 { 
-            margin: 0; 
-            font-size: 24px; 
-            font-weight: 700; 
-            color: #fff; 
-        }
-
-        .split-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 25px; 
-        }
-
-        .form-input { 
-            width: 100%; 
-            padding: 12px 15px; 
-            margin-bottom: 15px; 
-            border-radius: 8px; 
-            background: #11141a; 
-            border: 1px solid var(--border-color); 
-            color: #fff; 
-            font-size: 14px; 
-            transition: 0.3s; 
-            box-sizing: border-box; 
-            font-family: inherit; 
-        }
-
-        .form-input:focus { 
-            border-color: var(--neon-blue); 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
-        }
-
-        label { 
-            color: var(--text-muted); 
-            font-size: 13px; 
-            font-weight: 600; 
-            margin-bottom: 6px; 
-            display: block;
-        }
-
-        .admin-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 10px; 
-            font-size: 14px; 
-            color: #fff;
-        }
-
-        .admin-table th { 
-            color: var(--text-muted); 
-            text-align: left; 
-            padding: 14px 15px; 
-            border-bottom: 2px solid var(--border-color); 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 11.5px; 
-            background: #11141a; 
-        }
-
-        .admin-table td { 
-            padding: 15px; 
-            border-bottom: 1px solid var(--border-color); 
-            color: #cfd8dc; 
-        }
-
-        .admin-table tr:hover td { 
-            background: rgba(255,255,255,0.02); 
-        }
-
-        .fact-btn-del { 
-            padding: 8px 12px; 
-            background: rgba(239,68,68,0.1); 
-            border: 1px solid rgba(239,68,68,0.3); 
-            color: #ef4444; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            transition: 0.3s;
-        }
-
-        .fact-btn-del:hover { 
-            background: #ef4444; 
-            color: white;
-        }
-
-        .fact-btn-view { 
-            padding: 8px 14px; 
-            background: rgba(16, 185, 129, 0.1); 
-            border: 1px solid rgba(16, 185, 129, 0.3); 
-            color: var(--btn-green); 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            transition: 0.3s; 
-            margin-right: 5px; 
-            font-weight: 600;
-        }
-
-        .fact-btn-view:hover { 
-            background: var(--btn-green); 
-            color: white;
-        }
-
-        .tabs-header { 
-            display: flex; 
-            border-bottom: 1px solid var(--border-color); 
-            margin-bottom: 25px; 
-            gap: 10px; 
-        }
-
-        .tab-link { 
-            padding: 12px 20px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            color: var(--text-muted); 
-            border-bottom: 2px solid transparent; 
-            margin-bottom: -1px; 
-            transition: 0.2s; 
-        }
-
-        .tab-link:hover { 
-            color: #fff; 
-        }
-
-        .tab-link.active { 
-            color: var(--neon-blue); 
-            border-bottom-color: var(--neon-blue); 
-        }
-
-        /* TIENDA Y CARRITO */
-        .pricing-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
-            margin-bottom: 40px; 
-            align-items: start;
-        }
-
-        .price-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            text-align: center; 
-            color: var(--text-light); 
-            display: flex; 
-            flex-direction: column; 
-            border: 1px solid var(--border-color); 
-            position: relative; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .price-card.recommended { 
-            transform: scale(1.03); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
-            border: 2px solid var(--neon-blue); 
-            z-index: 10;
-        }
-
-        .price-header { 
-            padding: 15px; 
-            font-weight: 800; 
-            font-size: 14px; 
-            letter-spacing: 1px; 
-            background: #11141a; 
-            color: white; 
-            text-transform: uppercase;
-        }
-
-        .price-header.featured { 
-            background: var(--neon-blue); 
-            color: #fff; 
-        }
-
-        .price-amount { 
-            padding: 25px 20px 10px; 
-            border-bottom: 1px solid var(--border-color); 
-        }
-
-        .price-amount h2 { 
-            font-size: 38px; 
-            color: #fff; 
-            margin: 0; 
-            font-weight: 800;
-        }
-
-        .price-features { 
-            padding: 20px; 
-            list-style: none; 
-            margin: 0; 
-            flex: 1; 
-            text-align: left;
-        }
-
-        .price-features li { 
-            padding: 12px 0; 
-            border-bottom: 1px solid var(--border-color); 
-            font-size: 13px; 
-            color: #cfd8dc; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-        }
-
-        .price-features li i { 
-            color: var(--neon-blue); 
-        }
-
-        .price-btn-box { 
-            padding: 20px; 
-            background: #11141a; 
-            border-top: 1px solid var(--border-color);
-        }
-
-        .btn-add-cart { 
-            padding: 12px 20px; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            width: 100%; 
-            border: none; 
-            cursor: pointer; 
-            transition:0.2s; 
-            background: rgba(85, 187, 204, 0.1); 
-            color: var(--neon-blue); 
-            border: 1px solid var(--neon-blue);
-        }
-
-        .btn-add-cart:hover { 
-            background: var(--neon-blue); 
-            color: #000; 
-        }
-        
-        .services-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 20px; 
-            margin-bottom: 40px; 
-        }
-
-        .service-upsell-card { 
-            background: rgba(85, 187, 204, 0.05); 
-            border: 1px solid rgba(85, 187, 204, 0.2); 
-            border-radius: 12px; 
-            padding: 25px; 
-            text-align: center; 
-            transition: var(--transition);
-        }
-
-        .service-upsell-card:hover { 
-            transform: translateY(-5px); 
-            border-color: var(--neon-blue); 
-            background: rgba(85, 187, 204, 0.1); 
-        }
-
-        .upsell-icon { 
-            font-size: 45px; 
-            color: var(--neon-blue); 
-            margin-bottom: 20px; 
-        }
-
-        .service-upsell-card h3 { 
-            font-size: 20px; 
-            color: white; 
-            margin-bottom: 12px; 
-        }
-
-        .service-upsell-card p { 
-            font-size: 14.5px; 
-            color: var(--text-muted); 
-            line-height: 1.6; 
-            margin-bottom: 25px; 
-        }
-        
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 20px; 
-            margin-bottom: 40px;
-        }
-
-        .prod-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            padding: 20px; 
-            border: 1px solid var(--border-color); 
-            transition: var(--transition); 
-            display:flex; 
-            flex-direction:column;
-        }
-
-        .prod-img { 
-            width: 100%; 
-            height: 180px; 
-            object-fit: cover; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            background: #11141a; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 40px; 
-            color: rgba(85, 187, 204, 0.3);
-        }
-
-        .cart-icon-wrapper { 
-            position: relative; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 8px; 
-            background: rgba(85, 187, 204, 0.1); 
-            border: 1px solid rgba(85, 187, 204, 0.2); 
-            transition: 0.2s;
-        }
-
-        .cart-icon-wrapper:hover { 
-            background: var(--neon-blue); 
-        }
-
-        .cart-icon-wrapper:hover i { 
-            color: #fff !important; 
-        }
-
-        .cart-badge { 
-            position: absolute; 
-            top: -5px; 
-            right: -5px; 
-            background: var(--del); 
-            color: white; 
-            border-radius: 50%; 
-            width: 18px; 
-            height: 18px; 
-            font-size: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-        }
-
-        /* BURBUJA CABYS INTELIGENTE */
-        .cabys-wrapper { 
-            position: relative; 
-        }
-        
-        .cabys-dropdown { 
-            display: none; 
-            position: absolute; 
-            top: 100%; 
-            left: 0; 
-            width: 100%; 
-            background: #1f2833; 
-            border: 1px solid var(--neon-blue); 
-            z-index: 9999; /* Z-index super alto para que flote sobre todo */
-            border-radius: 8px; 
-            max-height: 250px; 
-            overflow-y: auto; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            margin-top: 5px; 
-        }
-
-        .cabys-item { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            cursor: pointer; 
-            color: #fff; 
-            font-size: 13px; 
-            transition: 0.2s; 
-        }
-
-        .cabys-item:hover { 
-            background: var(--neon-blue); 
-            color: #000; 
-        }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px;}
+        .prod-card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); transition: var(--transition); display:flex; flex-direction:column;}
+        .prod-img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; background: #11141a; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(85, 187, 204, 0.3);}
+        .cart-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: rgba(85, 187, 204, 0.1); border: 1px solid rgba(85, 187, 204, 0.2); transition: 0.2s;}
+        .cart-icon-wrapper:hover { background: var(--neon-blue); }
+        .cart-icon-wrapper:hover i { color: #fff !important; }
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: var(--del); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        .cabys-wrapper { position: relative; }
+        .cabys-dropdown { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #1f2833; border: 1px solid var(--neon-blue); z-index: 9999; border-radius: 8px; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-top: 5px; }
+        .cabys-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; color: #fff; font-size: 13px; transition: 0.2s; }
+        .cabys-item:hover { background: var(--neon-blue); color: #000; }
     </style>
 </head>
 <body>
@@ -927,7 +261,20 @@
     </main>
 
     <script>
-        // VARIABLES GLOBALES (CARRITO Y DATOS DE SESIÓN)
+        // SEGURIDAD: Función global para escapar caracteres HTML peligrosos (Prevención XSS)
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return str.toString().replace(/[&<>'"]/g, match => {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[match];
+            });
+        }
+
         window.userDataCache = { permisos: { facturacion: false, datacenter: false, tickets: true } };
         window.lineasDocumento = []; 
         window.clientesCache = [];
@@ -983,7 +330,7 @@
                 <div class="card" style="text-align: center; padding: 80px 20px;">
                     <i class="fas fa-lock" style="font-size: 60px; color: var(--text-muted); margin-bottom: 20px;"></i>
                     <h2 class="page-title" style="border: none; margin-bottom: 10px; justify-content:center; display:flex; color:#1e293b;">Acceso Restringido</h2>
-                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px;">Tu cuenta no tiene un plan activo para el módulo de <b>${nombreModulo}</b>.</p>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px;">Tu cuenta no tiene un plan activo para el módulo de <b>${escapeHTML(nombreModulo)}</b>.</p>
                     <button class="btn-top btn-t-blue" style="margin: 0 auto; font-size: 16px; padding: 12px 24px;" onclick="window.location.href='/tienda_servicios.html'">
                         Ver Planes y Adquirir
                     </button>
@@ -1013,8 +360,8 @@
             
             items.forEach((item, index) => {
                 html += `
-                <a class="nav-item ${index === 0 ? 'active' : ''}" onclick="window.renderModulo('${item.nombre}', this)">
-                    <div><i class="fas ${item.icon} main-icon"></i> ${item.nombre}</div>
+                <a class="nav-item ${index === 0 ? 'active' : ''}" onclick="window.renderModulo('${escapeHTML(item.nombre)}', this)">
+                    <div><i class="fas ${item.icon} main-icon"></i> ${escapeHTML(item.nombre)}</div>
                 </a>`;
             });
             
@@ -1124,10 +471,10 @@
                     window.productosCache.forEach(p => {
                         gridProd.innerHTML += `
                             <div class="prod-card">
-                                <div class="prod-title">${p.descripcion}</div>
+                                <div class="prod-title">${escapeHTML(p.descripcion)}</div>
                                 <div class="prod-desc">Categoría: Componente Físico</div>
                                 <div class="prod-price">${formatter.format(p.precio_unitario)}</div>
-                                <button class="btn-add-cart" onclick="window.agregarAlCarrito('${p.descripcion}', ${p.precio_unitario}, 'Hardware')"><i class="fas fa-cart-plus"></i> Agregar</button>
+                                <button class="btn-add-cart" onclick="window.agregarAlCarrito('${escapeHTML(p.descripcion)}', ${p.precio_unitario}, 'Hardware')"><i class="fas fa-cart-plus"></i> Agregar</button>
                             </div>
                         `;
                     });
@@ -1141,7 +488,7 @@
                     '<p style="color:var(--text-muted); text-align:center; padding:30px;">Tu carrito está vacío. Ve a la Tienda para agregar servicios.</p>' : 
                     window.carrito.map((item, idx) => `
                         <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid var(--border-color);">
-                            <div><b style="color:#fff;">${item.nombre}</b><br><small style="color:var(--text-muted);">${item.tipo}</small></div>
+                            <div><b style="color:#fff;">${escapeHTML(item.nombre)}</b><br><small style="color:var(--text-muted);">${escapeHTML(item.tipo)}</small></div>
                             <div style="display:flex; gap:15px; align-items:center;">
                                 <span style="color:var(--neon-blue); font-weight:bold;">$${parseFloat(item.precio).toFixed(2)}</span>
                                 <button onclick="window.eliminarDelCarrito(${idx})" style="background:none;border:none;color:var(--del);cursor:pointer;"><i class="fas fa-trash"></i></button>
@@ -1298,7 +645,7 @@
                         <div class="card">
                             <h3 class="section-title">PLAN RECOMENDADO</h3>
                             <p style="color:var(--text-muted); margin-bottom:15px; line-height:1.6;">Basado en las características de su perfil, este es un plan recomendado de nuestra tienda:</p>
-                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: ${plan})</h4>
+                            <h4 style="color:var(--neon-blue); margin:0 0 10px 0; font-size: 15px;">PLAN PROFESIONAL (Actualmente: ${escapeHTML(plan)})</h4>
                             <ul style="color:#cfd8dc; padding-left:20px; line-height:2;">
                                 <li>Documentos Ilimitados</li>
                                 <li>Reportes Especializados</li>
@@ -1380,9 +727,6 @@
                 window.cargarClientesFact();
             }
             
-            // ==========================================
-            // BURBUJA CABYS EN CATÁLOGO DE PRODUCTOS (CORREGIDO OVERFLOW)
-            // ==========================================
             else if (opcion === 'Catálogo CABYS') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>CABYS</span></div>
@@ -1417,12 +761,9 @@
                 window.cargarProductosFact();
             }
 
-            // ==========================================
-            // BURBUJA CABYS EN NUEVA FACTURA
-            // ==========================================
             else if (opcion === 'Nueva Factura' || opcion === 'Nueva Proforma') {
                 window.lineasDocumento = [];
-                const docName = opcion.split(' ')[1];
+                const docName = escapeHTML(opcion.split(' ')[1]);
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Modulo Contable / <span>Nueva ${docName.toLowerCase()}</span></div>
                     <div class="card">
@@ -1468,13 +809,13 @@
                 if(!window.clientesCache || window.clientesCache.length === 0) { 
                     selC.innerHTML = '<option value="">Sin clientes registrados</option>'; 
                 } else { 
-                    selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); 
+                    selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); 
                 }
             }
             
             else if (opcion === 'Historial de Facturas' || opcion === 'Proformas Generadas') {
                 const tipo = opcion === 'Historial de Facturas' ? 'factura' : 'proforma';
-                contenedor.innerHTML = `<div class="breadcrumb">Modulo Contable / <span>${opcion}</span></div><div class="card"><h2 class="page-title">${opcion}</h2><div id="tabla-historial">Cargando...</div></div>`;
+                contenedor.innerHTML = `<div class="breadcrumb">Modulo Contable / <span>${escapeHTML(opcion)}</span></div><div class="card"><h2 class="page-title">${escapeHTML(opcion)}</h2><div id="tabla-historial">Cargando...</div></div>`;
                 window.cargarHistorialDoc(tipo);
             }
             else if (opcion === 'Datos de la Empresa') {
@@ -1484,7 +825,6 @@
                 window.renderConfigHacienda();
             }
 
-            // ---------- MÓDULO TICKETS (SOPORTE) ----------
             else if (opcion === 'Reportar Avería') {
                 contenedor.innerHTML = `
                     <div class="breadcrumb">Soporte iCare / <span>Reportar Avería</span></div>
@@ -1504,9 +844,9 @@
             }
             else if (opcion === 'Tickets Activos' || opcion === 'Historial de Soporte') {
                 contenedor.innerHTML = `
-                    <div class="breadcrumb">Soporte iCare / <span>${opcion}</span></div>
+                    <div class="breadcrumb">Soporte iCare / <span>${escapeHTML(opcion)}</span></div>
                     <div class="card">
-                        <h2 class="page-title"><i class="fas fa-list"></i> ${opcion}</h2>
+                        <h2 class="page-title"><i class="fas fa-list"></i> ${escapeHTML(opcion)}</h2>
                         <div id="lista-t">Cargando...</div>
                     </div>
                 `;
@@ -1514,10 +854,7 @@
             }
         };
 
-        // ==========================================
-        // LÓGICA DE BURBUJAS CABYS 
-        // ==========================================
-
+        // BURBUJAS CABYS 
         window.buscarCabysOficial = async function(q) {
             const drop = document.getElementById('cabys-oficial-dropdown');
             if(!q || q.length < 3) { drop.style.display = 'none'; return; }
@@ -1530,8 +867,8 @@
                     return; 
                 }
                 drop.innerHTML = matches.map(m => `
-                    <div class="cabys-item" onclick="window.seleccionarCabysOficial('${m.codigo}', '${m.descripcion.replace(/'/g, "\\'")}', ${m.impuesto})">
-                        <b style="font-family:monospace;">${m.codigo}</b> - ${m.descripcion} 
+                    <div class="cabys-item" onclick="window.seleccionarCabysOficial('${m.codigo}', '${escapeHTML(m.descripcion).replace(/'/g, "\\'")}', ${m.impuesto})">
+                        <b style="font-family:monospace;">${m.codigo}</b> - ${escapeHTML(m.descripcion)} 
                         <span style="font-weight:bold; float:right;">IVA: ${m.impuesto}%</span>
                     </div>
                 `).join('');
@@ -1557,8 +894,8 @@
                 return; 
             }
             drop.innerHTML = matches.map(m => `
-                <div class="cabys-item" onclick="window.seleccionarCabys('${m.codigo_cabys}', '${m.descripcion.replace(/'/g, "\\'")}', ${m.precio_unitario}, ${m.impuesto}, '${m.unidad_medida}')">
-                    <b style="font-family:monospace;">${m.codigo_cabys}</b> - ${m.descripcion} 
+                <div class="cabys-item" onclick="window.seleccionarCabys('${m.codigo_cabys}', '${escapeHTML(m.descripcion).replace(/'/g, "\\'")}', ${m.precio_unitario}, ${m.impuesto}, '${m.unidad_medida}')">
+                    <b style="font-family:monospace;">${m.codigo_cabys}</b> - ${escapeHTML(m.descripcion)} 
                     <span style="font-weight:bold; float:right;">₡${m.precio_unitario}</span>
                 </div>
             `).join('');
@@ -1598,7 +935,7 @@
             const tbody = document.getElementById('doc-body');
             let html = ''; let sub = 0; let iva = 0;
             window.lineasDocumento.forEach((l, i) => {
-                html += `<tr><td>${l.cantidad}</td><td>${l.codigo_cabys}</td><td><b>${l.descripcion}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:600; color:var(--neon-blue);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="window.lineasDocumento.splice(${i},1); window.renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
+                html += `<tr><td>${l.cantidad}</td><td>${escapeHTML(l.codigo_cabys)}</td><td><b>${escapeHTML(l.descripcion)}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:600; color:var(--neon-blue);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="window.lineasDocumento.splice(${i},1); window.renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
                 sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100);
             });
             tbody.innerHTML = html || `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sin líneas</td></tr>`;
@@ -1627,7 +964,7 @@
             fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
                 if(!data || data.length === 0) { list.innerHTML = "<p style='color:var(--text-muted); padding:20px; text-align:center;'>Sin clientes registrados.</p>"; return; }
                 list.innerHTML = `<table class="admin-table"><thead><tr><th>Nombre o Razón Social</th><th>Identificación</th><th>Correo de Envío</th><th>Acción</th></tr></thead><tbody>
-                    ${data.map(c => `<tr><td><b>${c.nombre}</b></td><td>${c.identificacion}</td><td>${c.correo}</td><td><button class="fact-btn-del" onclick="window.borrarItem('clientes_facturacion', ${c.id}, 'Clientes')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                    ${data.map(c => `<tr><td><b>${escapeHTML(c.nombre)}</b></td><td>${escapeHTML(c.identificacion)}</td><td>${escapeHTML(c.correo)}</td><td><button class="fact-btn-del" onclick="window.borrarItem('clientes_facturacion', ${c.id}, 'Clientes')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -1643,7 +980,7 @@
             fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(data => {
                 if(!data || data.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); padding:20px; text-align:center;'>El catálogo está vacío.</p>"; return; }
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>CABYS</th><th>Descripción</th><th>Precio (CRC)</th><th>Acción</th></tr></thead><tbody>
-                    ${data.map(p => `<tr><td><code>${p.codigo_cabys}</code></td><td><b>${p.descripcion}</b></td><td style="color:var(--neon-blue);">₡${p.precio_unitario}</td><td><button class="fact-btn-del" onclick="window.borrarItem('productos_facturacion', ${p.id}, 'Catálogo CABYS')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                    ${data.map(p => `<tr><td><code>${escapeHTML(p.codigo_cabys)}</code></td><td><b>${escapeHTML(p.descripcion)}</b></td><td style="color:var(--neon-blue);">₡${p.precio_unitario}</td><td><button class="fact-btn-del" onclick="window.borrarItem('productos_facturacion', ${p.id}, 'Catálogo CABYS')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -1664,7 +1001,7 @@
                 const lista = tipo === 'factura' ? data.facturas : data.proformas;
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay documentos emitidos.</p>"; return; }
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado</th>':''}<th>Monto</th><th>Impresión</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${d.consecutivo}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${d.estado}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${escapeHTML(d.consecutivo)}</b></td>${tipo==='factura'?`<td style="color:${d.estado==='Rechazado'?'#ff3b30':'var(--btn-green)'}">${escapeHTML(d.estado)}</td>`:''}<td><b style="color:var(--neon-blue);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-print"></i> PDF Oficial</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -1784,7 +1121,7 @@
                 if(opcion === 'Tickets Activos') { lista = lista.filter(t => t.estado !== 'Resuelto' && t.estado !== 'Cerrado'); }
                 if(lista.length === 0) { area.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:20px;'>No hay tickets en esta vista.</p>"; return; }
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha</th><th>Asunto / Falla</th><th>Prioridad</th><th>Estado</th><th>Atendido por</th></tr></thead><tbody>
-                    ${lista.map(t => `<tr><td>${new Date(t.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${t.asunto}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${t.descripcion}</span></td><td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${t.prioridad}</td><td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${t.estado}</td><td>${t.atendido_por}</td></tr>`).join('')}
+                    ${lista.map(t => `<tr><td>${new Date(t.fecha).toLocaleDateString()}</td><td><b style="color:#fff;">${escapeHTML(t.asunto)}</b><br><span style="font-size:11.5px; color:var(--text-muted);">${escapeHTML(t.descripcion)}</span></td><td style="color:${t.prioridad === 'Alta' ? '#ff3b30' : 'var(--btn-yellow)'}">${escapeHTML(t.prioridad)}</td><td style="color:${t.estado==='Resuelto'?'#10b981':'var(--neon-blue)'}">${escapeHTML(t.estado)}</td><td>${escapeHTML(t.atendido_por)}</td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -1795,7 +1132,6 @@
                 if (res.status === 401) { window.location.href = '/login.html'; return; }
                 const data = await res.json();
                 
-                // REDIRECCIÓN A CONTADOR CORREGIDA (Ya no permite ver cliente)
                 if(data.rol === 'contador') {
                     window.location.href = '/dashboard_contador.html';
                     return;
@@ -1804,8 +1140,8 @@
                 if(data.usuario) {
                     const headerUserName = document.getElementById('header-user-name');
                     const headerUserInitial = document.getElementById('header-user-initial');
-                    if (headerUserName) headerUserName.innerText = data.usuario;
-                    if (headerUserInitial) headerUserInitial.innerText = data.usuario.charAt(0).toUpperCase();
+                    if (headerUserName) headerUserName.innerText = escapeHTML(data.usuario);
+                    if (headerUserInitial) headerUserInitial.innerText = escapeHTML(data.usuario).charAt(0).toUpperCase();
                 }
                 
                 const opsRes = await fetch('/api/cliente/datos-operativos', {credentials: 'include'});

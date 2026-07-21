@@ -22,10 +22,14 @@
         .recover-container { background: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; text-align: center; }
         
         .input-group { margin-bottom: 20px; text-align: left; }
-        input { width: 100%; padding: 15px; background: #11141a; border: 1px solid var(--border-color); color: white; border-radius: 8px; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; background: #11141a; border: 1px solid var(--border-color); color: white; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 180, 216, 0.15); }
         
-        button { width: 100%; padding: 15px; background: var(--neon-blue); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 10px; }
+        button { width: 100%; padding: 15px; background: var(--neon-blue); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 10px; transition: 0.3s; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        
         .method-btn { background: #11141a; border: 1px solid var(--neon-blue); color: var(--neon-blue); margin-bottom: 10px; }
+        .method-btn:hover { background: var(--neon-blue); color: #000; }
         
         .hidden { display: none; }
     </style>
@@ -46,7 +50,7 @@
             <div class="input-group">
                 <input type="text" id="input-data" placeholder="Ingresa tu correo o teléfono">
             </div>
-            <button onclick="solicitarCodigo()">Enviar Código</button>
+            <button id="btn-submit" onclick="solicitarCodigo()">Enviar Código</button>
         </div>
 
         <div class="links" style="margin-top: 20px;">
@@ -66,13 +70,40 @@
         }
 
         async function solicitarCodigo() {
-            const dato = document.getElementById('input-data').value;
+            const dato = document.getElementById('input-data').value.trim();
+            const btn = document.getElementById('btn-submit');
             
-            // Aquí llamaríamos a la API para enviar el código
-            alert(`Enviando código de verificación a ${dato} vía ${metodoSeleccionado}...`);
+            if (!dato) {
+                alert("Por favor ingresa tu dato de contacto.");
+                return;
+            }
             
-            // Simulación de flujo
-            window.location.href = "login.html"; // Luego de esto, el usuario debería ir a una pantalla para ingresar el código
+            btn.innerText = "Procesando...";
+            btn.disabled = true;
+
+            try {
+                // Hacemos el llamado real al backend usando una ruta relativa para Vercel
+                const res = await fetch('/api/recuperar_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ metodo: metodoSeleccionado, contacto: dato })
+                });
+                
+                const data = await res.json();
+                
+                if(data.success) {
+                    alert(`Se han enviado las instrucciones de recuperación a ${dato}. Revisa tu bandeja de entrada o mensajes.`);
+                    window.location.href = "login.html"; 
+                } else {
+                    alert("Error: " + (data.message || "No se encontró ninguna cuenta asociada a este dato."));
+                    btn.innerText = "Enviar Código";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert("Error de conexión con el servidor.");
+                btn.innerText = "Enviar Código";
+                btn.disabled = false;
+            }
         }
     </script>
 </body>

@@ -17,13 +17,13 @@
     <style>
         :root {
             --bg-dark: #f8fafc; 
-            --sidebar-bg: #2b78e4; /* Tono azul basado en tus imágenes */
+            --sidebar-bg: #2b78e4;
             --sidebar-hover: #1e62c2;
             --card-bg: #1f2833;
             --text-light: #ffffff;
             --text-muted: #8a99ad;
             --neon-blue: #55bbcc; 
-            --btn-green: #7cb342; /* Verde del botón Buscar/Excel */
+            --btn-green: #7cb342; 
             --border-color: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s ease;
             --del: #ff3b30;
@@ -216,13 +216,27 @@
     </main>
 
     <script>
+        // SEGURIDAD: Escapar caracteres HTML peligrosos (Prevención XSS)
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return str.toString().replace(/[&<>'"]/g, match => {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[match];
+            });
+        }
+
         let excelApp = null;
         window.userDataCache = {};
         window.lineasDocumento = []; 
         window.clientesCache = [];
         window.productosCache = [];
 
-        // ESTRUCTURA DEL MENÚ ERP (BASADA EN TUS IMÁGENES)
+        // ESTRUCTURA DEL MENÚ ERP
         const erpMenu = [
             {
                 id: 'inicio', nombre: 'Inicio y Herramientas', icon: 'fa-home',
@@ -262,7 +276,6 @@
             }
         ];
 
-        // FUNCIÓN PARA RENDERIZAR EL ACORDEÓN
         function renderSidebar() {
             const menuHtml = document.getElementById('sidebar-dynamic-menu');
             let html = '';
@@ -271,14 +284,14 @@
                 html += `
                     <div class="menu-category" onclick="toggleSubmenu('${cat.id}')">
                         <div style="display:flex; align-items:center;">
-                            <i class="fas ${cat.icon} icon-left"></i> ${cat.nombre.toUpperCase()}
+                            <i class="fas ${cat.icon} icon-left"></i> ${escapeHTML(cat.nombre).toUpperCase()}
                         </div>
                         <i class="fas fa-caret-down icon-right" id="arrow-${cat.id}"></i>
                     </div>
                     <div class="submenu" id="sub-${cat.id}">
                 `;
                 cat.subitems.forEach(sub => {
-                    html += `<a class="submenu-item" onclick="window.renderModulo('${sub}', '${cat.nombre}', this)"><i class="fas fa-chevron-right"></i> ${sub.toUpperCase()}</a>`;
+                    html += `<a class="submenu-item" onclick="window.renderModulo('${escapeHTML(sub)}', '${escapeHTML(cat.nombre)}', this)"><i class="fas fa-chevron-right"></i> ${escapeHTML(sub).toUpperCase()}</a>`;
                 });
                 html += `</div>`;
             });
@@ -286,12 +299,10 @@
             menuHtml.innerHTML = html;
         }
 
-        // FUNCIÓN PARA ABRIR/CERRAR SUBMENÚS
         function toggleSubmenu(id) {
             const sub = document.getElementById(`sub-${id}`);
             const arrow = document.getElementById(`arrow-${id}`);
             
-            // Cerrar todos los demás primero
             document.querySelectorAll('.submenu').forEach(el => {
                 if(el.id !== `sub-${id}`) el.style.display = 'none';
             });
@@ -309,21 +320,15 @@
         }
 
         window.renderModulo = function(opcion, categoria, el) {
-            // Activar botón seleccionado
             if(el) {
                 document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
                 el.classList.add('active');
             }
 
-            // Actualizar Títulos de Cabecera
             document.getElementById('top-title').innerText = opcion;
             document.getElementById('top-bread').innerText = `${categoria.toUpperCase()} > ${opcion.toUpperCase()}`;
 
             const contenedor = document.getElementById('vista-principal');
-
-            // ==========================================
-            // PANTALLAS ESPECÍFICAS PROGRAMADAS
-            // ==========================================
 
             if (opcion === 'Mi Dashboard' || opcion === 'Cambiar Empresa') {
                 contenedor.innerHTML = `
@@ -434,7 +439,7 @@
                 `;
                 const selC = document.getElementById('doc-cliente');
                 if(!window.clientesCache || window.clientesCache.length === 0) { selC.innerHTML = '<option value="">Sin clientes en esta empresa</option>'; }
-                else { selC.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${c.nombre} (${c.identificacion})</option>`).join(''); }
+                else { selC.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); }
             }
 
             else if (opcion === 'Ver Clientes' || opcion === 'Crear Cliente') {
@@ -511,9 +516,9 @@
                 fetch('/api/facturacion/config-empresa', {credentials: 'include'}).then(r=>r.json()).then(data => {
                     if(data.nombre_comercial) {
                         document.getElementById('datos-empresa-box').innerHTML = `
-                            <p style="margin-bottom:10px; color:#475569;"><b>Razón Social:</b> ${data.nombre_comercial}</p>
-                            <p style="margin-bottom:10px; color:#475569;"><b>Teléfono:</b> ${data.telefono}</p>
-                            <p style="margin-bottom:10px; color:#475569;"><b>Correo Registrado:</b> ${data.correo}</p>
+                            <p style="margin-bottom:10px; color:#475569;"><b>Razón Social:</b> ${escapeHTML(data.nombre_comercial)}</p>
+                            <p style="margin-bottom:10px; color:#475569;"><b>Teléfono:</b> ${escapeHTML(data.telefono)}</p>
+                            <p style="margin-bottom:10px; color:#475569;"><b>Correo Registrado:</b> ${escapeHTML(data.correo)}</p>
                         `;
                     } else { document.getElementById('datos-empresa-box').innerHTML = "La empresa no ha completado su perfil fiscal."; }
                 });
@@ -529,7 +534,7 @@
                 `;
                 fetch('/api/admin/facturacion/probar-conexion', {credentials: 'include'}).then(r=>r.json()).then(d => {
                     const el = document.getElementById('estado-hacienda');
-                    if(d.status === "Conexión Exitosa") { el.innerHTML = `<span style="color:#10b981; font-weight:700; font-size:15px;"><i class="fas fa-check-circle"></i> CONEXIÓN ESTABLECIDA CON ATV HACIENDA.</span><br><br><span style="color:#64748b;">Token activo: ${d.token}</span>`; }
+                    if(d.status === "Conexión Exitosa") { el.innerHTML = `<span style="color:#10b981; font-weight:700; font-size:15px;"><i class="fas fa-check-circle"></i> CONEXIÓN ESTABLECIDA CON ATV HACIENDA.</span><br><br><span style="color:#64748b;">Token activo: ${escapeHTML(d.token)}</span>`; }
                     else { el.innerHTML = `<span style="color:#ff3b30; font-weight:700; font-size:15px;"><i class="fas fa-exclamation-triangle"></i> ERROR DE CONEXIÓN.</span><br><br><span style="color:#64748b;">El cliente debe renovar su llave criptográfica (.p12) desde su portal privado.</span>`; }
                 });
             }
@@ -551,12 +556,11 @@
             }
 
             else {
-                // PANTALLA POR DEFECTO PARA MÓDULOS EN CONSTRUCCIÓN DE LAS IMÁGENES
                 contenedor.innerHTML = `
                     <div class="card" style="text-align: center; padding: 60px 20px;">
                         <i class="fas fa-tools" style="font-size: 50px; color: #cbd5e1; margin-bottom: 20px;"></i>
                         <h2 style="color:#1e293b; font-size:20px;">Módulo en Integración</h2>
-                        <p style="color: #64748b;">El submódulo <b>${opcion}</b> está siendo enlazado actualmente con las normativas de Hacienda.</p>
+                        <p style="color: #64748b;">El submódulo <b>${escapeHTML(opcion)}</b> está siendo enlazado actualmente con las normativas de Hacienda.</p>
                     </div>
                 `;
             }
@@ -585,10 +589,10 @@
                 lista.innerHTML = data.map(e => `
                     <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
                         <div>
-                            <h3 style="color:var(--sidebar-bg); font-size:17px; margin-bottom:5px; font-weight:800;"><i class="fas fa-building"></i> ${e.nombre}</h3>
-                            <p style="color:#475569; font-size:12px; margin-bottom:15px; font-weight:600;">Plan: <span style="color:var(--neon-blue);">${e.plan}</span> | Documentos procesados: ${e.documentos}</p>
+                            <h3 style="color:var(--sidebar-bg); font-size:17px; margin-bottom:5px; font-weight:800;"><i class="fas fa-building"></i> ${escapeHTML(e.nombre)}</h3>
+                            <p style="color:#475569; font-size:12px; margin-bottom:15px; font-weight:600;">Plan: <span style="color:var(--neon-blue);">${escapeHTML(e.plan)}</span> | Documentos procesados: ${e.documentos}</p>
                         </div>
-                        <button class="btn-top" style="width:100%;" onclick="seleccionarEmpresa(${e.id}, '${e.nombre}')">Entrar al Sistema</button>
+                        <button class="btn-top" style="width:100%;" onclick="seleccionarEmpresa(${e.id}, '${escapeHTML(e.nombre).replace(/'/g, "\\'")}')">Entrar al Sistema</button>
                     </div>
                 `).join('');
             } catch(e) { console.log("Error cargando empresas del contador."); }
@@ -608,7 +612,7 @@
                     fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(d => window.clientesCache = d).catch(e => console.log(e));
                     fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => window.productosCache = d).catch(e => console.log(e));
 
-                    document.getElementById('header-plan').innerText = `Plan ${window.userDataCache.plan} - Vencimiento: Próximo Mes`;
+                    document.getElementById('header-plan').innerText = `Plan ${escapeHTML(window.userDataCache.plan)} - Vencimiento: Próximo Mes`;
                     // Abrir Facturador por defecto
                     toggleSubmenu('facturar');
                     setTimeout(()=>{ window.renderModulo('Inicio Facturador', 'Facturar', document.querySelectorAll('.submenu-item')[3]); }, 100);
@@ -650,8 +654,8 @@
                     return; 
                 }
                 drop.innerHTML = matches.map(m => `
-                    <div class="cabys-item" onclick="window.seleccionarCabysOficial('${m.codigo}', '${m.descripcion.replace(/'/g, "\\'")}', ${m.impuesto})">
-                        <b style="font-family:monospace; color:var(--sidebar-bg);">${m.codigo}</b> - ${m.descripcion} 
+                    <div class="cabys-item" onclick="window.seleccionarCabysOficial('${m.codigo}', '${escapeHTML(m.descripcion).replace(/'/g, "\\'")}', ${m.impuesto})">
+                        <b style="font-family:monospace; color:var(--sidebar-bg);">${m.codigo}</b> - ${escapeHTML(m.descripcion)} 
                         <span style="font-weight:bold; float:right;">IVA: ${m.impuesto}%</span>
                     </div>
                 `).join('');
@@ -677,8 +681,8 @@
                 return; 
             }
             drop.innerHTML = matches.map(m => `
-                <div class="cabys-item" onclick="window.seleccionarCabys('${m.codigo_cabys}', '${m.descripcion.replace(/'/g, "\\'")}', ${m.precio_unitario}, ${m.impuesto}, '${m.unidad_medida}')">
-                    <b style="font-family:monospace; color:var(--sidebar-bg);">${m.codigo_cabys}</b> - ${m.descripcion} 
+                <div class="cabys-item" onclick="window.seleccionarCabys('${m.codigo_cabys}', '${escapeHTML(m.descripcion).replace(/'/g, "\\'")}', ${m.precio_unitario}, ${m.impuesto}, '${m.unidad_medida}')">
+                    <b style="font-family:monospace; color:var(--sidebar-bg);">${m.codigo_cabys}</b> - ${escapeHTML(m.descripcion)} 
                     <span style="font-weight:bold; float:right;">₡${m.precio_unitario}</span>
                 </div>
             `).join('');
@@ -717,7 +721,7 @@
             const tbody = document.getElementById('doc-body');
             let html = ''; let sub = 0; let iva = 0;
             window.lineasDocumento.forEach((l, i) => {
-                html += `<tr><td>${l.cantidad}</td><td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${l.codigo_cabys}</code></td><td><b>${l.descripcion}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:700; color:var(--sidebar-bg);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="window.lineasDocumento.splice(${i},1); window.renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
+                html += `<tr><td>${l.cantidad}</td><td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${escapeHTML(l.codigo_cabys)}</code></td><td><b>${escapeHTML(l.descripcion)}</b></td><td>₡${l.precio_unitario}</td><td>${l.impuesto}%</td><td style="font-weight:700; color:var(--sidebar-bg);">₡${l.monto_total.toFixed(2)}</td><td><button class="fact-btn-del" onclick="window.lineasDocumento.splice(${i},1); window.renderLineasDocumento();"><i class="fas fa-trash"></i></button></td></tr>`;
                 sub += l.monto_total; iva += l.monto_total * (parseFloat(l.impuesto)/100);
             });
             tbody.innerHTML = html || `<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay líneas agregadas al documento</td></tr>`;
@@ -746,7 +750,7 @@
             fetch('/api/facturacion/clientes', {credentials: 'include'}).then(r=>r.json()).then(data => {
                 if(!data || data.length === 0) { list.innerHTML = "<p style='color:#64748b; padding:20px; text-align:center;'>Sin clientes en la base de datos.</p>"; return; }
                 list.innerHTML = `<table class="admin-table"><thead><tr><th>Nombre o Razón Social</th><th>Identificación</th><th>Correo de Envío</th><th>Acción</th></tr></thead><tbody>
-                    ${data.map(c => `<tr><td><b style="color:#0f172a;">${c.nombre}</b></td><td>${c.identificacion}</td><td>${c.correo}</td><td><button class="fact-btn-del" onclick="window.borrarItem('clientes_facturacion', ${c.id}, 'Clientes')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                    ${data.map(c => `<tr><td><b style="color:#0f172a;">${escapeHTML(c.nombre)}</b></td><td>${escapeHTML(c.identificacion)}</td><td>${escapeHTML(c.correo)}</td><td><button class="fact-btn-del" onclick="window.borrarItem('clientes_facturacion', ${c.id}, 'Clientes')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -762,7 +766,7 @@
             fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(data => {
                 if(!data || data.length === 0) { area.innerHTML = "<p style='color:#64748b; padding:20px; text-align:center;'>Catálogo vacío.</p>"; return; }
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>CABYS</th><th>Descripción Comercial</th><th>Tarifa IVA</th><th>Precio (CRC)</th><th>Acción</th></tr></thead><tbody>
-                    ${data.map(p => `<tr><td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${p.codigo_cabys}</code></td><td><b style="color:#0f172a;">${p.descripcion}</b></td><td>${p.impuesto}%</td><td style="color:var(--sidebar-bg); font-weight:700;">₡${p.precio_unitario}</td><td><button class="fact-btn-del" onclick="window.borrarItem('productos_facturacion', ${p.id}, 'Catálogo CABYS')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                    ${data.map(p => `<tr><td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${escapeHTML(p.codigo_cabys)}</code></td><td><b style="color:#0f172a;">${escapeHTML(p.descripcion)}</b></td><td>${p.impuesto}%</td><td style="color:var(--sidebar-bg); font-weight:700;">₡${p.precio_unitario}</td><td><button class="fact-btn-del" onclick="window.borrarItem('productos_facturacion', ${p.id}, 'Catálogo CABYS')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -783,7 +787,7 @@
                 const lista = tipo === 'factura' ? data.facturas : data.proformas;
                 if(!lista || lista.length === 0) { area.innerHTML = "<p style='color:#64748b; text-align:center; padding:30px;'><i class='fas fa-folder-open' style='font-size:30px; margin-bottom:10px; display:block;'></i>Aún no has emitido documentos.</p>"; return; }
                 area.innerHTML = `<table class="admin-table"><thead><tr><th>Fecha Creación</th><th>Consecutivo</th>${tipo==='factura'?'<th>Estado Ministerio</th>':''}<th>Monto Total</th><th>Descargar</th></tr></thead><tbody>
-                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#0f172a;">${d.consecutivo}</b></td>${tipo==='factura'?`<td><span style="background:${d.estado==='Rechazado'?'rgba(239,68,68,0.1)':'rgba(16,185,129,0.1)'}; color:${d.estado==='Rechazado'?'#ef4444':'#10b981'}; padding:4px 8px; border-radius:4px; font-weight:700; font-size:11px;">${d.estado.toUpperCase()}</span></td>`:''}<td><b style="color:var(--sidebar-bg);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-file-pdf"></i> PDF</button></td></tr>`).join('')}
+                    ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#0f172a;">${escapeHTML(d.consecutivo)}</b></td>${tipo==='factura'?`<td><span style="background:${d.estado==='Rechazado'?'rgba(239,68,68,0.1)':'rgba(16,185,129,0.1)'}; color:${d.estado==='Rechazado'?'#ef4444':'#10b981'}; padding:4px 8px; border-radius:4px; font-weight:700; font-size:11px;">${escapeHTML(d.estado).toUpperCase()}</span></td>`:''}<td><b style="color:var(--sidebar-bg);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-file-pdf"></i> PDF</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
         };
@@ -802,8 +806,8 @@
                 }
 
                 if(data.usuario) {
-                    document.getElementById('header-user-name').innerText = data.usuario;
-                    document.getElementById('header-user-initial').innerText = data.usuario.charAt(0).toUpperCase();
+                    document.getElementById('header-user-name').innerText = escapeHTML(data.usuario);
+                    document.getElementById('header-user-initial').innerText = escapeHTML(data.usuario).charAt(0).toUpperCase();
                 }
 
                 toggleSubmenu('inicio');

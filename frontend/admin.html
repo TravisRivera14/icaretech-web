@@ -133,7 +133,8 @@
         <li class="sidebar-item" onclick="switchTab('tab-contenidos', event)"><i class="fas fa-file-alt"></i> Landing & Contenidos</li>
         <li class="sidebar-item" onclick="switchTab('tab-personal', event)"><i class="fas fa-users"></i> Personal Técnico</li>
         <li class="sidebar-item" onclick="switchTab('tab-auditoria', event)"><i class="fas fa-history"></i> Auditoría</li>
-        
+        <li class="sidebar-item" onclick="switchTab('tab-compras', event)"><i class="fas fa-shopping-bag"></i> Compras</li>
+
         <hr style="border: 0; border-top: 1px solid var(--border-smooth); margin: 10px 0;">
         <li class="sidebar-item" onclick="window.open('/dashboard_empresarial.html', '_blank')"><i class="fas fa-desktop"></i> Portal Empresarial</li>
     </ul>
@@ -426,6 +427,32 @@
             </div>
         </div>
     </section>
+
+    <!-- 📦 NUEVA SECCIÓN DE COMPRAS PERFECTAMENTE INTEGRADA 📦 -->
+    <section id="tab-compras" class="tab-section">
+        <div class="card">
+            <h2><i class="fas fa-shopping-bag" style="color: var(--turquoise-main);"></i> Gestión de Pedidos y Compras</h2>
+            <p style="color:var(--text-secondary); margin-bottom:15px; font-size:14px;">Trazabilidad y registro de las compras y proformas de la tienda virtual.</p>
+            
+            <div class="ticket-table-wrapper">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Consecutivo</th>
+                            <th>Fecha</th>
+                            <th>Artículos</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidos-table-body">
+                        <!-- JS injects here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
 </main>
 
 <div id="modalTicketGrande" class="apple-modal">
@@ -528,7 +555,8 @@
             'tab-empresas': 'Clientes Corporativos', 'tab-particulares': 'Clientes Particulares',
             'tab-operaciones': 'Centro de Operaciones',
             'tab-contenidos': 'Landing & Contenidos', 'tab-personal': 'Personal & Accesos', 
-            'tab-auditoria': 'Auditoría'
+            'tab-auditoria': 'Auditoría',
+            'tab-compras': 'Gestión de Compras'
         };
         const descs = {
             'tab-tickets': 'Visualiza y atiende los requerimientos de soporte.',
@@ -538,13 +566,96 @@
             'tab-operaciones': 'Gestiona qué módulos puede ver cada empresa y usuario.',
             'tab-contenidos': 'Modifica la estructura visual y textos de la página.',
             'tab-personal': 'Administra las cuentas de tu equipo y clientes.',
-            'tab-auditoria': 'Trazabilidad y registro de acciones del sistema.'
+            'tab-auditoria': 'Trazabilidad y registro de acciones del sistema.',
+            'tab-compras': 'Monitorea el ingreso y estado de pedidos corporativos.'
         };
         
         const titleElement = document.getElementById('main-panel-title');
         const descElement = document.getElementById('main-panel-desc');
         if(titleElement) titleElement.innerText = titles[tabId] || 'Panel de Administración';
         if(descElement) descElement.innerText = descs[tabId] || '';
+        
+        if (tabId === 'tab-compras') {
+            cargarPedidosAdmin();
+        }
+    }
+    function cargarPedidosAdmin() {
+        const tbody = document.getElementById('pedidos-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-secondary);">Cargando historial de compras...</td></tr>`;
+
+        // AQUÍ ESTÁ EL ARREGLO: credentials: 'include'
+        fetch('/api/admin/pedidos', { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) throw new Error("Error de red");
+                return res.json();
+            })
+            .then(data => {
+                tbody.innerHTML = "";
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-secondary);">No hay compras registradas en el sistema.</td></tr>`;
+                    return;
+                }
+
+                const formatter = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
+
+                data.forEach(pedido => {
+                    let listaArticulos = "";
+                    if(pedido.articulos && pedido.articulos.length > 0) {
+                        listaArticulos = pedido.articulos.map(art => 
+                            `<span style="display:block; font-size:12px; color:var(--text-light); margin-bottom:2px;">• ${art.descripcion} <strong style="color:var(--turquoise-main);">(x${art.cantidad})</strong></span>`
+                        ).join('');
+                    } else {
+                        listaArticulos = `<span style="color:var(--text-secondary);">Sin detalle</span>`;
+                    }
+
+                    const selectId = `status-select-${pedido.id}`;
+                    
+                    let bgColor = '#11141a'; let textColor = '#ffffff';
+                    if(pedido.estado === 'Finalizado') { bgColor = 'rgba(16, 185, 129, 0.15)'; textColor = '#10b981'; } 
+                    if(pedido.estado === 'En proceso') { bgColor = 'rgba(245, 158, 11, 0.15)'; textColor = '#f59e0b'; } 
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: bold; color: var(--turquoise-light);">${pedido.consecutivo}</td>
+                            <td style="font-size: 13px; color: var(--text-secondary);">${new Date(pedido.fecha).toLocaleString('es-CR')}</td>
+                            <td>${listaArticulos}</td>
+                            <td style="font-weight: bold; color: #fff;">${formatter.format(pedido.total)}</td>
+                            <td>
+                                <select id="${selectId}" onchange="actualizarEstadoPedido(${pedido.id}, this)" style="margin:0; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-smooth); background: ${bgColor}; color: ${textColor}; outline: none; font-size: 13px; cursor: pointer; width: 130px;">
+                                    <option value="Ingresado" ${pedido.estado === 'Ingresado' ? 'selected' : ''}>📥 Ingresado</option>
+                                    <option value="En proceso" ${pedido.estado === 'En proceso' ? 'selected' : ''}>⚙️ En proceso</option>
+                                    <option value="Finalizado" ${pedido.estado === 'Finalizado' ? 'selected' : ''}>✅ Finalizado</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(err => {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--del);">Error de conexión con la base de datos.</td></tr>`;
+            });
+    }
+
+    function actualizarEstadoPedido(id, selectElement) {
+        const nuevoEstado = selectElement.value;
+        
+        if(nuevoEstado === 'Finalizado') { selectElement.style.background = 'rgba(16, 185, 129, 0.15)'; selectElement.style.color = '#10b981'; }
+        else if(nuevoEstado === 'En proceso') { selectElement.style.background = 'rgba(245, 158, 11, 0.15)'; selectElement.style.color = '#f59e0b'; }
+        else { selectElement.style.background = '#11141a'; selectElement.style.color = '#ffffff'; }
+
+        // AQUÍ ESTÁ EL ARREGLO: credentials: 'include'
+        fetch(`/api/admin/pedidos/${id}/estado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ estado: nuevoEstado })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) alert("Error actualizando en BD: " + data.message);
+        });
     }
 
     function toggleSelectAll(source, className) {
@@ -654,12 +765,16 @@
                 if(!div) return;
                 div.innerHTML = usuarios.map(u => {
                     const encodedObj = encodeURIComponent(JSON.stringify(u));
+                    const safeNombre = u.nombre ? u.nombre.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "Sin Nombre";
+                    const dispNombre = u.nombre ? u.nombre.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "Sin Nombre";
+                    const dispUsuario = u.usuario ? u.usuario.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+                    
                     return `
                     <div class="list-item">
-                        <span>${u.nombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${u.usuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
+                        <span>${dispNombre} (<code style="background:var(--dark-bg); color:var(--turquoise-main); padding:2px 6px; border-radius:4px;">${dispUsuario}</code>) - <b style="color:var(--turquoise-light);">${u.rol.toUpperCase()}</b></span>
                         <div>
                             <button class="btn-edit" onclick="activarEdicionUsuario('${encodedObj}')">Editar</button>
-                            <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">Eliminar</button>
+                            <button class="btn-del" onclick="eliminarUsuario(${u.id}, '${safeNombre}')">Eliminar</button>
                         </div>
                     </div>
                 `}).join('');
@@ -953,12 +1068,13 @@
                 } else {
                     divBajas.innerHTML = cacheData.empresas.map(e => {
                         const imgTag = e.imagen ? `<img src="${e.imagen}" alt="Logo" style="height:25px; width:auto; border-radius:4px; margin-right:10px; vertical-align:middle;">` : `🏢 `;
+                        const safeEmpNombre = e.nombre ? e.nombre.replace(/'/g, "\\'").replace(/"/g, "&quot;") : "";
                         return `
                     <div class="list-item">
                         <span style="display:flex; align-items:center; color: var(--text-light);">${imgTag} ${e.nombre}</span>
                         <div>
                             <button class="btn-brand-accent" style="width:auto; padding:6px 14px; font-size:12px; border-radius:6px; margin-right:5px; border:none;" onclick="irAOperaciones(${e.id})"><i class="fas fa-network-wired"></i> Accesos</button>
-                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${e.nombre}', '${e.imagen}')">Editar</button>
+                            <button class="btn-edit" onclick="ajustarEdicionEmpresaSoporte(${e.id}, '${safeEmpNombre}', '${e.imagen}')">Editar</button>
                             <button class="btn-del" onclick="eliminarEmpresaSoporte(${e.id})">Eliminar</button>
                         </div>
                     </div>
@@ -1129,7 +1245,7 @@
                 list.innerHTML = users.map(u => `
                     <div style="background:#11141a; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--border-smooth);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                            <b style="color:var(--turquoise-main); font-size:15px;">${u.nombre}</b> <span style="background:var(--card-bg); padding:2px 8px; border-radius:6px; font-size:11px; color:var(--text-light);">${u.rol.toUpperCase()}</span>
+                            <b style="color:var(--turquoise-main); font-size:15px;">${u.nombre.replace(/</g, "&lt;")}</b> <span style="background:var(--card-bg); padding:2px 8px; border-radius:6px; font-size:11px; color:var(--text-light);">${u.rol.toUpperCase()}</span>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <label class="toggle-switch"><input type="checkbox" id="u-fact-${u.id}" ${u.permisos.facturacion ? 'checked':''}><span class="slider"></span> Facturación</label>
@@ -1156,8 +1272,8 @@
                 infoBox.innerHTML = contadoresVinculados.map(contador => `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#161a22; padding:12px; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom: 10px;">
                         <div>
-                            <div style="color:var(--btn-green); font-weight:bold; font-size:14px;"><i class="fas fa-user-tie"></i> ${contador.nombre}</div>
-                            <div style="color:var(--text-muted); font-size:12px; margin-top:4px;">${contador.usuario}</div>
+                            <div style="color:var(--btn-green); font-weight:bold; font-size:14px;"><i class="fas fa-user-tie"></i> ${contador.nombre.replace(/</g, "&lt;")}</div>
+                            <div style="color:var(--text-muted); font-size:12px; margin-top:4px;">${contador.usuario.replace(/</g, "&lt;")}</div>
                         </div>
                         <button class="btn-del" style="margin:0;" onclick="desvincularContadorExistente(${contador.id})" title="Remover Contador"><i class="fas fa-trash"></i></button>
                     </div>
@@ -1282,9 +1398,6 @@
         }).catch(err => { alert("Error de conexión."); });
     };
 
-    // =========================================================
-    // IMPORTACIÓN MASIVA DE CSV (CÓDIGOS CABYS)
-    // =========================================================
     window.subirCSVCabys = async function(event) {
         const fileInput = document.getElementById('csvCabysFile');
         if (!fileInput.files[0]) return alert("Selecciona un archivo CSV primero.");

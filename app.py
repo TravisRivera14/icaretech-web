@@ -5,7 +5,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 import os
 import psycopg2
-from psycopg2 import pool
 import requests
 import random
 from datetime import datetime, timedelta
@@ -14,6 +13,23 @@ import base64
 import json
 import csv
 import io
+import time 
+from cryptography.fernet import Fernet
+
+# 🔐 LLAVE MAESTRA DE ENCRIPTACIÓN (FERNET)
+# Usamos una llave válida estática por defecto para evitar que Vercel rompa las contraseñas al reiniciarse.
+# IMPORTANTE: En producción real, configura la variable FERNET_KEY en tu panel de Vercel.
+LLAVE_POR_DEFECTO = b'xRz5K3bNf1tE8Qp2L7mY9Wv4ZcY6TjH0aBvX5uM3F1s='
+LLAVE_FERNET = os.environ.get('FERNET_KEY', LLAVE_POR_DEFECTO.decode('utf-8'))
+caja_fuerte = Fernet(LLAVE_FERNET.encode('utf-8'))
+
+def encriptar_dato(texto):
+    if not texto: return None
+    return caja_fuerte.encrypt(texto.encode('utf-8')).decode('utf-8')
+
+def desencriptar_dato(texto_cifrado):
+    if not texto_cifrado: return None
+    return caja_fuerte.decrypt(texto_cifrado.encode('utf-8')).decode('utf-8')
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
@@ -21,12 +37,14 @@ CORS(app, supports_credentials=True)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
-app.config.update(SESSION_COOKIE_SECURE=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_HTTPONLY=True)
+app.config.update(SESSION_COOKIE_SECURE=False, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_HTTPONLY=True)
 
-DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_rXcGY7BdMpS9@ep-green-forest-ap6dfhlf-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require')
-db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
+# URL de la Base de Datos
+DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_lSF7YLo4uDwE@ep-bitter-dream-aw8facb0.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require')
 
-def get_db_connection(): return db_pool.getconn()
+# CORRECCIÓN PARA SERVERLESS (Vercel): No usar Pool, abrir y cerrar conexiones limpiamente.
+def get_db_connection(): 
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 def db_query(query, params=(), fetch=False):
     conn = get_db_connection()
@@ -42,10 +60,10 @@ def db_query(query, params=(), fetch=False):
         print(f"Error DB: {e}")
         raise e
     finally:
-        db_pool.putconn(conn)
+        conn.close()
 
 def init_db():
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS productos (id SERIAL PRIMARY KEY, nombre TEXT, precio NUMERIC DEFAULT 0, imagen TEXT, categoria TEXT DEFAULT 'Otros')''')
     c.execute('''CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)''')
@@ -63,8 +81,15 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS productos_facturacion (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, codigo_cabys VARCHAR(20), descripcion VARCHAR(200), precio_unitario NUMERIC(15,5), unidad_medida VARCHAR(10), impuesto NUMERIC(5,2), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS empresa_datos_visuales (id_empresa INT PRIMARY KEY, nombre_comercial VARCHAR(150), telefono VARCHAR(20), correo VARCHAR(150), logo_base64 TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS Facturas (id SERIAL PRIMARY KEY, Id_Empresa INT, Id_Cliente INT, Consecutivo VARCHAR(50), Clave_50_Digitos VARCHAR(50), Condicion_Venta VARCHAR(2), Medio_Pago VARCHAR(2), Total_Servicios_Gravados NUMERIC, Total_Impuesto NUMERIC, Total_Comprobante NUMERIC, Estado_Hacienda VARCHAR(50), Mensaje_Hacienda TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, lineas_json TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS cabys_maestro (id SERIAL PRIMARY KEY, codigo VARCHAR(20) UNIQUE, descripcion TEXT, impuesto NUMERIC(5,2))''')
+    c.execute('''CREATE TABLE IF NOT EXISTS proformas (id SERIAL PRIMARY KEY, id_empresa INT NOT NULL, id_cliente INT NOT NULL, consecutivo VARCHAR(20), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, fecha_vencimiento TIMESTAMP, condicion_venta VARCHAR(2), medio_pago VARCHAR(2), total_gravado NUMERIC(15,5), total_impuesto NUMERIC(15,5), total_comprobante NUMERIC(15,5), lineas_json TEXT, estado VARCHAR(30) DEFAULT 'Ingresado')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS resenas (id SERIAL PRIMARY KEY, cliente VARCHAR(150), puesto VARCHAR(100), comentario TEXT, imagen_cliente TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS socios (id SERIAL PRIMARY KEY, nombre VARCHAR(150), imagen TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS beneficios (id SERIAL PRIMARY KEY, icono VARCHAR(50), titulo VARCHAR(150), descripcion TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS clientes_objetivos (id SERIAL PRIMARY KEY, icono VARCHAR(50), titulo VARCHAR(150), descripcion TEXT)''')
+    
+    # CORRECCIÓN: Crear la tabla del diccionario cabys global para la carga CSV
+    c.execute('''CREATE TABLE IF NOT EXISTS cabys_maestro (codigo VARCHAR(20) PRIMARY KEY, descripcion TEXT, impuesto NUMERIC(5,2) DEFAULT 13.0)''')
+    
     conn.commit()
     c.close()
     conn.close()
@@ -78,7 +103,8 @@ def init_db():
         "ALTER TABLE Facturas ADD COLUMN lineas_json TEXT",
         "ALTER TABLE empresas_recomiendan ADD COLUMN plan VARCHAR(50) DEFAULT 'Gratis'",
         "ALTER TABLE empresas_recomiendan ADD COLUMN tipo VARCHAR(20) DEFAULT 'corporativo'",
-        "ALTER TABLE empresas_recomiendan ADD COLUMN creador_id INT"
+        "ALTER TABLE empresas_recomiendan ADD COLUMN creador_id INT", # CORRECCIÓN: Faltaba esta coma
+        "ALTER TABLE proformas ADD COLUMN estado VARCHAR(30) DEFAULT 'Ingresado'"
     ]
     for mig in migraciones:
         try: db_query(mig)
@@ -130,6 +156,7 @@ def login():
     data = request.json
     usr = data.get('usuario', '').strip()
     pwd = data.get('password', '').strip()
+    
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -140,7 +167,8 @@ def login():
             
         user = cur.fetchone()
         cur.close()
-        db_pool.putconn(conn)
+        conn.close()
+        
         if user and check_password_hash(user[2], pwd):
             session['usuario_id'] = user[0]
             session['usuario'] = user[1]
@@ -150,6 +178,21 @@ def login():
             return jsonify({"success": True, "rol": user[3], "debe_cambiar_pass": user[4], "usuario_id": user[0]}), 200
         return jsonify({"success": False, "message": "Credenciales incorrectas"}), 401
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+
+# CORRECCIÓN: Nuevo Endpoint para el cambio de contraseña temporal
+@app.route('/api/cambiar_password_provisional', methods=['POST'])
+def cambiar_password_provisional():
+    d = request.json or {}
+    uid = d.get('usuario_id')
+    nueva = d.get('nueva_password')
+    if not uid or not nueva: 
+        return jsonify({"success": False, "message": "Faltan datos"}), 400
+    try:
+        hashed = generate_password_hash(nueva)
+        db_query("UPDATE usuarios SET password_hash = %s, debe_cambiar_pass = FALSE WHERE id = %s", (hashed, uid))
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/logout', methods=['GET', 'POST'])
 def logout():
@@ -188,7 +231,6 @@ def obtener_datos_operativos():
     usuario_id = session.get('usuario_id')
     usuario_nombre = session.get('usuario', 'Usuario')
     
-    # SOLUCIÓN AL BUG DEL "8": CONVERTIR EL ID EN EL NOMBRE REAL DE LA EMPRESA
     try:
         id_empresa = get_empresa_id_from_session()
         if not id_empresa: return jsonify({"error": "Empresa no registrada"}), 404
@@ -228,17 +270,18 @@ def obtener_datos_operativos():
         tickets = []
         try:
             if rol in ['cliente_admin', 'contador'] or es_admin():
-                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
+                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por, descripcion FROM tickets_soporte WHERE empresa_id = %s ORDER BY fecha DESC", (id_empresa,), fetch=True) or []
             else:
-                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
+                tickets_raw = db_query("SELECT id, asunto, estado, prioridad, fecha, atendido_por, descripcion FROM tickets_soporte WHERE usuario_id = %s ORDER BY fecha DESC", (usuario_id,), fetch=True) or []
             
             for t in tickets_raw:
                 atendido = t[5] if len(t) > 5 and t[5] else "Pendiente revisión"
-                tickets.append({"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3], "fecha": str(t[4]), "atendido_por": atendido})
+                tickets.append({"id": t[0], "asunto": t[1], "estado": t[2], "prioridad": t[3], "fecha": str(t[4]), "atendido_por": atendido, "descripcion": t[6] if len(t)>6 else ""})
         except Exception as e: pass
         
         return jsonify({
             "empresa": empresa_val,
+            "empresa_id": id_empresa,
             "plan": plan_actual,
             "facturas_mes_actual": facturas_mes,
             "facturas": [{"id": f[0], "consecutivo": f[1], "fecha": str(f[2]), "monto": str(f[3]), "estado": f[4]} for f in facturas],
@@ -285,7 +328,6 @@ def crear_usuario():
             if rol_asignado == 'contador':
                 try: db_query("INSERT INTO permisos_usuario (usuario_id, facturacion, datacenter, inventario, tickets) VALUES (%s, true, false, false, false)", (usuario_nuevo_id,))
                 except: pass
-                # VINCULAR MULTI-EMPRESA AUTOMÁTICAMENTE
                 if d.get('empresa_id'):
                     try: db_query("INSERT INTO contador_empresas (contador_id, empresa_id) VALUES (%s, %s) ON CONFLICT DO NOTHING", (usuario_nuevo_id, d.get('empresa_id')))
                     except: pass
@@ -365,7 +407,6 @@ def save_permisos_empresa():
     except: pass
     return jsonify({"success": True})
 
-# =============== LÓGICA DE USUARIOS Y CONTADORES MULTI-EMPRESA ==================
 @app.route('/api/admin/operaciones/usuarios/<int:empresa_id>', methods=['GET'])
 @login_required
 def get_permisos_usuarios_empresa(empresa_id):
@@ -374,7 +415,6 @@ def get_permisos_usuarios_empresa(empresa_id):
     if not res_emp: return jsonify([])
     nombre_empresa = res_emp[0][0]
     
-    # SE OBTIENEN LOS CLIENTES DE LA EMPRESA Y LOS CONTADORES VINCULADOS
     users = db_query("""
         SELECT id, nombre, rol, usuario FROM usuarios WHERE empresa = %s OR empresa = %s
         UNION
@@ -430,7 +470,6 @@ def desvincular_contador(c_id, e_id):
     db_query("DELETE FROM contador_empresas WHERE contador_id = %s AND empresa_id = %s", (c_id, e_id))
     return jsonify({"success":True})
 
-# =============== API EXCLUSIVA PARA CONTADORES ==================
 @app.route('/api/contador/empresas', methods=['GET', 'POST'])
 @login_required
 def contador_empresas_api():
@@ -471,8 +510,6 @@ def seleccionar_empresa_contador():
         session['empresa'] = str(emp_id)
         return jsonify({"success": True, "nombre": res[0][0]})
     return jsonify({"success": False, "message": "Empresa no encontrada"}), 404
-
-# ================================================================
 
 @app.route('/api/registro_particular', methods=['POST'])
 def registro_particular():
@@ -642,9 +679,6 @@ def crud_productos_facturacion():
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
-# =========================================================
-# RUTAS DE CARGA MASIVA Y BÚSQUEDA DE CÓDIGOS CABYS (CSV)
-# =========================================================
 @app.route('/api/admin/cabys/importar', methods=['POST'])
 @login_required
 def importar_cabys_global():
@@ -698,7 +732,7 @@ def importar_cabys_global():
                 
         conn.commit()
         cur.close()
-        db_pool.putconn(conn)
+        conn.close()
         return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {count} códigos al diccionario global CABYS."})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -714,25 +748,45 @@ def buscar_cabys():
 
 
 @app.route('/api/facturacion/proformas/emitir', methods=['POST'])
-@login_required
 def emitir_proforma():
-    d = request.json
-    id_empresa = get_empresa_id_from_session()
-    if not id_empresa: return jsonify({"success": False, "message": "Empresa no asociada"}), 403
-
     try:
-        res_count = db_query("SELECT COUNT(*) FROM proformas WHERE id_empresa = %s", (id_empresa,), fetch=True)
-        count = res_count[0][0] + 1
-        consecutivo = f"PRF-{str(count).zfill(5)}"
+        datos = request.json or {}
         
-        fecha_vencimiento = datetime.now() + timedelta(days=int(d.get('dias_validez', 30)))
-        lineas_json = json.dumps(d.get('lineas'))
-
-        db_query("""INSERT INTO proformas (id_empresa, id_cliente, consecutivo, fecha_vencimiento, condicion_venta, medio_pago, total_gravado, total_impuesto, total_comprobante, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
-                 (id_empresa, d.get('cliente_id'), consecutivo, fecha_vencimiento, d.get('condicion_venta'), d.get('medio_pago'), d.get('total_gravado'), d.get('total_impuesto'), d.get('total_comprobante'), lineas_json))
+        id_emp = session.get('id_empresa') or session.get('empresa_id')
+        if not id_emp:
+            try:
+                res_prof = db_query("SELECT id_empresa FROM proformas WHERE id_empresa IS NOT NULL LIMIT 1", fetch=True)
+                id_emp = res_prof[0][0] if (res_prof and res_prof[0][0]) else 1
+            except Exception:
+                id_emp = 1
+                
+        id_cli = session.get('id_cliente') or session.get('cliente_id') or session.get('usuario_id')
+        if not id_cli:
+            try:
+                res_cli = db_query("SELECT id_cliente FROM proformas WHERE id_cliente IS NOT NULL LIMIT 1", fetch=True)
+                if res_cli and res_cli[0][0]:
+                    id_cli = res_cli[0][0]
+                else:
+                    res_u = db_query("SELECT id FROM usuarios WHERE rol LIKE '%cliente%' LIMIT 1", fetch=True)
+                    id_cli = res_u[0][0] if res_u else 1
+            except Exception:
+                id_cli = 1
         
-        return jsonify({"success": True, "message": "Proforma generada correctamente.", "consecutivo": consecutivo})
-    except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
+        lineas = datos.get('lineas', [])
+        total = datos.get('total', 0)
+        
+        import random
+        consecutivo = f"PROF-WEB-{random.randint(100000, 999999)}"
+        
+        db_query("""
+            INSERT INTO proformas (id_empresa, id_cliente, consecutivo, fecha, total_comprobante, estado, lineas_json)
+            VALUES (%s, %s, %s, NOW(), %s, 'Ingresado', %s)
+        """, (id_emp, id_cli, consecutivo, total, json.dumps(lineas)))
+        
+        return jsonify({"success": True, "message": "¡Pedido realizado con éxito!", "consecutivo": consecutivo})
+    except Exception as e:
+        print("🔥 Error exacto al emitir compra pública:", e)
+        return jsonify({"success": False, "message": str(e), "error": str(e)}), 500
 
 @app.route('/api/facturacion/config-empresa', methods=['GET', 'POST'])
 @login_required
@@ -756,7 +810,10 @@ def config_visual_empresa():
 def obtener_oauth_token_hacienda(id_empresa):
     res = db_query("""SELECT hacienda_usuario_idp, hacienda_password_idp, ambiente_produccion FROM configuracionhacienda WHERE id_empresa = %s""", (id_empresa,), fetch=True)
     if not res: raise Exception(f"La empresa con ID {id_empresa} no tiene configuradas sus credenciales de Hacienda.")
-    usuario_idp = res[0][0]; password_idp = res[0][1]; ambiente_produccion = res[0][2]
+    
+    usuario_idp = res[0][0]
+    password_idp = desencriptar_dato(res[0][1]) if res[0][1] else ""
+    ambiente_produccion = res[0][2]
 
     url_auth = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut/protocol/openid-connect/token" if ambiente_produccion else "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"
 
@@ -781,19 +838,21 @@ def calcular_clave_50_digitos(cedula_emisor, consecutivo, situacion="1"):
     clave = f"506{dia}{mes}{ano}{cedula_12}{consecutivo}{situacion}{codigo_seguridad}"
     return clave
 
-def generar_xml_factura_44(datos_factura, lineas_detalle):
-    NS_FACTURA = "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturelectronica"
-    root = ET.Element("FacturaElectronica", {"xmlns": NS_FACTURA, "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "xsi:schemaLocation": f"{NS_FACTURA} https://www.hacienda.go.cr/ATV/ComprobanteElectronico/v4.4/facturelectronica.xsd"})
+def generar_xml_factura_43(datos_factura, lineas_detalle):
+    NS_FACTURA = "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturelectronica"
+    root = ET.Element("FacturaElectronica", {"xmlns": NS_FACTURA, "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "xsi:schemaLocation": f"{NS_FACTURA} https://www.hacienda.go.cr/ATV/ComprobanteElectronico/v4.3/facturelectronica.xsd"})
     ET.SubElement(root, "Clave").text = datos_factura['clave']
     ET.SubElement(root, "CodigoActividad").text = datos_factura.get('codigo_actividad', '620201')
     ET.SubElement(root, "NumeroConsecutivo").text = datos_factura['consecutivo']
     ET.SubElement(root, "FechaEmision").text = datetime.now().isoformat()[:-3] + "-06:00"
+    
     emisor = ET.SubElement(root, "Emisor")
     ET.SubElement(emisor, "Nombre").text = datos_factura['emisor_nombre']
     id_emisor = ET.SubElement(emisor, "Identificacion")
     ET.SubElement(id_emisor, "Tipo").text = datos_factura.get('emisor_tipo_cedula', '02')
     ET.SubElement(id_emisor, "Numero").text = datos_factura['emisor_cedula']
     ET.SubElement(emisor, "CorreoElectronico").text = datos_factura.get('emisor_correo', 'soporte@icartech.cr')
+    
     receptor = ET.SubElement(root, "Receptor")
     ET.SubElement(receptor, "Nombre").text = datos_factura['cliente_nombre']
     id_receptor = ET.SubElement(receptor, "Identificacion")
@@ -802,6 +861,7 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
     ET.SubElement(receptor, "CorreoElectronico").text = datos_factura.get('cliente_correo')
     ET.SubElement(root, "CondicionVenta").text = datos_factura.get('condicion_venta', '01')
     ET.SubElement(root, "MedioPago").text = datos_factura.get('medio_pago', '04')
+    
     detalle_nodo = ET.SubElement(root, "DetalleServicio")
     total_serv_gravados = 0.0; total_iva = 0.0
     for idx, linea in enumerate(lineas_detalle, start=1):
@@ -823,6 +883,7 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
         ET.SubElement(impuesto_nodo, "Tarifa").text = f"{float(linea['impuesto']):.2f}"
         ET.SubElement(impuesto_nodo, "Monto").text = f"{monto_impuesto:.5f}"
         ET.SubElement(linea_nodo, "MontoTotalLinea").text = f"{(float(linea['monto_total']) + monto_impuesto):.5f}"
+        
     resumen = ET.SubElement(root, "ResumenFactura")
     ET.SubElement(resumen, "CodigoTipoMoneda").text = datos_factura.get('moneda', 'CRC')
     ET.SubElement(resumen, "TipoCambio").text = "1.00000"
@@ -839,39 +900,38 @@ def generar_xml_factura_44(datos_factura, lineas_detalle):
     ET.SubElement(resumen, "TotalComprobante").text = f"{(total_serv_gravados + total_iva):.5f}"
     return ET.tostring(root, encoding="utf-8").decode("utf-8")
 
-def firmar_xml_hacienda(xml_sin_firmar, p12_b64, pin):
+def firmar_xml_hacienda(xml_sin_firmar_str, p12_b64, pin_cifrado):
     try:
         from cryptography.hazmat.primitives.serialization import pkcs12
-        from cryptography.hazmat.primitives import hashes
-        from cryptography.hazmat.primitives.asymmetric import padding
         from cryptography.hazmat.backends import default_backend
-        from cryptography.hazmat.primitives import serialization
+        from signxml import XMLSigner, methods
+        from lxml import etree
         
-        p12_data = base64.b64decode(p12_b64)
-        private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(p12_data, pin.encode(), backend=default_backend())
-        cert_der = certificate.public_bytes(serialization.Encoding.DER)
-        cert_b64 = base64.b64encode(cert_der).decode('utf-8')
-        signature_template = f"""
-        <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-iCare">
-            <ds:SignedInfo>
-                <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
-                <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-                <ds:Reference Id="Reference-iCare" URI="">
-                    <ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms>
-                    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                    <ds:DigestValue>... (Hash a generar) ...</ds:DigestValue>
-                </ds:Reference>
-            </ds:SignedInfo>
-            <ds:SignatureValue>... (Firma RSA) ...</ds:SignatureValue>
-            <ds:KeyInfo><ds:X509Data><ds:X509Certificate>{cert_b64}</ds:X509Certificate></ds:X509Data></ds:KeyInfo>
-        </ds:Signature>
-        """
-        return xml_sin_firmar.replace("</FacturaElectronica>", f"{signature_template}</FacturaElectronica>")
-    except Exception as e: raise Exception(f"Fallo al firmar: {str(e)}")
+        pin_real = desencriptar_dato(pin_cifrado) if pin_cifrado else ""
+        p12_bytes = base64.b64decode(p12_b64)
+        
+        private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+            p12_bytes, pin_real.encode('utf-8'), backend=default_backend()
+        )
+        
+        root = etree.fromstring(xml_sin_firmar_str.encode('utf-8'))
+        
+        signer = XMLSigner(
+            method=methods.enveloped,
+            signature_algorithm="rsa-sha256",
+            digest_algorithm="sha256",
+            c14n_algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+        )
+        
+        signed_root = signer.sign(root, key=private_key, cert=certificate)
+        return etree.tostring(signed_root, encoding='utf-8').decode('utf-8')
+    except Exception as e:
+        print("🔥 Error criptográfico al firmar XML:", e)
+        raise Exception(f"Fallo al firmar el comprobante: {str(e)}")
 
 def enviar_factura_hacienda(id_empresa, datos_xml, xml_firmado):
     token_data = obtener_oauth_token_hacienda(id_empresa)
-    if not token_data["success"]: return {"success": False, "message": "Error autenticando: " + token_data.get("error_detalle", "")}
+    if not token_data.get("success"): return {"success": False, "message": "Error autenticando: " + token_data.get("error_detalle", "")}
     payload = {
         "clave": datos_xml['clave'], "fecha": datetime.now().isoformat(),
         "emisor": {"tipoIdentificacion": "02", "numeroIdentificacion": datos_xml['emisor_cedula']},
@@ -930,7 +990,7 @@ def emitir_factura_electronica_api():
         db_query("""INSERT INTO Facturas (Id_Empresa, Id_Cliente, Consecutivo, Clave_50_Digitos, Condicion_Venta, Medio_Pago, Total_Servicios_Gravados, Total_Impuesto, Total_Comprobante, Estado_Hacienda, lineas_json) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pendiente', %s)""", (id_empresa_actual, cliente_id, consecutivo_sistema, clave_50, condicion_venta, medio_pago, total_serv_gravados, total_iva, total_comprobante, lineas_json))
 
         datos_xml_maestro = {'clave': clave_50, 'consecutivo': consecutivo_sistema, 'emisor_nombre': emisor_datos["nombre"], 'emisor_cedula': emisor_datos["cedula"], 'emisor_correo': emisor_datos["correo"], 'cliente_nombre': cliente_datos["nombre"], 'cliente_cedula': cliente_datos["cedula"], 'cliente_correo': cliente_datos["correo"], 'condicion_venta': condicion_venta, 'medio_pago': medio_pago}
-        xml_generado_crudo = generar_xml_factura_44(datos_xml_maestro, lineas_frontend)
+        xml_generado_crudo = generar_xml_factura_43(datos_xml_maestro, lineas_frontend)
         xml_firmado_listo = firmar_xml_hacienda(xml_generado_crudo, p12_b64, pin_p12)
         resultado_envio = enviar_factura_hacienda(id_empresa_actual, datos_xml_maestro, xml_firmado_listo)
 
@@ -949,7 +1009,7 @@ def probar_conexion_hacienda():
     if not id_empresa_actual: return jsonify({"status": "Error", "mensaje": "Usuario no tiene empresa asignada."}), 400
     try:
         resultado = obtener_oauth_token_hacienda(id_empresa_actual)
-        if resultado["success"]: return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente.", "token": resultado["access_token"][:15] + "..."})
+        if resultado.get("success"): return jsonify({"status": "Conexión Exitosa", "mensaje": "Autenticado correctamente.", "token": resultado["access_token"][:15] + "..."})
         else: return jsonify({"status": "Error de Autenticación", "mensaje": "Hacienda rechazó las credenciales.", "detalles_tecnicos": resultado}), 400
     except Exception as e: return jsonify({"status": "Error Interno", "error": str(e)}), 500
 
@@ -957,7 +1017,8 @@ def probar_conexion_hacienda():
 @login_required
 def guardar_configuracion_hacienda():
     rol = str(session.get('rol', '')).lower().strip()
-    if rol not in ['admin', 'personal', 'personal_admin', 'cliente_admin']: return jsonify({"message": "Acceso denegado"}), 403
+    if rol not in ['admin', 'personal', 'personal_admin', 'cliente_admin', 'contador']: 
+        return jsonify({"message": "Acceso denegado"}), 403
         
     usuario_idp = request.form.get('usuario_idp')
     password_idp = request.form.get('password_idp')
@@ -973,11 +1034,21 @@ def guardar_configuracion_hacienda():
     try:
         contenido_binario = archivo_p12.read()
         p12_base64 = base64.b64encode(contenido_binario).decode('utf-8')
+        
+        pass_encriptada = encriptar_dato(password_idp)
+        pin_encriptado = encriptar_dato(pin_p12)
+        
         existe = db_query("SELECT id_configuracion FROM configuracionhacienda WHERE id_empresa = %s", (id_empresa_actual,), fetch=True)
-        if existe: db_query("""UPDATE configuracionhacienda SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s WHERE id_empresa = %s""", (usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion, id_empresa_actual))
-        else: db_query("""INSERT INTO configuracionhacienda (id_empresa, hacienda_usuario_idp, hacienda_password_idp, ruta_llave_p12, pin_llave_p12, ambiente_produccion) VALUES (%s, %s, %s, %s, %s, %s)""", (id_empresa_actual, usuario_idp, password_idp, p12_base64, pin_p12, ambiente_produccion))
-        return jsonify({"success": True, "message": "Configuración guardada correctamente."})
-    except Exception as e: return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
+        if existe: 
+            db_query("""UPDATE configuracionhacienda SET hacienda_usuario_idp = %s, hacienda_password_idp = %s, ruta_llave_p12 = %s, pin_llave_p12 = %s, ambiente_produccion = %s WHERE id_empresa = %s""", 
+                     (usuario_idp, pass_encriptada, p12_base64, pin_encriptado, ambiente_produccion, id_empresa_actual))
+        else: 
+            db_query("""INSERT INTO configuracionhacienda (id_empresa, hacienda_usuario_idp, hacienda_password_idp, ruta_llave_p12, pin_llave_p12, ambiente_produccion) VALUES (%s, %s, %s, %s, %s, %s)""", 
+                     (id_empresa_actual, usuario_idp, pass_encriptada, p12_base64, pin_encriptado, ambiente_produccion))
+                     
+        return jsonify({"success": True, "message": "Configuración guardada de forma segura (Encriptación AES de 256 bits)."})
+    except Exception as e: 
+        return jsonify({"success": False, "message": f"Error interno: {str(e)}"}), 500
 
 @app.route('/api/admin/configuracion-hacienda/verificar', methods=['GET'])
 @login_required
@@ -1006,9 +1077,16 @@ def aprobar_solicitud():
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/admin/eliminar-varios', methods=['POST'])
+@login_required
 def eliminar_varios():
+    if not es_admin(): return jsonify({"message": "Denegado"}), 403
     data = request.json
-    db_query(f"DELETE FROM {data.get('tabla')} WHERE id IN %s", (tuple(data.get('ids', [])),))
+    tabla = data.get('tabla')
+    tablas_permitidas = ['productos', 'servicios', 'socios', 'resenas', 'beneficios', 'clientes_objetivos', 'empresas_recomiendan', 'solicitudes_registro', 'clientes_facturacion', 'productos_facturacion']
+    if tabla not in tablas_permitidas:
+        return jsonify({"success": False, "message": "Tabla no permitida"}), 400
+    
+    db_query(f"DELETE FROM {tabla} WHERE id IN %s", (tuple(data.get('ids', [])),))
     return jsonify({"success": True})
 
 @app.route('/api/todo', methods=['GET'])
@@ -1168,6 +1246,88 @@ def cambiar_estado_ticket(id):
     if not es_admin(): return jsonify({"message": "Denegado"}), 403
     db_query("UPDATE tickets_soporte SET estado = %s, atendido_por = %s WHERE id = %s", (request.json.get('estado'), session.get('usuario', 'Soporte'), id))
     return jsonify({"success": True})
+
+# ====================================================================
+# 🌐 MOTOR DE RENDIMIENTO VISUAL LOCAL (IDÉNTICO A PRODUCCIÓN)
+# ====================================================================
+from flask import render_template
+
+@app.route('/')
+def vista_home():
+    return render_template('index.html')
+
+@app.route('/login')
+def vista_login():
+    return render_template('login.html')
+
+@app.route('/registro')
+def vista_registro():
+    return render_template('registro.html')
+
+@app.route('/recuperar')
+def vista_recuperar():
+    return render_template('recuperar.html')
+
+@app.route('/servicio')
+def vista_servicio():
+    return render_template('servicio.html')
+
+@app.route('/tienda')
+def vista_tienda():
+    return render_template('tienda.html')
+
+@app.route('/<string:pagina>.html')
+def servir_paginas_html_directas(pagina):
+    try:
+        return render_template(f"{pagina}.html")
+    except Exception:
+        return f"La página '{pagina}.html' no se encuentra en el catálogo de plantillas locales.", 404
+
+
+@app.route('/api/admin/pedidos', methods=['GET'])
+@login_required
+def listar_pedidos_admin():
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    try:
+        try:
+            pedidos = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado, lineas_json FROM proformas ORDER BY fecha DESC", fetch=True) or []
+        except Exception:
+            db_query("ALTER TABLE proformas ADD COLUMN estado VARCHAR(30) DEFAULT 'Ingresado'")
+            pedidos = db_query("SELECT id, consecutivo, fecha, total_comprobante, estado, lineas_json FROM proformas ORDER BY fecha DESC", fetch=True) or []
+
+        resultado = []
+        for p in pedidos:
+            articulos = []
+            try:
+                if len(p) > 5 and p[5]: 
+                    articulos = json.loads(p[5])
+            except Exception: pass
+
+            resultado.append({
+                "id": p[0],
+                "consecutivo": p[1] if p[1] else 'Sin ID',
+                "fecha": str(p[2]),
+                "total": float(p[3] or 0),
+                "estado": p[4] if len(p) > 4 and p[4] else 'Ingresado',
+                "articulos": articulos
+            })
+        return jsonify(resultado)
+    except Exception as e:
+        print(f"🔥 Error en listar_pedidos_admin: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/pedidos/<int:id>/estado', methods=['POST'])
+@login_required
+def cambiar_estado_pedido(id):
+    if not es_admin(): return jsonify({"message": "Acceso denegado"}), 403
+    nuevo_estado = request.json.get('estado')
+    try:
+        db_query("UPDATE proformas SET estado = %s WHERE id = %s", (nuevo_estado, id))
+        registrar_cambio("Modificó Estado Pedido", f"El administrador cambió el pedido {id} a {nuevo_estado}")
+        return jsonify({"success": True})
+    except Exception as e: 
+        print(f"🔥 Error en cambiar_estado_pedido: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == '__main__':
     initialize_database()

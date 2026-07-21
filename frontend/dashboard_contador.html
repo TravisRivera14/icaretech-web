@@ -236,7 +236,7 @@
         window.clientesCache = [];
         window.productosCache = [];
 
-        // ESTRUCTURA DEL MENÚ ERP
+        // ESTRUCTURA DEL MENÚ ERP (BASADA EN TUS IMÁGENES)
         const erpMenu = [
             {
                 id: 'inicio', nombre: 'Inicio y Herramientas', icon: 'fa-home',
@@ -276,6 +276,7 @@
             }
         ];
 
+        // FUNCIÓN PARA RENDERIZAR EL ACORDEÓN
         function renderSidebar() {
             const menuHtml = document.getElementById('sidebar-dynamic-menu');
             let html = '';
@@ -299,10 +300,12 @@
             menuHtml.innerHTML = html;
         }
 
+        // FUNCIÓN PARA ABRIR/CERRAR SUBMENÚS
         function toggleSubmenu(id) {
             const sub = document.getElementById(`sub-${id}`);
             const arrow = document.getElementById(`arrow-${id}`);
             
+            // Cerrar todos los demás primero
             document.querySelectorAll('.submenu').forEach(el => {
                 if(el.id !== `sub-${id}`) el.style.display = 'none';
             });
@@ -320,15 +323,21 @@
         }
 
         window.renderModulo = function(opcion, categoria, el) {
+            // Activar botón seleccionado
             if(el) {
                 document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
                 el.classList.add('active');
             }
 
+            // Actualizar Títulos de Cabecera
             document.getElementById('top-title').innerText = opcion;
             document.getElementById('top-bread').innerText = `${categoria.toUpperCase()} > ${opcion.toUpperCase()}`;
 
             const contenedor = document.getElementById('vista-principal');
+
+            // ==========================================
+            // PANTALLAS ESPECÍFICAS PROGRAMADAS
+            // ==========================================
 
             if (opcion === 'Mi Dashboard' || opcion === 'Cambiar Empresa') {
                 contenedor.innerHTML = `
@@ -413,7 +422,7 @@
                         <div style="display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; gap:10px; margin-bottom:20px; align-items:end;">
                             <div class="cabys-wrapper">
                                 <label>Producto (Código CABYS o Nombre)</label>
-                                <input type="text" id="busca-prod" class="form-input" style="background:#fff; margin:0;" placeholder="Escribe para buscar..." autocomplete="off" onkeyup="window.filtrarDropdownCabys(this.value)">
+                                <input type="text" id="busca-prod" class="form-input" style="background:#fff; margin:0;" placeholder="Haz clic o escribe para buscar..." autocomplete="off" onfocus="window.filtrarDropdownCabys(this.value)" onclick="window.filtrarDropdownCabys(this.value)" onkeyup="window.filtrarDropdownCabys(this.value)">
                                 <div id="cabys-dropdown" class="cabys-dropdown"></div>
                             </div>
                             <div><label>Cantidad</label><input type="number" id="busca-cant" class="form-input" style="background:#fff; margin:0;" value="1" min="0.1" oninput="window.actualizarTotalLinea()"></div>
@@ -455,7 +464,7 @@
                                 <div><label>Nombre o Razón Social</label><input type="text" id="fc-nombre" class="form-input" style="background:#fff;" required></div>
                                 <div><label>Identificación</label><input type="text" id="fc-cedula" class="form-input" style="background:#fff;" required></div>
                                 <div><label>Tipo</label><select id="fc-tipo" class="form-select" style="background:#fff;"><option value="01">Física (9)</option><option value="02">Jurídica (10)</option></select></div>
-                                <div><label>Correo Electrónico de Envío</label><input type="email" id="fc-correo" class="form-input" style="background:#fff;" required></div>
+                                <div><label>Correo Electrónico de Envío</label><input type="email" id="fc-correo" class="form-input" style="background:#fff;" required onblur="this.value = this.value.trim()"></div>
                                 <div><label>Teléfono</label><input type="text" id="fc-telefono" class="form-input" style="background:#fff;"></div>
                                 <div style="grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end;">
                                     <button type="button" class="btn-top" style="background:#94a3b8;" onclick="document.getElementById('form-cliente').style.display='none'">Cancelar</button>
@@ -484,7 +493,7 @@
                                     <div id="cabys-oficial-dropdown" class="cabys-dropdown"></div>
                                 </div>
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; width: 100%;">
-                                    <div><label>Código CABYS</label><input type="text" id="fp-cabys" class="form-input" style="background:#fff;" required placeholder="13 dígitos"></div>
+                                    <div><label>Código CABYS</label><input type="text" id="fp-cabys" class="form-input" style="background:#fff;" required placeholder="13 dígitos" onblur="this.value = this.value.trim()"></div>
                                     <div><label>Descripción Comercial</label><input type="text" id="fp-desc" class="form-input" style="background:#fff;" required></div>
                                     <div><label>Precio Unitario (₡)</label><input type="number" id="fp-precio" class="form-input" style="background:#fff;" step="0.01" required></div>
                                     <div><label>Tarifa IVA (%)</label><input type="number" id="fp-iva" class="form-input" style="background:#fff;" step="0.01" required value="13.00"></div>
@@ -556,6 +565,7 @@
             }
 
             else {
+                // PANTALLA POR DEFECTO PARA MÓDULOS EN CONSTRUCCIÓN DE LAS IMÁGENES
                 contenedor.innerHTML = `
                     <div class="card" style="text-align: center; padding: 60px 20px;">
                         <i class="fas fa-tools" style="font-size: 50px; color: #cbd5e1; margin-bottom: 20px;"></i>
@@ -673,8 +683,13 @@
 
         window.filtrarDropdownCabys = function(txt) {
             const drop = document.getElementById('cabys-dropdown');
-            if(!txt || txt.length < 2) { drop.style.display = 'none'; return; }
-            const matches = window.productosCache.filter(p => p.descripcion.toLowerCase().includes(txt.toLowerCase()) || p.codigo_cabys.includes(txt));
+            const term = (txt || "").toLowerCase().trim();
+            
+            const matches = window.productosCache.filter(p => 
+                p.descripcion.toLowerCase().includes(term) || 
+                p.codigo_cabys.includes(term)
+            );
+            
             if(matches.length === 0) { 
                 drop.style.display = 'block'; 
                 drop.innerHTML = '<div class="cabys-item" style="color:#94a3b8;">No en catálogo local.</div>';

@@ -5,3 +5,5 @@ requests==2.31.0
 Werkzeug==3.0.1
 gunicorn==21.2.0
 cryptography==41.0.7
+signxml==3.1.0
+lxml==4.9.3

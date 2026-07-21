@@ -1401,6 +1401,17 @@
                             <h2 class="page-title" style="border:none; margin:0; padding:0;">Catálogo de productos y servicios</h2>
                             <button class="btn-top btn-t-blue" onclick="document.getElementById('form-prod-box').style.display='block'"><i class="fas fa-plus"></i> Nuevo Ítem</button>
                         </div>
+
+                        <!-- NUEVA ZONA DE IMPORTACIÓN CSV CABYS -->
+                        <div style="margin-bottom: 25px; padding: 20px; background: #11141a; border-radius: 12px; border: 1px dashed var(--neon-blue);">
+                            <h3 style="font-size: 15px; margin-bottom: 10px; color: var(--neon-blue);"><i class="fas fa-file-excel"></i> Carga Masiva de Códigos CABYS (CSV)</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Sube el CSV oficial de Hacienda (Catálogo) o tu propia plantilla.</p>
+                            <div style="display:flex; gap:10px;">
+                                <input type="file" id="csvCabysFile" accept=".csv" class="form-input" style="margin:0;">
+                                <button onclick="window.subirCSVCabys(event)" class="btn-top btn-t-green" style="white-space:nowrap;"><i class="fas fa-cloud-upload-alt"></i> Importar</button>
+                            </div>
+                        </div>
+
                         <div id="form-prod-box" style="display:none; background:#11141a; padding:25px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:25px;">
                             <form onsubmit="window.guardarProductoFact(event)">
                                 <div class="cabys-wrapper" style="grid-column:1/-1; margin-bottom:15px;">
@@ -1436,7 +1447,7 @@
                         <h2 class="page-title">Emitir ${docName} Electrónica</h2>
                         
                         <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:15px; margin-bottom:20px; background:#11141a; padding:20px; border-radius:12px; border:1px solid var(--border-color);">
-                            <div><label>Receptor</label><select id="doc-cliente" class="form-input" style="margin:0;"></select></div>
+                            <div><label>Receptor</label><select id="doc-cliente" class="form-input" style="margin:0;"><option value="">Cargando clientes...</option></select></div>
                             <div><label>Venta</label><select id="doc-condicion" class="form-input" style="margin:0;"><option value="01">Contado</option><option value="02">Crédito</option></select></div>
                             <div><label>Pago</label><select id="doc-medio" class="form-input" style="margin:0;"><option value="04">Transferencia</option><option value="01">Efectivo</option></select></div>
                         </div>
@@ -1471,12 +1482,19 @@
                     </div>
                 `;
                 
+                // CARGA EN TIEMPO REAL LOS CLIENTES
                 const selC = document.getElementById('doc-cliente');
-                if(!window.clientesCache || window.clientesCache.length === 0) { 
-                    selC.innerHTML = '<option value="">Sin clientes registrados</option>'; 
-                } else { 
-                    selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); 
-                }
+                fetch('/api/facturacion/clientes', {credentials: 'include'})
+                    .then(r=>r.json())
+                    .then(clientes => {
+                        window.clientesCache = clientes;
+                        if(!clientes || clientes.length === 0) { 
+                            selC.innerHTML = '<option value="">Sin clientes registrados. Ve a la pestaña Clientes.</option>'; 
+                        } else { 
+                            selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + clientes.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); 
+                        }
+                    })
+                    .catch(e => selC.innerHTML = '<option value="">Error cargando clientes</option>');
             }
             
             else if (opcion === 'Historial de Facturas' || opcion === 'Proformas Generadas') {
@@ -1797,13 +1815,36 @@
             });
         };
 
+        window.subirCSVCabys = async function(event) {
+            const fileInput = document.getElementById('csvCabysFile');
+            if (!fileInput.files[0]) return alert("Selecciona un archivo CSV primero.");
+            
+            const formData = new FormData();
+            formData.append('archivo', fileInput.files[0]);
+            
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch('/api/admin/cabys/importar', { method: 'POST', credentials: 'include', body: formData });
+                const data = await res.json();
+                if (data.success) { alert(data.message); fileInput.value = ""; } 
+                else { alert("Error: " + data.message); }
+            } catch(e) { alert("Error subiendo el archivo."); }
+            
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        };
+
         window.onload = async () => {
             try {
                 const res = await fetch('/api/login', { method: 'GET', credentials: 'include' });
                 if (res.status === 401) { window.location.href = '/login.html'; return; }
                 const data = await res.json();
                 
-                // REDIRECCIÓN A CONTADOR
+                // REDIRECCIÓN A CONTADOR CORREGIDA (Ya no permite ver cliente)
                 if(data.rol === 'contador') {
                     window.location.href = '/dashboard_contador.html';
                     return;

@@ -17,8 +17,6 @@ import time
 from cryptography.fernet import Fernet
 
 # 🔐 LLAVE MAESTRA DE ENCRIPTACIÓN (FERNET)
-# Usamos una llave válida estática por defecto para evitar que Vercel rompa las contraseñas al reiniciarse.
-# IMPORTANTE: En producción real, configura la variable FERNET_KEY en tu panel de Vercel.
 LLAVE_POR_DEFECTO = b'xRz5K3bNf1tE8Qp2L7mY9Wv4ZcY6TjH0aBvX5uM3F1s='
 LLAVE_FERNET = os.environ.get('FERNET_KEY', LLAVE_POR_DEFECTO.decode('utf-8'))
 caja_fuerte = Fernet(LLAVE_FERNET.encode('utf-8'))
@@ -39,10 +37,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'iCareTechCR_Master_Key_2026')
 app.config.update(SESSION_COOKIE_SECURE=False, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_HTTPONLY=True)
 
-# URL de la Base de Datos
 DATABASE_URL = os.environ.get('CONEXION_DIRECTA_NEON', 'postgresql://neondb_owner:npg_lSF7YLo4uDwE@ep-bitter-dream-aw8facb0.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require')
 
-# CORRECCIÓN PARA SERVERLESS (Vercel): No usar Pool, abrir y cerrar conexiones limpiamente.
+# CORRECCIÓN PARA SERVERLESS: Conexiones limpias
 def get_db_connection(): 
     return psycopg2.connect(DATABASE_URL, sslmode='require')
 
@@ -87,7 +84,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS beneficios (id SERIAL PRIMARY KEY, icono VARCHAR(50), titulo VARCHAR(150), descripcion TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS clientes_objetivos (id SERIAL PRIMARY KEY, icono VARCHAR(50), titulo VARCHAR(150), descripcion TEXT)''')
     
-    # CORRECCIÓN: Crear la tabla del diccionario cabys global para la carga CSV
+    # Tabla CABYS global
     c.execute('''CREATE TABLE IF NOT EXISTS cabys_maestro (codigo VARCHAR(20) PRIMARY KEY, descripcion TEXT, impuesto NUMERIC(5,2) DEFAULT 13.0)''')
     
     conn.commit()
@@ -103,7 +100,7 @@ def init_db():
         "ALTER TABLE Facturas ADD COLUMN lineas_json TEXT",
         "ALTER TABLE empresas_recomiendan ADD COLUMN plan VARCHAR(50) DEFAULT 'Gratis'",
         "ALTER TABLE empresas_recomiendan ADD COLUMN tipo VARCHAR(20) DEFAULT 'corporativo'",
-        "ALTER TABLE empresas_recomiendan ADD COLUMN creador_id INT", # CORRECCIÓN: Faltaba esta coma
+        "ALTER TABLE empresas_recomiendan ADD COLUMN creador_id INT",
         "ALTER TABLE proformas ADD COLUMN estado VARCHAR(30) DEFAULT 'Ingresado'"
     ]
     for mig in migraciones:
@@ -179,7 +176,6 @@ def login():
         return jsonify({"success": False, "message": "Credenciales incorrectas"}), 401
     except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
-# CORRECCIÓN: Nuevo Endpoint para el cambio de contraseña temporal
 @app.route('/api/cambiar_password_provisional', methods=['POST'])
 def cambiar_password_provisional():
     d = request.json or {}
@@ -682,7 +678,8 @@ def crud_productos_facturacion():
 @app.route('/api/admin/cabys/importar', methods=['POST'])
 @login_required
 def importar_cabys_global():
-    if not es_admin(): 
+    rol = str(session.get('rol', '')).lower().strip()
+    if rol not in ['admin', 'personal', 'personal_admin', 'administrador', 'contador', 'cliente_admin']: 
         return jsonify({"success": False, "message": "Acceso denegado"}), 403
         
     if 'archivo' not in request.files: 
@@ -1247,9 +1244,6 @@ def cambiar_estado_ticket(id):
     db_query("UPDATE tickets_soporte SET estado = %s, atendido_por = %s WHERE id = %s", (request.json.get('estado'), session.get('usuario', 'Soporte'), id))
     return jsonify({"success": True})
 
-# ====================================================================
-# 🌐 MOTOR DE RENDIMIENTO VISUAL LOCAL (IDÉNTICO A PRODUCCIÓN)
-# ====================================================================
 from flask import render_template
 
 @app.route('/')
@@ -1282,7 +1276,6 @@ def servir_paginas_html_directas(pagina):
         return render_template(f"{pagina}.html")
     except Exception:
         return f"La página '{pagina}.html' no se encuentra en el catálogo de plantillas locales.", 404
-
 
 @app.route('/api/admin/pedidos', methods=['GET'])
 @login_required

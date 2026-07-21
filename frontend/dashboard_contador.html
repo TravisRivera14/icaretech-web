@@ -236,7 +236,7 @@
         window.clientesCache = [];
         window.productosCache = [];
 
-        // ESTRUCTURA DEL MENÚ ERP (BASADA EN TUS IMÁGENES)
+        // ESTRUCTURA DEL MENÚ ERP
         const erpMenu = [
             {
                 id: 'inicio', nombre: 'Inicio y Herramientas', icon: 'fa-home',
@@ -276,7 +276,6 @@
             }
         ];
 
-        // FUNCIÓN PARA RENDERIZAR EL ACORDEÓN
         function renderSidebar() {
             const menuHtml = document.getElementById('sidebar-dynamic-menu');
             let html = '';
@@ -300,12 +299,10 @@
             menuHtml.innerHTML = html;
         }
 
-        // FUNCIÓN PARA ABRIR/CERRAR SUBMENÚS
         function toggleSubmenu(id) {
             const sub = document.getElementById(`sub-${id}`);
             const arrow = document.getElementById(`arrow-${id}`);
             
-            // Cerrar todos los demás primero
             document.querySelectorAll('.submenu').forEach(el => {
                 if(el.id !== `sub-${id}`) el.style.display = 'none';
             });
@@ -323,21 +320,15 @@
         }
 
         window.renderModulo = function(opcion, categoria, el) {
-            // Activar botón seleccionado
             if(el) {
                 document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
                 el.classList.add('active');
             }
 
-            // Actualizar Títulos de Cabecera
             document.getElementById('top-title').innerText = opcion;
             document.getElementById('top-bread').innerText = `${categoria.toUpperCase()} > ${opcion.toUpperCase()}`;
 
             const contenedor = document.getElementById('vista-principal');
-
-            // ==========================================
-            // PANTALLAS ESPECÍFICAS PROGRAMADAS
-            // ==========================================
 
             if (opcion === 'Mi Dashboard' || opcion === 'Cambiar Empresa') {
                 contenedor.innerHTML = `
@@ -414,11 +405,12 @@
                 contenedor.innerHTML = `
                     <div class="card">
                         <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:15px; margin-bottom:25px; background:#f8fafc; padding:20px; border-radius:10px; border:1px solid #e2e8f0;">
-                            <div><label>Cliente Receptor</label><select id="doc-cliente" class="form-select" style="background:#fff; margin:0;"></select></div>
+                            <div><label>Cliente Receptor</label><select id="doc-cliente" class="form-select" style="background:#fff; margin:0;"><option value="">Cargando clientes...</option></select></div>
                             <div><label>Condición de Venta</label><select id="doc-condicion" class="form-select" style="background:#fff; margin:0;"><option value="01">Contado</option><option value="02">Crédito</option></select></div>
                             <div><label>Medio de Pago</label><select id="doc-medio" class="form-select" style="background:#fff; margin:0;"><option value="04">Transferencia</option><option value="01">Efectivo</option></select></div>
                         </div>
                         
+                        <h3 class="section-title"><i class="fas fa-list-ol"></i> Detalle</h3>
                         <div style="display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; gap:10px; margin-bottom:20px; align-items:end;">
                             <div class="cabys-wrapper">
                                 <label>Producto (Código CABYS o Nombre)</label>
@@ -446,9 +438,20 @@
                         <button id="btn-emitir-doc" class="btn-top" style="width:100%; margin-top:25px; padding:15px; font-size:15px;" disabled onclick="window.emitirDocumento('Factura')">Emitir y Firmar en Hacienda</button>
                     </div>
                 `;
+                
+                // CARGA EN TIEMPO REAL LOS CLIENTES
                 const selC = document.getElementById('doc-cliente');
-                if(!window.clientesCache || window.clientesCache.length === 0) { selC.innerHTML = '<option value="">Sin clientes en esta empresa</option>'; }
-                else { selC.innerHTML = '<option value="">-- Seleccione Cliente --</option>' + window.clientesCache.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); }
+                fetch('/api/facturacion/clientes', {credentials: 'include'})
+                    .then(r=>r.json())
+                    .then(clientes => {
+                        window.clientesCache = clientes;
+                        if(!clientes || clientes.length === 0) { 
+                            selC.innerHTML = '<option value="">Sin clientes registrados. Ve a la pestaña Clientes.</option>'; 
+                        } else { 
+                            selC.innerHTML = '<option value="">-- Seleccionar Cliente --</option>' + clientes.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} (${escapeHTML(c.identificacion)})</option>`).join(''); 
+                        }
+                    })
+                    .catch(e => selC.innerHTML = '<option value="">Error cargando clientes</option>');
             }
 
             else if (opcion === 'Ver Clientes' || opcion === 'Crear Cliente') {
@@ -485,6 +488,17 @@
                             <h2 style="margin:0; color:#1e293b; font-size:18px;">Catálogo de Bienes y Servicios</h2>
                             <button class="btn-top" onclick="document.getElementById('form-prod-box').style.display='block'"><i class="fas fa-plus"></i> Nuevo Bien/Servicio</button>
                         </div>
+
+                        <!-- NUEVA ZONA DE IMPORTACIÓN CSV CABYS -->
+                        <div style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px dashed var(--sidebar-bg);">
+                            <h3 style="font-size: 15px; margin-bottom: 10px; color: var(--sidebar-bg);"><i class="fas fa-file-excel"></i> Carga Masiva de Códigos CABYS (CSV)</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Sube el CSV oficial de Hacienda (Catálogo) o tu propia plantilla.</p>
+                            <div style="display:flex; gap:10px;">
+                                <input type="file" id="csvCabysFile" accept=".csv" class="form-input" style="margin:0; background:#fff;">
+                                <button onclick="window.subirCSVCabys(event)" class="btn-top btn-t-green" style="white-space:nowrap;"><i class="fas fa-cloud-upload-alt"></i> Importar</button>
+                            </div>
+                        </div>
+
                         <div id="form-prod-box" style="display:${opcion==='Crear Productos'?'block':'none'}; background:#f8fafc; padding:25px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:25px;">
                             <form onsubmit="window.guardarProductoFact(event)">
                                 <div class="cabys-wrapper" style="grid-column:1/-1; margin-bottom:15px;">
@@ -565,7 +579,6 @@
             }
 
             else {
-                // PANTALLA POR DEFECTO PARA MÓDULOS EN CONSTRUCCIÓN DE LAS IMÁGENES
                 contenedor.innerHTML = `
                     <div class="card" style="text-align: center; padding: 60px 20px;">
                         <i class="fas fa-tools" style="font-size: 50px; color: #cbd5e1; margin-bottom: 20px;"></i>
@@ -623,7 +636,6 @@
                     fetch('/api/facturacion/productos', {credentials: 'include'}).then(r=>r.json()).then(d => window.productosCache = d).catch(e => console.log(e));
 
                     document.getElementById('header-plan').innerText = `Plan ${escapeHTML(window.userDataCache.plan)} - Vencimiento: Próximo Mes`;
-                    // Abrir Facturador por defecto
                     toggleSubmenu('facturar');
                     setTimeout(()=>{ window.renderModulo('Inicio Facturador', 'Facturar', document.querySelectorAll('.submenu-item')[3]); }, 100);
 
@@ -805,6 +817,29 @@
                     ${lista.map(d => `<tr><td>${new Date(d.fecha).toLocaleDateString()}</td><td><b style="color:#0f172a;">${escapeHTML(d.consecutivo)}</b></td>${tipo==='factura'?`<td><span style="background:${d.estado==='Rechazado'?'rgba(239,68,68,0.1)':'rgba(16,185,129,0.1)'}; color:${d.estado==='Rechazado'?'#ef4444':'#10b981'}; padding:4px 8px; border-radius:4px; font-weight:700; font-size:11px;">${escapeHTML(d.estado).toUpperCase()}</span></td>`:''}<td><b style="color:var(--sidebar-bg);">₡${d.monto}</b></td><td><button class="fact-btn-view" onclick="window.open('/api/facturacion/imprimir?tipo=${tipo}&id=${d.id}', '_blank')"><i class="fas fa-file-pdf"></i> PDF</button></td></tr>`).join('')}
                 </tbody></table>`;
             });
+        };
+
+        window.subirCSVCabys = async function(event) {
+            const fileInput = document.getElementById('csvCabysFile');
+            if (!fileInput.files[0]) return alert("Selecciona un archivo CSV primero.");
+            
+            const formData = new FormData();
+            formData.append('archivo', fileInput.files[0]);
+            
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch('/api/admin/cabys/importar', { method: 'POST', credentials: 'include', body: formData });
+                const data = await res.json();
+                if (data.success) { alert(data.message); fileInput.value = ""; } 
+                else { alert("Error: " + data.message); }
+            } catch(e) { alert("Error subiendo el archivo."); }
+            
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
         };
 
         // --- ARRANQUE ---

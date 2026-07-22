@@ -5,6 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 import os
 import psycopg2
+import psycopg2.extras
 import requests
 import random
 from datetime import datetime, timedelta
@@ -675,6 +676,7 @@ def crud_productos_facturacion():
             return jsonify({"success": True})
         except Exception as e: return jsonify({"success": False, "message": str(e)}), 500
 
+# OPTIMIZACIÓN BULK INSERT PARA CSV CABYS
 @app.route('/api/admin/cabys/importar', methods=['POST'])
 @login_required
 def importar_cabys_global():
@@ -698,11 +700,9 @@ def importar_cabys_global():
         csv_input = csv.reader(stream, delimiter=',')
         header = next(csv_input, None)
         
-        conn = get_db_connection()
-        cur = conn.cursor()
-        count = 0
-        
         is_hacienda_format = header and len(header) >= 19 and 'Categoría 8' in header
+
+        codigos_a_insertar = []
 
         for row in csv_input:
             if not row or len(row) == 0: continue
@@ -723,14 +723,27 @@ def importar_cabys_global():
                     except: impuesto = 13.0
                 
                 if cabys:
-                    cur.execute("""INSERT INTO cabys_maestro (codigo, descripcion, impuesto) VALUES (%s, %s, %s) ON CONFLICT (codigo) DO UPDATE SET descripcion = EXCLUDED.descripcion, impuesto = EXCLUDED.impuesto""", (cabys, desc, impuesto))
-                    count += 1
-            except Exception as e: continue
+                    codigos_a_insertar.append((cabys, desc, impuesto))
+            except Exception: continue
                 
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        if codigos_a_insertar:
+            psycopg2.extras.execute_values(
+                cur,
+                """INSERT INTO cabys_maestro (codigo, descripcion, impuesto) 
+                   VALUES %s 
+                   ON CONFLICT (codigo) DO UPDATE SET 
+                   descripcion = EXCLUDED.descripcion, 
+                   impuesto = EXCLUDED.impuesto""",
+                codigos_a_insertar
+            )
+            
         conn.commit()
         cur.close()
         conn.close()
-        return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {count} códigos al diccionario global CABYS."})
+        return jsonify({"success": True, "message": f"¡Éxito! Se inyectaron {len(codigos_a_insertar)} códigos al diccionario CABYS."})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
